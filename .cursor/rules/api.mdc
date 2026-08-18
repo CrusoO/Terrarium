@@ -1,0 +1,12 @@
+---
+description: FastAPI orchestration API
+globs: apps/api/**
+alwaysApply: false
+---
+
+# API
+
+- FastAPI + Uvicorn on port 3001
+- Import contracts from `terrarium_contracts`, never duplicate DTOs
+- Long work is Redis/ARQ (P1-S4). Do not run LLM agents inline in the HTTP handler
+- Do not import React. Talk to Docker only through `packages/sandbox`

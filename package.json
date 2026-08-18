@@ -7,12 +7,13 @@
     "build": "pnpm --filter @terrarium/contracts build",
     "postinstall": "pnpm --filter @terrarium/contracts build",
     "dev:web": "pnpm --filter @terrarium/web dev",
-    "dev:api": "pnpm --filter @terrarium/api dev",
+    "dev:api": "uv run uvicorn terrarium_api.main:app --reload --host 0.0.0.0 --port 3001",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
     "infra:down": "docker compose -f infra/docker-compose.yml down",
     "stories:generate": "node scripts/generate-stories.mjs",
     "stories:login": "node scripts/m365-login.mjs",
-    "stories:push-loop": "node scripts/push-stories-to-loop.mjs"
+    "stories:push-loop": "node scripts/push-stories-to-loop.mjs",
+    "stories:update-loop": "node scripts/push-stories-to-loop.mjs --planName \"Project Terrarium Playground\" --bucketName \"To do\" --update"
   },
   "devDependencies": {
     "@pnp/cli-microsoft365": "^11.10.0",

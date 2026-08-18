@@ -78,3 +78,13 @@ export const sessionEventSchema = z.object({
   payload: z.record(z.unknown()).optional(),
 });
 export type SessionEvent = z.infer<typeof sessionEventSchema>;
+
+export const createSessionRequestSchema = z.object({
+  prompt: z.string(),
+});
+export type CreateSessionRequest = z.infer<typeof createSessionRequestSchema>;
+
+export const createSessionResponseSchema = z.object({
+  sessionId: z.string(),
+});
+export type CreateSessionResponse = z.infer<typeof createSessionResponseSchema>;

@@ -1,12 +1,13 @@
 ---
-description: Agent package — FileMap in, no Docker
+description: Python agent package — FileMap in, no Docker
 globs: packages/agents/**
 alwaysApply: false
 ---
 
 # Agents
 
-- Input `AgentJob`, output `AgentResult` with `FileMap`
+Python package `terrarium_agents`. Input `AgentJob`, output `AgentResult` with `FileMap`.
+
 - Do not start, stop, or inspect Docker
 - Intent: `new|modify` and `react|fullstack` only
 - Editor: targeted diffs when `kind=modify`; no full rewrite

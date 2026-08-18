@@ -26,7 +26,8 @@ Chat on the left, live tool iframe on the right (desktop). Stack vertically on s
 
 - No dashboard (P4-S4)
 - No auth chrome (P6)
+- Monaco is not the live canvas; an optional Code tab is out of scope for this story
 
 ## Implementation notes
 
-Read [PLAN.md](../../PLAN.md) before coding. Change only the packages listed above. If contract changes are not none, update `packages/contracts` first. Do not start work from another story.
+Read [PLAN.md](../../PLAN.md) before coding. Change only the packages listed above. If contract changes are not none, update `packages/contracts` (Zod) and `packages/py-contracts` (Pydantic) first. Do not start work from another story. Live preview is always an iframe URL; Monaco is not the running app.

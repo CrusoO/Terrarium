@@ -1,0 +1,21 @@
+[project]
+name = "terrarium"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "terrarium-api",
+]
+
+[tool.uv.workspace]
+members = [
+    "apps/api",
+    "packages/py-contracts",
+    "packages/agents",
+    "packages/sandbox",
+]
+
+[tool.uv.sources]
+terrarium-api = { workspace = true }
+terrarium-contracts = { workspace = true }
+terrarium-agents = { workspace = true }
+terrarium-sandbox = { workspace = true }
