@@ -6,17 +6,28 @@ Terrarium is an AI app builder: a user prompt becomes a sandboxed live tool in a
 
 ## Locked stack
 
-TypeScript monorepo, `pnpm` workspaces:
+Mixed-language monorepo. The parent UI is TypeScript; orchestration, agents, and the sandbox runner are Python.
+
+**JavaScript (pnpm):**
 
 - `apps/web` — Parent UI (Vite + React + TypeScript + Tailwind)
-- `apps/api` — Orchestration API (Fastify + TypeScript)
-- `packages/contracts` — **only** shared types, Zod schemas, events, HTTP DTOs
+- `packages/contracts` — Zod schemas and TS types for the parent (HTTP DTOs, events)
+
+**Python (uv workspace):**
+
+- `apps/api` — Orchestration API (FastAPI + Uvicorn)
+- `packages/py-contracts` — Pydantic v2 models with the same names and JSON fields as Zod
 - `packages/agents` — Intent, Code Generator, Editor, Self-Healing, Smart Match
 - `packages/sandbox` — Docker runner, health, sleep/wake, preview URLs
-- `packages/templates` — `react` and `fullstack` starter kits
+
+**Shared:**
+
+- `packages/templates` — `react` and `fullstack` starter kits (files only, filled in P2-S2)
 - `infra/` — Compose: Postgres, Redis, Traefik, sandbox network
 
-Why: one language, contracts compile into web and API, Docker matches the product diagram, Postgres for tools/users, Redis + BullMQ for long agent jobs, Traefik for `{sessionId}.sandbox.local` iframe URLs.
+**Live tool:** the parent canvas is always an **iframe** of the sandbox preview URL. Never inline generated HTML. Never use Monaco (or CodeMirror/Sandpack) as the running app. A later optional **Code** tab may mount Monaco to *view* source; that tab is not a current story and is not the preview.
+
+Why: FastAPI is the agent/orchestration runtime; React stays the builder chrome; Docker matches the product diagram; Postgres for tools/users; Redis + ARQ for long agent jobs (Python equivalent of a Redis job queue); Traefik for `{sessionId}.sandbox.local` iframe URLs. JSON field names stay camelCase so web and API share one wire format.
 
 ## Pipeline
 
@@ -45,23 +56,23 @@ flowchart TD
   Healer -->|"retry max 3"| IntentAgent
 ```
 
-HTTP path: `POST /sessions` → Redis/BullMQ job → SSE `/sessions/:id/events` → parent iframe `previewUrl`.
+HTTP path: `POST /sessions` → Redis/ARQ job → SSE `/sessions/{id}/events` → parent iframe `previewUrl`.
 
 Phase 5 Smart Match runs **before** Code Generator. Phase 6 auth is the only identity source; until then use the `dev-user` stub from contracts.
 
 ## Hard rules (every story)
 
-- New or changed API, event, or agent I/O goes in `packages/contracts` first. No duplicate types in `apps/*`.
+- New or changed API, event, or agent I/O is specified in this file, then implemented in **both** `packages/contracts` (Zod) and `packages/py-contracts` (Pydantic) before app code. No third copy in `apps/*`.
 - Agents never talk to Docker. They return a `FileMap`. Only `packages/sandbox` starts or stops containers.
 - Generated apps run only in Docker with CPU, memory, PID, and network limits. Never on the API host.
 - Self-heal is max **3** retries, then emit `heal.exhausted` and show the error in chat.
-- Preview is always an iframe URL from the sandbox proxy. Never inline generated HTML in the parent.
+- Preview is always an iframe URL from the sandbox proxy. Never inline generated HTML in the parent. Monaco is not the live canvas.
 - Smart Match never auto-overwrites the user. Offer “Use existing” vs “Build new”.
 - Change only the packages listed on the story. Mark the story done in this file when acceptance criteria pass.
 
 ## Frozen contracts
 
-Implement these shapes in `packages/contracts`. Stories must not invent parallel types.
+Implement these shapes in `packages/contracts` (Zod) and `packages/py-contracts` (Pydantic). JSON keys are camelCase in both. Stories must not invent parallel types.
 
 ```ts
 export type Stack = "react" | "fullstack";
@@ -121,11 +132,12 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 
 | Package | May import | Must not |
 | --- | --- | --- |
-| `packages/contracts` | nothing in this repo | Docker, LLM SDKs, React, Fastify |
-| `packages/agents` | contracts, templates | Docker, `apps/*` |
-| `packages/sandbox` | contracts | LLM SDKs, `apps/web` |
-| `apps/api` | contracts, agents, sandbox | React UI |
-| `apps/web` | contracts | Docker, agents, sandbox internals |
+| `packages/contracts` | nothing in this repo | Docker, LLM SDKs, React, FastAPI |
+| `packages/py-contracts` | nothing in this repo | Docker, LLM SDKs, FastAPI routes, React |
+| `packages/agents` | py-contracts, templates | Docker, `apps/*` |
+| `packages/sandbox` | py-contracts | LLM SDKs, `apps/web` |
+| `apps/api` | py-contracts, agents, sandbox | React UI |
+| `apps/web` | `@terrarium/contracts` | Docker, agents, sandbox internals |
 
 ## Parallelism
 
@@ -139,8 +151,8 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 ## Definition of done (every story)
 
 - Acceptance criteria in the story file are met.
-- If the story lists contract changes, Zod/types in `packages/contracts` were updated first.
-- No types duplicated outside contracts.
+- If the story lists contract changes, Zod in `packages/contracts` and Pydantic in `packages/py-contracts` were updated first.
+- No types duplicated outside those two packages.
 - Story checkbox below is marked.
 
 ## Phase checklist
@@ -148,7 +160,7 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 ### Phase 1 — Foundation and Sandbox
 
 - [x] [P1-S1](docs/stories/P1-S1-monorepo-and-contracts.md) Monorepo + Compose + contracts skeleton
-- [ ] [P1-S2](docs/stories/P1-S2-parent-prompt-shell.md) Parent prompt shell
+- [x] [P1-S2](docs/stories/P1-S2-parent-prompt-shell.md) Parent prompt shell
 - [ ] [P1-S3](docs/stories/P1-S3-sandbox-runner.md) Sandbox runner
 - [ ] [P1-S4](docs/stories/P1-S4-session-api.md) Session API + SSE + stub worker
 
@@ -191,7 +203,7 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 
 1. Open this file and the story under `docs/stories/` (or `@` the story ID in Cursor).
 2. Change only listed packages.
-3. Update `packages/contracts` if Contract changes is not “none”.
+3. Update both contract packages if Contract changes is not “none”.
 4. Check the box above when acceptance criteria pass.
 
 ## Generate story files
@@ -210,11 +222,17 @@ Requires Node 20+ and a **work/school** Microsoft 365 account that can already o
 ```powershell
 cd C:\Users\thakur\Desktop\Terrarium
 node scripts\m365-login.mjs
-node scripts\push-stories-to-loop.mjs --planName "JIRA BOARD" --bucketName "To do"
+node scripts\push-stories-to-loop.mjs --planName "Project Terrarium Playground" --bucketName "To do"
+```
+
+Re-run without `--update` skips cards whose title already starts with `[P1-S1]` … `[P6-S4]`. To patch those existing cards in place (no delete):
+
+```powershell
+node scripts\push-stories-to-loop.mjs --planName "Project Terrarium Playground" --bucketName "To do" --update
 ```
 
 A device-code / browser prompt will appear on login. Use the **work/school** account that can already open the board. Do not use `npx @pnp/cli-microsoft365` (that package’s binary is `m365`, so npx cannot start it). Do not use `Install-Module`.
 
 If login asks for **App ID** / **tenant**: cancel it (Ctrl+C). Those are Microsoft Entra values, not Loop fields. Run `node scripts\m365-login.mjs` again — it starts `m365 setup`, which **creates** the Entra app. Choose **create a new app** and **full permissions**. To look up an existing app instead: Azure Portal → Microsoft Entra ID → App registrations → Overview → Application (client) ID and Directory (tenant) ID. For tenant you can also use `common`.
 
-Cards are created **unassigned** in To do. Assign people on the board. Re-run is safe: titles prefixed `[P1-S1]` are skipped if they already exist. If the plan is not found, also pass `--ownerGroupName "Your M365 Group"`.
+Cards are created **unassigned** in To do. Assign people on the board. Re-run without `--update` skips existing `[P1-S1]` titles. `--update` overwrites title and description on those cards and creates any that are missing. If the plan is not found, also pass `--ownerGroupName "Your M365 Group"`.

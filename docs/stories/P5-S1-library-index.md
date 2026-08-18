@@ -3,7 +3,7 @@
 > Generated from `docs/stories.catalog.json`. Do not hand-edit. Run `node scripts/generate-stories.mjs`.
 
 - **Phase:** 5 — Smart Match
-- **Packages:** apps/api, packages/contracts
+- **Packages:** apps/api, packages/contracts, packages/py-contracts
 - **Depends on:** P4-S2
 - **Parallel with:** none
 
@@ -27,4 +27,4 @@ Index each published tool (prompt, summary, stack) for later exact-problem match
 
 ## Implementation notes
 
-Read [PLAN.md](../../PLAN.md) before coding. Change only the packages listed above. If contract changes are not none, update `packages/contracts` first. Do not start work from another story.
+Read [PLAN.md](../../PLAN.md) before coding. Change only the packages listed above. If contract changes are not none, update `packages/contracts` (Zod) and `packages/py-contracts` (Pydantic) first. Do not start work from another story. Live preview is always an iframe URL; Monaco is not the running app.

@@ -11,6 +11,7 @@ const planName = args.planName ?? process.env.LOOP_PLAN_NAME ?? "JIRA BOARD";
 const bucketName = args.bucketName ?? process.env.LOOP_BUCKET_NAME ?? "To do";
 const ownerGroupName = args.ownerGroupName ?? process.env.LOOP_GROUP_NAME;
 const planIdArg = args.planId ?? process.env.LOOP_PLAN_ID;
+const updateExisting = Boolean(args.update);
 
 const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
 const stories = catalog.stories ?? [];
@@ -33,36 +34,51 @@ const planId = plan.id ?? plan.Id;
 console.log(`Using plan "${plan.title ?? plan.Title ?? planName}" (${planId})`);
 console.log(`Listing existing tasks...`);
 const existing = await m365Json(["planner", "task", "list", "--planId", planId]);
-const existingTitles = new Set(
-  (Array.isArray(existing) ? existing : []).map((t) => t.title ?? t.Title)
-);
+const tasks = Array.isArray(existing) ? existing : [];
 
 let created = 0;
+let updated = 0;
 let skipped = 0;
 
 for (const story of stories) {
   const title = `[${story.id}] ${story.title}`;
-  if (hasTitle(existingTitles, story.id)) {
-    console.log(`skip  ${title}`);
-    skipped += 1;
+  const description = storyDescription(story);
+  const matches = findTasksByStoryId(tasks, story.id);
+
+  if (matches.length > 0) {
+    if (!updateExisting) {
+      console.log(`skip  ${title}`);
+      skipped += 1;
+      continue;
+    }
+    if (matches.length > 1) {
+      console.log(
+        `warn  ${title}: ${matches.length} cards share this id; updating all of them`
+      );
+    }
+    for (const task of matches) {
+      const taskId = task.id ?? task.Id;
+      console.log(`update ${title} (${taskId}) ...`);
+      await runM365(
+        [
+          "planner",
+          "task",
+          "set",
+          "--id",
+          taskId,
+          "--title",
+          title,
+          "--description",
+          description,
+          "--output",
+          "json",
+        ],
+        { timeoutMs: 60_000 }
+      );
+      updated += 1;
+    }
     continue;
   }
-
-  const description = [
-    story.goal,
-    "",
-    `Phase ${story.phase}: ${story.phaseName}`,
-    `Packages: ${(story.packages ?? []).join(", ")}`,
-    `Depends on: ${(story.dependsOn ?? []).join(", ") || "none"}`,
-    "",
-    "Acceptance:",
-    ...(story.acceptance ?? []).map((line) => `- ${line}`),
-    "",
-    "Non-goals:",
-    ...(story.nonGoals ?? []).map((line) => `- ${line}`),
-    "",
-    `Source: docs/stories/${story.id}-${story.slug}.md`,
-  ].join("\n");
 
   console.log(`create ${title} ...`);
   await runM365([
@@ -86,9 +102,39 @@ for (const story of stories) {
 }
 
 console.log(
-  `Done. created=${created} skipped=${skipped} plan="${planName}" bucket="${bucketName}"`
+  `Done. created=${created} updated=${updated} skipped=${skipped} plan="${planName}" bucket="${bucketName}"`
 );
-console.log("Refresh Microsoft Loop. Assign people on the board — tasks are unassigned.");
+console.log("Refresh Microsoft Loop.");
+if (!updateExisting && skipped > 0) {
+  console.log(
+    "Existing cards were left unchanged. Re-run with --update to patch their descriptions in place."
+  );
+}
+
+function storyDescription(story) {
+  return [
+    story.goal,
+    "",
+    `Phase ${story.phase}: ${story.phaseName}`,
+    `Packages: ${(story.packages ?? []).join(", ")}`,
+    `Depends on: ${(story.dependsOn ?? []).join(", ") || "none"}`,
+    "",
+    "Acceptance:",
+    ...(story.acceptance ?? []).map((line) => `- ${line}`),
+    "",
+    "Non-goals:",
+    ...(story.nonGoals ?? []).map((line) => `- ${line}`),
+    "",
+    `Source: docs/stories/${story.id}-${story.slug}.md`,
+  ].join("\n");
+}
+
+function findTasksByStoryId(list, id) {
+  const prefix = `[${id}]`;
+  return list.filter((task) =>
+    String(task.title ?? task.Title ?? "").startsWith(prefix)
+  );
+}
 
 async function disablePrompts() {
   try {
@@ -156,7 +202,7 @@ async function findPlan(name, groupName) {
       throw new Error(
         `Loop workspaces are not M365 groups, so "${groupName}" is not a Graph group.\n` +
           `Use the Loop page's Planner plan title, for example:\n` +
-          `  node scripts\\push-stories-to-loop.mjs --planName "Project Terrarium Playground" --bucketName "To do"\n` +
+          `  node scripts\\push-stories-to-loop.mjs --planName "Project Terrarium Playground" --bucketName "To do" --update\n` +
           `(JIRA BOARD is a heading on the page, not the plan name.)\n` +
           originalError(error)
       );
@@ -187,13 +233,6 @@ async function graphGet(url, headers = {}) {
   return items;
 }
 
-function hasTitle(titles, id) {
-  for (const title of titles) {
-    if (typeof title === "string" && title.startsWith(`[${id}]`)) return true;
-  }
-  return false;
-}
-
 function pickPlan(plans, name) {
   const list = Array.isArray(plans) ? plans : [];
   const exact = list.find((p) => (p.title ?? p.Title) === name);
@@ -206,8 +245,13 @@ function parseArgs(argv) {
   const out = {};
   for (let i = 0; i < argv.length; i += 1) {
     const key = argv[i];
-    if (key.startsWith("--") && argv[i + 1]) {
-      out[key.slice(2)] = argv[i + 1];
+    if (!key.startsWith("--")) continue;
+    const name = key.slice(2);
+    const next = argv[i + 1];
+    if (!next || next.startsWith("--")) {
+      out[name] = true;
+    } else {
+      out[name] = next;
       i += 1;
     }
   }

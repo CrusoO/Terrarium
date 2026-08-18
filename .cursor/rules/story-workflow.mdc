@@ -8,7 +8,7 @@ alwaysApply: true
 1. User names a story ID (`P1-S1` … `P6-S4`). If they do not, ask for one.
 2. Read `docs/stories/<id>-*.md` and PLAN.md.
 3. Change only listed packages.
-4. If Contract changes is not none, update `packages/contracts` first.
+4. If Contract changes is not none, update `packages/contracts` (Zod) and `packages/py-contracts` (Pydantic) first.
 5. Do not start a different phase's work.
 6. When acceptance criteria pass, check the box in PLAN.md.
 

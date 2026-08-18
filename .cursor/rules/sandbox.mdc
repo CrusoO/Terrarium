@@ -1,10 +1,12 @@
 ---
-description: Sandbox isolation, health, sleep/wake, preview URLs
+description: Python sandbox isolation, health, sleep/wake, preview URLs
 globs: packages/sandbox/**
 alwaysApply: false
 ---
 
 # Sandbox
+
+Python package `terrarium_sandbox`.
 
 - One container per session, CPU/memory/PID/network limits
 - Preview URL via Traefik: `{sessionId}.sandbox.local` (or configured host)

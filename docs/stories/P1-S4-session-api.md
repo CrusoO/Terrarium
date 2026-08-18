@@ -17,7 +17,7 @@ Create a session, enqueue a job, stream SessionEvents over SSE, and set the pare
 
 ## Acceptance criteria
 
-- POST /sessions returns sessionId and enqueues a BullMQ job
+- POST /sessions returns sessionId and enqueues an ARQ job
 - Stub worker writes a fixture FileMap, starts sandbox, emits sandbox.ready then preview.ready
 - SSE stream delivers those events
 - Parent UI sets iframe src to previewUrl on preview.ready
@@ -31,4 +31,4 @@ Create a session, enqueue a job, stream SessionEvents over SSE, and set the pare
 
 ## Implementation notes
 
-Read [PLAN.md](../../PLAN.md) before coding. Change only the packages listed above. If contract changes are not none, update `packages/contracts` first. Do not start work from another story.
+Read [PLAN.md](../../PLAN.md) before coding. Change only the packages listed above. If contract changes are not none, update `packages/contracts` (Zod) and `packages/py-contracts` (Pydantic) first. Do not start work from another story. Live preview is always an iframe URL; Monaco is not the running app.
