@@ -5,6 +5,7 @@ description = "Docker runner, health, sleep/wake — filled in P1-S3"
 requires-python = ">=3.12"
 dependencies = [
     "terrarium-contracts",
+    "docker>=7.1",
 ]
 
 [build-system]

@@ -82,3 +82,18 @@ class CreateSessionResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     sessionId: str
+
+
+class SandboxHandle(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    sessionId: str
+    previewUrl: str
+    containerId: str
+
+
+class HealthReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: RuntimeStatus
+    logs: str

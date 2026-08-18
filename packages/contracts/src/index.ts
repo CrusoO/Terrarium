@@ -88,3 +88,16 @@ export const createSessionResponseSchema = z.object({
   sessionId: z.string(),
 });
 export type CreateSessionResponse = z.infer<typeof createSessionResponseSchema>;
+
+export const sandboxHandleSchema = z.object({
+  sessionId: z.string(),
+  previewUrl: z.string(),
+  containerId: z.string(),
+});
+export type SandboxHandle = z.infer<typeof sandboxHandleSchema>;
+
+export const healthReportSchema = z.object({
+  status: runtimeStatusSchema,
+  logs: z.string(),
+});
+export type HealthReport = z.infer<typeof healthReportSchema>;
