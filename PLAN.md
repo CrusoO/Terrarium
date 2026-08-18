@@ -60,6 +60,8 @@ HTTP path: `POST /sessions` → Redis/ARQ job → SSE `/sessions/{id}/events` �
 
 Phase 5 Smart Match runs **before** Code Generator. Phase 6 auth is the only identity source; until then use the `dev-user` stub from contracts.
 
+LLM placement, model defaults, and why Intent stays cheap while Code Generator/Editor stay large are in [`docs/llm-agents.md`](docs/llm-agents.md). Phase 1 uses no LLM. Agents live in `packages/agents` only.
+
 ## Hard rules (every story)
 
 - New or changed API, event, or agent I/O is specified in this file, then implemented in **both** `packages/contracts` (Zod) and `packages/py-contracts` (Pydantic) before app code. No third copy in `apps/*`.
