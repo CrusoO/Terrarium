@@ -1,0 +1,7 @@
+{
+  "name": "@terrarium/templates",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "react and fullstack starter kits — filled in P2-S2"
+}

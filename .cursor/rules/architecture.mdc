@@ -1,0 +1,16 @@
+---
+description: Terrarium architecture — stack, pipeline, and package boundaries
+alwaysApply: true
+---
+
+# Architecture
+
+Read PLAN.md. Do not reopen the stack or pipeline.
+
+- Monorepo: `apps/web`, `apps/api`, `packages/contracts`, `packages/agents`, `packages/sandbox`, `packages/templates`, `infra/`
+- Stack: Vite + React + TS (web), Fastify + TS (api), Postgres, Redis/BullMQ, Docker sandbox, Traefik preview URLs
+- Agents return `FileMap` only. Only `packages/sandbox` uses Docker
+- Preview is an iframe URL, never inlined generated HTML
+- Self-heal max 3 then `heal.exhausted`
+- Smart Match runs before Code Generator and never auto-accepts
+- Until P6-S1, actor is `dev-user`

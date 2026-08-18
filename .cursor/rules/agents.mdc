@@ -1,0 +1,14 @@
+---
+description: Agent package — FileMap in, no Docker
+globs: packages/agents/**
+alwaysApply: false
+---
+
+# Agents
+
+- Input `AgentJob`, output `AgentResult` with `FileMap`
+- Do not start, stop, or inspect Docker
+- Intent: `new|modify` and `react|fullstack` only
+- Editor: targeted diffs when `kind=modify`; no full rewrite
+- Healer: max 3 retries using logs in `errorContext`; then caller emits `heal.exhausted`
+- Smart Match runs before Code Generator

@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: terrarium
+      POSTGRES_PASSWORD: terrarium
+      POSTGRES_DB: terrarium
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U terrarium -d terrarium"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - terrarium
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - terrarium
+
+  traefik:
+    image: traefik:v3.3
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=terrarium-sandbox
+      - --entrypoints.web.address=:80
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - terrarium
+      - sandbox
+
+networks:
+  terrarium:
+    name: terrarium
+  sandbox:
+    name: terrarium-sandbox
+
+volumes:
+  postgres_data:

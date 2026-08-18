@@ -1,0 +1,14 @@
+---
+description: Sandbox isolation, health, sleep/wake, preview URLs
+globs: packages/sandbox/**
+alwaysApply: false
+---
+
+# Sandbox
+
+- One container per session, CPU/memory/PID/network limits
+- Preview URL via Traefik: `{sessionId}.sandbox.local` (or configured host)
+- Emit `sandbox.booting`, `sandbox.ready`, `sandbox.unhealthy`
+- Never run generated apps on the API host
+- Idle sleep stops the container; wake starts it again
+- Do not call LLMs from this package

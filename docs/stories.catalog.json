@@ -1,0 +1,582 @@
+{
+  "version": 1,
+  "phaseCount": 6,
+  "storiesPerPhase": 4,
+  "stories": [
+    {
+      "id": "P1-S1",
+      "slug": "monorepo-and-contracts",
+      "phase": 1,
+      "phaseName": "Foundation and Sandbox",
+      "title": "Monorepo, Compose, and contracts skeleton",
+      "goal": "Create the pnpm workspace, empty package folders, Postgres/Redis/Traefik Compose, and the contracts package with frozen types from PLAN.md so every later story has a place to land.",
+      "packages": ["pnpm-workspace.yaml", "packages/contracts", "infra", "apps/web", "apps/api"],
+      "dependsOn": [],
+      "parallelWith": [],
+      "contractChanges": [
+        "Add Stack, IntentKind, SessionEventName, FileMap, Intent, AgentJob, AgentResult, SessionEvent, RuntimeStatus as Zod + TS types",
+        "Export actorId stub constant DEV_USER = \"dev-user\""
+      ],
+      "acceptance": [
+        "pnpm-workspace.yaml lists apps/* and packages/*",
+        "packages/contracts builds and exports the frozen types from PLAN.md",
+        "infra/docker-compose.yml starts Postgres, Redis, and Traefik",
+        "apps/web and apps/api exist as stub packages that depend on contracts",
+        "pnpm install succeeds at repo root"
+      ],
+      "nonGoals": [
+        "No real UI beyond a blank Vite app",
+        "No Docker sandbox runner",
+        "No LLM agents",
+        "No auth"
+      ]
+    },
+    {
+      "id": "P1-S2",
+      "slug": "parent-prompt-shell",
+      "phase": 1,
+      "phaseName": "Foundation and Sandbox",
+      "title": "Parent prompt shell",
+      "goal": "Build the parent app prompt box that POSTs to /sessions and shows a stub event log so the API and iframe can be wired in P1-S4.",
+      "packages": ["apps/web"],
+      "dependsOn": ["P1-S1"],
+      "parallelWith": ["P1-S3"],
+      "contractChanges": [
+        "Add CreateSessionRequest { prompt: string } and CreateSessionResponse { sessionId: string }"
+      ],
+      "acceptance": [
+        "Prompt textarea and submit button exist",
+        "Submit calls POST /sessions with CreateSessionRequest",
+        "A visible event-log area can render SessionEvent objects (may be empty until P1-S4)",
+        "Types imported from @terrarium/contracts only"
+      ],
+      "nonGoals": [
+        "No split-screen iframe layout (P3-S1)",
+        "No SSE client (P3-S2)",
+        "No auth UI"
+      ]
+    },
+    {
+      "id": "P1-S3",
+      "slug": "sandbox-runner",
+      "phase": 1,
+      "phaseName": "Foundation and Sandbox",
+      "title": "Isolated Docker sandbox runner",
+      "goal": "Start and stop a fixture app in Docker with resource limits and a unique preview URL. No agents.",
+      "packages": ["packages/sandbox", "infra"],
+      "dependsOn": ["P1-S1"],
+      "parallelWith": ["P1-S2"],
+      "contractChanges": [
+        "Add SandboxHandle { sessionId, previewUrl, containerId }",
+        "Add HealthReport { status: RuntimeStatus, logs: string }"
+      ],
+      "acceptance": [
+        "Can start a fixture React app container for a sessionId",
+        "CPU, memory, PID, and network limits are applied",
+        "Returns a Traefik preview URL of the form {sessionId}.sandbox.local (or configured host)",
+        "Health check returns running or unhealthy with logs",
+        "Stop removes the container",
+        "Generated code never runs on the API host"
+      ],
+      "nonGoals": [
+        "No LLM",
+        "No sleep/wake scheduler (P4-S3)",
+        "No auth on preview URL (P6-S4)"
+      ]
+    },
+    {
+      "id": "P1-S4",
+      "slug": "session-api",
+      "phase": 1,
+      "phaseName": "Foundation and Sandbox",
+      "title": "Session API, SSE, and stub worker",
+      "goal": "Create a session, enqueue a job, stream SessionEvents over SSE, and set the parent iframe when preview.ready fires. Worker is an echo stub (no LLM).",
+      "packages": ["apps/api", "apps/web"],
+      "dependsOn": ["P1-S1", "P1-S2", "P1-S3"],
+      "parallelWith": [],
+      "contractChanges": [
+        "Document POST /sessions and GET /sessions/:id/events (SSE of SessionEvent)"
+      ],
+      "acceptance": [
+        "POST /sessions returns sessionId and enqueues a BullMQ job",
+        "Stub worker writes a fixture FileMap, starts sandbox, emits sandbox.ready then preview.ready",
+        "SSE stream delivers those events",
+        "Parent UI sets iframe src to previewUrl on preview.ready",
+        "No LLM calls"
+      ],
+      "nonGoals": [
+        "No Intent/CodeGen/Editor agents",
+        "No self-heal loop",
+        "No persist/publish"
+      ]
+    },
+    {
+      "id": "P2-S1",
+      "slug": "intent-agent",
+      "phase": 2,
+      "phaseName": "Core Agents",
+      "title": "Intent Agent",
+      "goal": "Classify the prompt as new vs modify and react vs fullstack, optionally attach toolId, and emit intent.classified.",
+      "packages": ["packages/agents", "apps/api"],
+      "dependsOn": ["P1-S4"],
+      "parallelWith": ["P2-S2", "P2-S3"],
+      "contractChanges": [
+        "Intent type is already frozen; add IntentAgentInput/Output aliases if needed without changing fields"
+      ],
+      "acceptance": [
+        "Given a prompt, returns Intent { kind, stack, summary, toolId? }",
+        "Modify requires an existing session/tool FileMap or toolId",
+        "API persists intent.classified on the session SSE stream",
+        "Does not write files or start Docker"
+      ],
+      "nonGoals": [
+        "No Smart Match (Phase 5)",
+        "No code generation"
+      ]
+    },
+    {
+      "id": "P2-S2",
+      "slug": "code-generator",
+      "phase": 2,
+      "phaseName": "Core Agents",
+      "title": "Code Generator Agent",
+      "goal": "Fill packages/templates/{stack} from Intent and return a FileMap for the sandbox. New apps only.",
+      "packages": ["packages/agents", "packages/templates", "apps/api"],
+      "dependsOn": ["P1-S4", "P2-S1"],
+      "parallelWith": ["P2-S3"],
+      "contractChanges": [
+        "None beyond AgentJob / AgentResult already frozen"
+      ],
+      "acceptance": [
+        "templates/react and templates/fullstack exist as runnable starters",
+        "Generator returns FileMap derived from the matching template",
+        "Emits codegen.started and codegen.completed",
+        "API hands FileMap to sandbox (does not call Docker from the agent)",
+        "kind=modify is rejected; caller must use Editor"
+      ],
+      "nonGoals": [
+        "No targeted diffs",
+        "No self-heal"
+      ]
+    },
+    {
+      "id": "P2-S3",
+      "slug": "editor-agent",
+      "phase": 2,
+      "phaseName": "Core Agents",
+      "title": "Editor Agent",
+      "goal": "Apply targeted file edits for follow-up prompts without rewriting the whole app.",
+      "packages": ["packages/agents", "apps/api"],
+      "dependsOn": ["P1-S4", "P2-S1"],
+      "parallelWith": ["P2-S2"],
+      "contractChanges": [
+        "None"
+      ],
+      "acceptance": [
+        "Input includes existing FileMap + prompt",
+        "Output FileMap changes only files required by the prompt",
+        "Emits editor.started and editor.completed",
+        "kind=new is rejected; caller must use Code Generator",
+        "Does not call Docker"
+      ],
+      "nonGoals": [
+        "No full-app regenerate",
+        "No publish"
+      ]
+    },
+    {
+      "id": "P2-S4",
+      "slug": "self-healing-agent",
+      "phase": 2,
+      "phaseName": "Core Agents",
+      "title": "Self-Healing Agent (max 3)",
+      "goal": "On sandbox.unhealthy, attach logs, route back through Intent to Editor or Code Generator, retry at most 3 times, then emit heal.exhausted.",
+      "packages": ["packages/agents", "apps/api"],
+      "dependsOn": ["P2-S1", "P2-S2", "P2-S3", "P1-S3"],
+      "parallelWith": [],
+      "contractChanges": [
+        "Add healAttempt: number on AgentJob.errorContext or session state (0–3)"
+      ],
+      "acceptance": [
+        "sandbox.unhealthy triggers healer with logs",
+        "Each retry emits heal.attempt with the attempt number",
+        "After 3 failed retries, emit heal.exhausted and stop looping",
+        "Successful retry continues to preview.ready",
+        "No silent infinite loops"
+      ],
+      "nonGoals": [
+        "No parent UX for retries (P3-S4)",
+        "No changing max retries via UI"
+      ]
+    },
+    {
+      "id": "P3-S1",
+      "slug": "split-screen",
+      "phase": 3,
+      "phaseName": "Real-time UX",
+      "title": "Split-screen chat and iframe",
+      "goal": "Chat on the left, live tool iframe on the right (desktop). Stack vertically on small screens.",
+      "packages": ["apps/web"],
+      "dependsOn": ["P1-S2", "P1-S4"],
+      "parallelWith": ["P3-S2"],
+      "contractChanges": [
+        "None"
+      ],
+      "acceptance": [
+        "Desktop: two-pane layout chat | iframe",
+        "Narrow viewport: chat above iframe",
+        "Iframe src is only the sandbox previewUrl",
+        "Empty state shown when no preview yet"
+      ],
+      "nonGoals": [
+        "No dashboard (P4-S4)",
+        "No auth chrome (P6)"
+      ]
+    },
+    {
+      "id": "P3-S2",
+      "slug": "sse-event-stream",
+      "phase": 3,
+      "phaseName": "Real-time UX",
+      "title": "Stream agent steps into chat",
+      "goal": "Render SessionEvents and sandbox logs in the chat from SSE. No polling.",
+      "packages": ["apps/web"],
+      "dependsOn": ["P1-S4", "P3-S1"],
+      "parallelWith": [],
+      "contractChanges": [
+        "None"
+      ],
+      "acceptance": [
+        "EventSource (or fetch SSE) on GET /sessions/:id/events",
+        "Each SessionEvent appears in chat in order",
+        "No setInterval polling of session status",
+        "Reconnect on drop without duplicating the whole history incorrectly"
+      ],
+      "nonGoals": [
+        "No healing-specific copy (P3-S4)"
+      ]
+    },
+    {
+      "id": "P3-S3",
+      "slug": "live-iframe-refresh",
+      "phase": 3,
+      "phaseName": "Real-time UX",
+      "title": "Live iframe refresh after edits",
+      "goal": "When editor.completed or preview.ready fires, refresh the iframe without reloading the parent page.",
+      "packages": ["apps/web"],
+      "dependsOn": ["P3-S1", "P3-S2"],
+      "parallelWith": ["P3-S4"],
+      "contractChanges": [
+        "None"
+      ],
+      "acceptance": [
+        "On preview.ready, iframe src updates (cache-bust query allowed)",
+        "On editor.completed followed by preview.ready, iframe shows new content",
+        "Parent chat state is not wiped on refresh"
+      ],
+      "nonGoals": [
+        "No in-iframe HMR protocol of our own if sandbox Vite HMR already works — either is acceptable if the user sees the update"
+      ]
+    },
+    {
+      "id": "P3-S4",
+      "slug": "healing-ux",
+      "phase": 3,
+      "phaseName": "Real-time UX",
+      "title": "Healing retry UX",
+      "goal": "Show retry n/3 while healing. On heal.exhausted, show the error and a Retry anyway action that starts a new attempt without changing the default max of 3.",
+      "packages": ["apps/web"],
+      "dependsOn": ["P2-S4", "P3-S2"],
+      "parallelWith": ["P3-S3"],
+      "contractChanges": [
+        "None"
+      ],
+      "acceptance": [
+        "heal.attempt renders Retry 1/3, 2/3, or 3/3",
+        "heal.exhausted shows error logs in chat",
+        "Retry anyway posts a new session message / job; default auto max remains 3",
+        "Healthy preview still uses the iframe path"
+      ],
+      "nonGoals": [
+        "Do not raise the automatic retry cap"
+      ]
+    },
+    {
+      "id": "P4-S1",
+      "slug": "tool-schema",
+      "phase": 4,
+      "phaseName": "Saving, Security, and Dashboards",
+      "title": "Tool, version, and session schema",
+      "goal": "Add Prisma models for Tool, ToolVersion, and Session in Postgres, with types exported from contracts.",
+      "packages": ["apps/api", "packages/contracts"],
+      "dependsOn": ["P1-S1"],
+      "parallelWith": ["P2-S1"],
+      "contractChanges": [
+        "Add Tool, ToolVersion, Session DTOs (id, ownerId, status, createdAt, file snapshot metadata)"
+      ],
+      "acceptance": [
+        "Prisma schema migrated on Postgres from Compose",
+        "Tool, ToolVersion, Session tables exist",
+        "DTOs live in packages/contracts",
+        "API can create a Session row when POST /sessions runs"
+      ],
+      "nonGoals": [
+        "No publish UI",
+        "No sleep scheduler"
+      ]
+    },
+    {
+      "id": "P4-S2",
+      "slug": "publish-workspace",
+      "phase": 4,
+      "phaseName": "Saving, Security, and Dashboards",
+      "title": "Publish to personal workspace",
+      "goal": "Snapshot the current FileMap as a ToolVersion and list published tools for the actor (dev-user until Phase 6).",
+      "packages": ["apps/api", "apps/web"],
+      "dependsOn": ["P4-S1", "P1-S4"],
+      "parallelWith": ["P4-S3"],
+      "contractChanges": [
+        "Add PublishToolRequest and ToolSummary"
+      ],
+      "acceptance": [
+        "Publish action stores FileMap as a new ToolVersion",
+        "GET workspace tools returns ToolSummary list for the actor",
+        "Opening a published tool can load FileMap into a session"
+      ],
+      "nonGoals": [
+        "No sharing (P6-S3)",
+        "No Smart Match index (P5-S1) beyond storing summary text if cheap"
+      ]
+    },
+    {
+      "id": "P4-S3",
+      "slug": "idle-sleep-wake",
+      "phase": 4,
+      "phaseName": "Saving, Security, and Dashboards",
+      "title": "Idle sleep and wake",
+      "goal": "Stop sandbox containers after inactivity and wake them when the user opens the tool. Status is sleeping or running.",
+      "packages": ["packages/sandbox", "apps/api"],
+      "dependsOn": ["P1-S3", "P4-S1"],
+      "parallelWith": ["P4-S2"],
+      "contractChanges": [
+        "RuntimeStatus already includes sleeping; ensure ToolSummary.status uses it"
+      ],
+      "acceptance": [
+        "Configurable idle timeout stops the container",
+        "Open/wake starts the container and returns previewUrl",
+        "Status exposed as sleeping | running | stopped",
+        "Sleep does not delete ToolVersion files"
+      ],
+      "nonGoals": [
+        "No multi-region scale-to-zero"
+      ]
+    },
+    {
+      "id": "P4-S4",
+      "slug": "workspace-dashboard",
+      "phase": 4,
+      "phaseName": "Saving, Security, and Dashboards",
+      "title": "Workspace dashboard",
+      "goal": "List the actor's tools with status, last version, and open (wake + preview).",
+      "packages": ["apps/web", "apps/api"],
+      "dependsOn": ["P4-S2", "P4-S3"],
+      "parallelWith": [],
+      "contractChanges": [
+        "None if ToolSummary already has status and updatedAt"
+      ],
+      "acceptance": [
+        "Dashboard lists published tools",
+        "Each row shows sleeping|running and last published time",
+        "Open wakes if needed and navigates to split-screen with preview"
+      ],
+      "nonGoals": [
+        "No teammate sharing UI (P6-S3)"
+      ]
+    },
+    {
+      "id": "P5-S1",
+      "slug": "library-index",
+      "phase": 5,
+      "phaseName": "Smart Match",
+      "title": "Published-tool library index",
+      "goal": "Index each published tool (prompt, summary, stack) for later exact-problem matching.",
+      "packages": ["apps/api", "packages/contracts"],
+      "dependsOn": ["P4-S2"],
+      "parallelWith": [],
+      "contractChanges": [
+        "Add ToolIndexRecord { toolId, stack, summary, promptFingerprint or embedding ref }"
+      ],
+      "acceptance": [
+        "Publish writes or updates an index record",
+        "Index can be queried by prompt + stack",
+        "Implementation may be embeddings or a deterministic fingerprint — pick one and document it in contracts comments"
+      ],
+      "nonGoals": [
+        "No UI offer yet (P5-S3)"
+      ]
+    },
+    {
+      "id": "P5-S2",
+      "slug": "smart-match-precheck",
+      "phase": 5,
+      "phaseName": "Smart Match",
+      "title": "Smart Match pre-check",
+      "goal": "After the user prompt, before Code Generator, scan the library and emit smartmatch.hit or smartmatch.miss.",
+      "packages": ["packages/agents", "apps/api"],
+      "dependsOn": ["P5-S1", "P2-S1"],
+      "parallelWith": [],
+      "contractChanges": [
+        "Add SmartMatchResult { hit: boolean, toolId?: string, score?: number }"
+      ],
+      "acceptance": [
+        "Runs immediately after prompt, before codegen.started",
+        "hit emits smartmatch.hit with toolId",
+        "miss emits smartmatch.miss and pipeline continues to Intent/CodeGen",
+        "Does not start Code Generator on hit until the user chooses"
+      ],
+      "nonGoals": [
+        "No auto-load of the matched tool (P5-S4)"
+      ]
+    },
+    {
+      "id": "P5-S3",
+      "slug": "match-offer-ui",
+      "phase": 5,
+      "phaseName": "Smart Match",
+      "title": "Use existing vs build new",
+      "goal": "When smartmatch.hit fires, show the existing tool and let the user choose Use existing or Build new. Never auto-overwrite intent.",
+      "packages": ["apps/web"],
+      "dependsOn": ["P5-S2", "P3-S2"],
+      "parallelWith": [],
+      "contractChanges": [
+        "None"
+      ],
+      "acceptance": [
+        "Hit shows tool summary and two actions",
+        "Build new continues to Code Generator",
+        "Use existing is posted back to the API",
+        "No automatic navigation without a click"
+      ],
+      "nonGoals": [
+        "No permission checks beyond current actor (P6)"
+      ]
+    },
+    {
+      "id": "P5-S4",
+      "slug": "match-into-editor-path",
+      "phase": 5,
+      "phaseName": "Smart Match",
+      "title": "Accepted match loads Editor path",
+      "goal": "If the user accepts a match, load that tool's FileMap into the sandbox (Editor path) and skip Code Generator.",
+      "packages": ["apps/api"],
+      "dependsOn": ["P5-S3", "P2-S3", "P4-S2"],
+      "parallelWith": [],
+      "contractChanges": [
+        "Add AcceptMatchRequest { sessionId, toolId }"
+      ],
+      "acceptance": [
+        "Accepting a match does not emit codegen.started",
+        "FileMap from the published version is loaded",
+        "Sandbox boots and preview.ready fires",
+        "Further prompts use Editor (kind=modify, toolId set)"
+      ],
+      "nonGoals": [
+        "No fork/copy permissions beyond owner until P6"
+      ]
+    },
+    {
+      "id": "P6-S1",
+      "slug": "accounts-login",
+      "phase": 6,
+      "phaseName": "Access and Authentication",
+      "title": "Accounts and login",
+      "goal": "Replace dev-user with real signup/login and a session cookie or JWT.",
+      "packages": ["apps/api", "apps/web", "packages/contracts"],
+      "dependsOn": ["P4-S1"],
+      "parallelWith": [],
+      "contractChanges": [
+        "Add User { id, email }, AuthSession, LoginRequest, SignupRequest",
+        "Remove DEV_USER from production path; keep only as test fallback"
+      ],
+      "acceptance": [
+        "Signup and login work",
+        "Authenticated requests carry user id",
+        "POST /sessions uses the logged-in user, not dev-user",
+        "Logout clears the session"
+      ],
+      "nonGoals": [
+        "No SSO/SAML unless already trivial",
+        "No sharing yet"
+      ]
+    },
+    {
+      "id": "P6-S2",
+      "slug": "ownership-roles",
+      "phase": 6,
+      "phaseName": "Access and Authentication",
+      "title": "Ownership and roles",
+      "goal": "Every tool has an owner. Roles are owner, editor, viewer.",
+      "packages": ["apps/api", "packages/contracts"],
+      "dependsOn": ["P6-S1", "P4-S2"],
+      "parallelWith": [],
+      "contractChanges": [
+        "Add ToolMember { toolId, userId, role: ToolRole }"
+      ],
+      "acceptance": [
+        "Publisher is owner",
+        "Role enum is owner | editor | viewer only",
+        "Queries can list members for a tool"
+      ],
+      "nonGoals": [
+        "No invite UI yet (P6-S3)",
+        "No preview URL authz yet (P6-S4)"
+      ]
+    },
+    {
+      "id": "P6-S3",
+      "slug": "share-teammates",
+      "phase": 6,
+      "phaseName": "Access and Authentication",
+      "title": "Share with teammates",
+      "goal": "Owner can invite a teammate by email or user id and list members.",
+      "packages": ["apps/api", "apps/web"],
+      "dependsOn": ["P6-S2"],
+      "parallelWith": [],
+      "contractChanges": [
+        "Add ShareToolRequest { emailOrUserId, role }"
+      ],
+      "acceptance": [
+        "Owner can add a member with editor or viewer",
+        "Members list is visible to owner and editors",
+        "Non-owners cannot change membership"
+      ],
+      "nonGoals": [
+        "No public unlisted links",
+        "No org-wide admin console"
+      ]
+    },
+    {
+      "id": "P6-S4",
+      "slug": "enforce-access",
+      "phase": 6,
+      "phaseName": "Access and Authentication",
+      "title": "Enforce API and preview access",
+      "goal": "API and sandbox preview URLs require authorization. Unauthenticated iframe access is denied. Viewer cannot edit; editor can.",
+      "packages": ["apps/api", "packages/sandbox", "apps/web"],
+      "dependsOn": ["P6-S3", "P1-S3"],
+      "parallelWith": [],
+      "contractChanges": [
+        "None required if roles already exist; add ErrorCode FORBIDDEN if missing"
+      ],
+      "acceptance": [
+        "Unauthenticated GET preview URL returns 401/403, not the app",
+        "Viewer can open preview, cannot POST edits",
+        "Editor and owner can POST edits",
+        "Non-members cannot load the tool from dashboard or API"
+      ],
+      "nonGoals": [
+        "No custom domain ACLs"
+      ]
+    }
+  ]
+}

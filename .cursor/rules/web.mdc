@@ -1,0 +1,13 @@
+---
+description: Parent UI — chat, SSE, iframe preview only
+globs: apps/web/**
+alwaysApply: false
+---
+
+# Parent UI
+
+- Chat left, live iframe right on desktop; stack on small screens
+- Subscribe to SSE `/sessions/:id/events` — no polling
+- Set iframe `src` to sandbox `previewUrl` only
+- On `preview.ready` / `editor.completed`, refresh iframe without a full page reload
+- Smart Match: show Use existing vs Build new; do not auto-accept

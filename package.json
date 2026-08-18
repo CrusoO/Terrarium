@@ -1,0 +1,24 @@
+{
+  "name": "terrarium",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "pnpm --filter @terrarium/contracts build",
+    "postinstall": "pnpm --filter @terrarium/contracts build",
+    "dev:web": "pnpm --filter @terrarium/web dev",
+    "dev:api": "pnpm --filter @terrarium/api dev",
+    "infra:up": "docker compose -f infra/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infra/docker-compose.yml down",
+    "stories:generate": "node scripts/generate-stories.mjs",
+    "stories:login": "node scripts/m365-login.mjs",
+    "stories:push-loop": "node scripts/push-stories-to-loop.mjs"
+  },
+  "devDependencies": {
+    "@pnp/cli-microsoft365": "^11.10.0",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

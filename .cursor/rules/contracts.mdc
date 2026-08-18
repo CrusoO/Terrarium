@@ -1,0 +1,13 @@
+---
+description: Shared Zod/types live only in packages/contracts
+globs: packages/contracts/**
+alwaysApply: false
+---
+
+# Contracts
+
+`packages/contracts` is the only shared type package.
+
+- Export Zod schemas and inferred types for SessionEvent, Intent, FileMap, AgentJob, AgentResult
+- Apps import from `@terrarium/contracts` — never copy DTOs into `apps/web` or `apps/api`
+- Do not import Docker, LLM SDKs, React, or Fastify here
