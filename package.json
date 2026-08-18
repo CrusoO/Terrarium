@@ -8,6 +8,7 @@
     "postinstall": "pnpm --filter @terrarium/contracts build",
     "dev:web": "pnpm --filter @terrarium/web dev",
     "dev:api": "uv run uvicorn terrarium_api.main:app --reload --host 0.0.0.0 --port 3001",
+    "dev:worker": "uv run arq terrarium_api.worker.WorkerSettings",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
     "infra:down": "docker compose -f infra/docker-compose.yml down",
     "stories:generate": "node scripts/generate-stories.mjs",

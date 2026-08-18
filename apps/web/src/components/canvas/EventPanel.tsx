@@ -8,10 +8,13 @@ export function EventPanel({ events }: { events: SessionEvent[] }) {
       </div>
       <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4 font-mono text-xs">
         {events.length === 0 ? (
-          <li className="text-muted">No SessionEvents yet. Submit a prompt to start. SSE streaming lands in P3-S2.</li>
+          <li className="text-muted">No SessionEvents yet. Submit a prompt to start the SSE stream.</li>
         ) : (
-          events.map((item) => (
-            <li key={`${item.sessionId}-${item.at}-${item.name}`} className="rounded-md bg-maroon-soft px-3 py-2">
+          events.map((item, index) => (
+            <li
+              key={`${item.sessionId}-${item.at}-${item.name}-${index}`}
+              className="rounded-md bg-maroon-soft px-3 py-2"
+            >
               <span className="font-semibold text-maroon">{item.name}</span>
               <div className="mt-1 text-muted">{item.at}</div>
             </li>

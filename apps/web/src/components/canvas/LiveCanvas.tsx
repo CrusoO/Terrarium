@@ -2,7 +2,13 @@ import type { SessionEvent } from "@terrarium/contracts";
 import { EventPanel } from "./EventPanel";
 import { PreviewPanel } from "./PreviewPanel";
 
-export function LiveCanvas({ events }: { events: SessionEvent[] }) {
+export function LiveCanvas({
+  events,
+  previewUrl,
+}: {
+  events: SessionEvent[];
+  previewUrl: string | null;
+}) {
   return (
     <section className="flex min-w-0 flex-1 flex-col bg-canvas">
       <header className="flex h-12 items-center justify-between border-b border-line bg-white px-5">
@@ -13,7 +19,7 @@ export function LiveCanvas({ events }: { events: SessionEvent[] }) {
       </header>
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden p-5 lg:grid-cols-2">
         <EventPanel events={events} />
-        <PreviewPanel />
+        <PreviewPanel previewUrl={previewUrl} />
       </div>
     </section>
   );

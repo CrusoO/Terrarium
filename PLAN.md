@@ -139,6 +139,13 @@ export type HealthReport = {
 
 Until Phase 6: `actorId` is always `"dev-user"`.
 
+## HTTP (P1-S4)
+
+- `POST /sessions` body `CreateSessionRequest` → `CreateSessionResponse`. Enqueues an ARQ job. Does not run agents inline.
+- `GET /sessions/{sessionId}/events` is SSE. Each `data:` line is a `SessionEvent`. Replay uses SSE `id` / `Last-Event-ID`.
+- `sandbox.ready` payload: `{ previewUrl, containerId }`
+- `preview.ready` payload: `{ previewUrl }` — parent sets iframe `src` to that URL only.
+
 ## Package boundaries
 
 | Package | May import | Must not |
@@ -173,7 +180,7 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 - [x] [P1-S1](docs/stories/P1-S1-monorepo-and-contracts.md) Monorepo + Compose + contracts skeleton
 - [x] [P1-S2](docs/stories/P1-S2-parent-prompt-shell.md) Parent prompt shell
 - [x] [P1-S3](docs/stories/P1-S3-sandbox-runner.md) Sandbox runner
-- [ ] [P1-S4](docs/stories/P1-S4-session-api.md) Session API + SSE + stub worker
+- [x] [P1-S4](docs/stories/P1-S4-session-api.md) Session API + SSE + stub worker
 
 ### Phase 2 — Core Agents
 

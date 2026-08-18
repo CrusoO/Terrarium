@@ -15,3 +15,5 @@ npx pnpm@9.15.4 infra:up
 Parent UI: `npx pnpm@9.15.4 --filter @terrarium/web dev` → http://localhost:5173/
 
 API: `uv run uvicorn terrarium_api.main:app --reload --host 0.0.0.0 --port 3001`
+
+Worker: `uv run arq terrarium_api.worker.WorkerSettings`
