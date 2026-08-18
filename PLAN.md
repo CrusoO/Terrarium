@@ -124,6 +124,17 @@ export type SessionEvent = {
   at: string; // ISO timestamp
   payload?: Record<string, unknown>;
 };
+
+export type SandboxHandle = {
+  sessionId: string;
+  previewUrl: string;
+  containerId: string;
+};
+
+export type HealthReport = {
+  status: RuntimeStatus;
+  logs: string;
+};
 ```
 
 Until Phase 6: `actorId` is always `"dev-user"`.
@@ -161,7 +172,7 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 
 - [x] [P1-S1](docs/stories/P1-S1-monorepo-and-contracts.md) Monorepo + Compose + contracts skeleton
 - [x] [P1-S2](docs/stories/P1-S2-parent-prompt-shell.md) Parent prompt shell
-- [ ] [P1-S3](docs/stories/P1-S3-sandbox-runner.md) Sandbox runner
+- [x] [P1-S3](docs/stories/P1-S3-sandbox-runner.md) Sandbox runner
 - [ ] [P1-S4](docs/stories/P1-S4-session-api.md) Session API + SSE + stub worker
 
 ### Phase 2 — Core Agents

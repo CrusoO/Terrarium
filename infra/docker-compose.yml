@@ -30,10 +30,11 @@ services:
       - terrarium
 
   traefik:
-    image: traefik:v3.3
+    image: traefik:v3.6.1
     command:
       - --api.insecure=true
       - --providers.docker=true
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=terrarium-sandbox
       - --entrypoints.web.address=:80
@@ -51,6 +52,7 @@ networks:
     name: terrarium
   sandbox:
     name: terrarium-sandbox
+    attachable: true
 
 volumes:
   postgres_data:
