@@ -18,7 +18,7 @@ export default function App() {
           onSubmit={session.onSubmit}
         />
       }
-      canvas={<LiveCanvas events={session.events} />}
+      canvas={<LiveCanvas events={session.events} previewUrl={session.previewUrl} />}
     />
   );
 }

@@ -84,6 +84,19 @@ class CreateSessionResponse(BaseModel):
     sessionId: str
 
 
+class SandboxReadyPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    previewUrl: str
+    containerId: str
+
+
+class PreviewReadyPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    previewUrl: str
+
+
 class SandboxHandle(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

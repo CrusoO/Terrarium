@@ -79,6 +79,14 @@ export const sessionEventSchema = z.object({
 });
 export type SessionEvent = z.infer<typeof sessionEventSchema>;
 
+/**
+ * HTTP (P1-S4):
+ * - POST /sessions { prompt } → { sessionId } and enqueue an ARQ job
+ * - GET /sessions/:sessionId/events  text/event-stream; each `data:` line is SessionEvent JSON
+ *
+ * preview.ready payload is PreviewReadyPayload.
+ * sandbox.ready payload is SandboxReadyPayload.
+ */
 export const createSessionRequestSchema = z.object({
   prompt: z.string(),
 });
@@ -88,6 +96,17 @@ export const createSessionResponseSchema = z.object({
   sessionId: z.string(),
 });
 export type CreateSessionResponse = z.infer<typeof createSessionResponseSchema>;
+
+export const sandboxReadyPayloadSchema = z.object({
+  previewUrl: z.string(),
+  containerId: z.string(),
+});
+export type SandboxReadyPayload = z.infer<typeof sandboxReadyPayloadSchema>;
+
+export const previewReadyPayloadSchema = z.object({
+  previewUrl: z.string(),
+});
+export type PreviewReadyPayload = z.infer<typeof previewReadyPayloadSchema>;
 
 export const sandboxHandleSchema = z.object({
   sessionId: z.string(),

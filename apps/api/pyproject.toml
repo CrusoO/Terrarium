@@ -6,6 +6,8 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
+    "arq>=0.26",
+    "redis>=5.2",
     "terrarium-contracts",
     "terrarium-agents",
     "terrarium-sandbox",
