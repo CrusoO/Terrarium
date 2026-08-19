@@ -9,6 +9,7 @@ from terrarium_contracts import SessionEvent
 STREAM_PREFIX = "terrarium:session:"
 STREAM_SUFFIX = ":events"
 FILES_SUFFIX = ":files"
+CONV_SUFFIX = ":conversation"
 
 
 def stream_key(session_id: str) -> str:
@@ -17,6 +18,10 @@ def stream_key(session_id: str) -> str:
 
 def files_key(session_id: str) -> str:
     return f"{STREAM_PREFIX}{session_id}{FILES_SUFFIX}"
+
+
+def conversation_key(session_id: str) -> str:
+    return f"{STREAM_PREFIX}{session_id}{CONV_SUFFIX}"
 
 
 def _as_str(value: object) -> str:
@@ -45,6 +50,22 @@ class SessionEventLog:
 
     async def save_files(self, session_id: str, files: dict[str, str]) -> None:
         await self.redis.set(files_key(session_id), json.dumps(files), ex=60 * 60 * 24)
+
+    async def load_conversation(self, session_id: str) -> list[dict[str, str]]:
+        raw = await self.redis.get(conversation_key(session_id))
+        if not raw:
+            return []
+        parsed = json.loads(_as_str(raw))
+        return parsed if isinstance(parsed, list) else []
+
+    async def save_conversation(
+        self, session_id: str, turns: list[dict[str, str]]
+    ) -> None:
+        await self.redis.set(
+            conversation_key(session_id),
+            json.dumps(turns),
+            ex=60 * 60 * 24,
+        )
 
     async def iter_events(
         self, session_id: str, last_id: str = "0-0"

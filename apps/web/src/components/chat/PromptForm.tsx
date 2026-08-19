@@ -20,7 +20,13 @@ export function PromptForm({ prompt, busy, status, onPromptChange, onSubmit }: P
         rows={3}
         value={prompt}
         onChange={(change) => onPromptChange(change.target.value)}
-        placeholder="Ask for changes…"
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            event.currentTarget.form?.requestSubmit();
+          }
+        }}
+        placeholder="Hi, or describe a tool — I’ll ask a few questions first…"
         className="w-full resize-none rounded-xl border border-line bg-canvas px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-maroon"
       />
       <div className="mt-2 flex items-center justify-between">

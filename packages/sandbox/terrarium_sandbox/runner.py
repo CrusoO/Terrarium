@@ -24,8 +24,13 @@ def session_slug(session_id: str) -> str:
     return slug
 
 
-def preview_url(session_id: str, host: str = config.SANDBOX_HOST) -> str:
-    return f"http://{session_slug(session_id)}.{host}"
+def preview_hostname(session_id: str, host: str | None = None) -> str:
+    # Prefix "s-" so a hex sessionId is not parsed as IPv6 by nip.io.
+    return f"s-{session_slug(session_id)}.{host or config.sandbox_host()}"
+
+
+def preview_url(session_id: str, host: str | None = None) -> str:
+    return f"http://{preview_hostname(session_id, host)}"
 
 
 def container_name(session_id: str) -> str:
@@ -47,20 +52,20 @@ class SandboxRunner:
 
         router = f"sandbox-{slug}"
         container = self.client.containers.run(
-            config.FIXTURE_IMAGE,
+            config.fixture_image(),
             name=name,
             detach=True,
-            nano_cpus=config.NANO_CPUS,
-            mem_limit=config.MEM_LIMIT,
-            memswap_limit=config.MEM_LIMIT,
-            pids_limit=config.PIDS_LIMIT,
-            network=config.SANDBOX_NETWORK,
+            nano_cpus=config.nano_cpus(),
+            mem_limit=config.mem_limit(),
+            memswap_limit=config.mem_limit(),
+            pids_limit=config.pids_limit(),
+            network=config.sandbox_network(),
             publish_all_ports=False,
             labels={
                 "terrarium.session": session_id,
                 "traefik.enable": "true",
-                "traefik.docker.network": config.SANDBOX_NETWORK,
-                f"traefik.http.routers.{router}.rule": f"Host(`{slug}.{config.SANDBOX_HOST}`)",
+                "traefik.docker.network": config.sandbox_network(),
+                f"traefik.http.routers.{router}.rule": f"Host(`{preview_hostname(session_id)}`)",
                 f"traefik.http.routers.{router}.entrypoints": "web",
                 f"traefik.http.services.{router}.loadbalancer.server.port": "80",
             },
@@ -111,16 +116,16 @@ class SandboxRunner:
 
     def _ensure_network(self) -> None:
         try:
-            self.client.networks.get(config.SANDBOX_NETWORK)
+            self.client.networks.get(config.sandbox_network())
         except NotFound as error:
             raise SandboxError(
-                f'Docker network "{config.SANDBOX_NETWORK}" is missing. '
+                f'Docker network "{config.sandbox_network()}" is missing. '
                 "Start infra with: npx pnpm@9.15.4 infra:up"
             ) from error
 
     def _ensure_fixture_image(self) -> None:
         try:
-            self.client.images.get(config.FIXTURE_IMAGE)
+            self.client.images.get(config.fixture_image())
             return
         except ImageNotFound:
             pass
@@ -128,7 +133,7 @@ class SandboxRunner:
             raise SandboxError(f"Fixture Dockerfile missing at {config.FIXTURE_DIR}")
         self.client.images.build(
             path=str(config.FIXTURE_DIR),
-            tag=config.FIXTURE_IMAGE,
+            tag=config.fixture_image(),
             rm=True,
         )
 

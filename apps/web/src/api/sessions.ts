@@ -26,14 +26,16 @@ export async function createSession(
 
 export function subscribeSessionEvents(
   sessionId: string,
-  onEvent: (event: SessionEvent) => void
+  onEvent: (event: SessionEvent, eventId?: string) => void,
+  lastEventId = "0-0"
 ): EventSource {
-  const source = new EventSource(`/sessions/${encodeURIComponent(sessionId)}/events`);
+  const params = lastEventId && lastEventId !== "0-0" ? `?lastEventId=${encodeURIComponent(lastEventId)}` : "";
+  const source = new EventSource(`/sessions/${encodeURIComponent(sessionId)}/events${params}`);
   source.onmessage = (message: MessageEvent<string>) => {
     try {
       const parsed = sessionEventSchema.safeParse(JSON.parse(message.data));
       if (parsed.success) {
-        onEvent(parsed.data);
+        onEvent(parsed.data, message.lastEventId || undefined);
       }
     } catch {
       // Ignore malformed SSE payloads rather than breaking the stream.

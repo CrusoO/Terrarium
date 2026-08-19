@@ -1,4 +1,5 @@
 import type { SessionEvent } from "@terrarium/contracts";
+import { IntentResult } from "../chat/IntentResult";
 
 export function EventPanel({ events }: { events: SessionEvent[] }) {
   return (
@@ -17,6 +18,10 @@ export function EventPanel({ events }: { events: SessionEvent[] }) {
             >
               <span className="font-semibold text-maroon">{item.name}</span>
               <div className="mt-1 text-muted">{item.at}</div>
+              {item.name === "intent.classified" ? <IntentResult event={item} /> : null}
+              {item.name === "preview.ready" && typeof item.payload?.previewUrl === "string" ? (
+                <p className="mt-2 break-all font-sans text-[11px] text-muted">{item.payload.previewUrl}</p>
+              ) : null}
             </li>
           ))
         )}

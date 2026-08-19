@@ -6,10 +6,46 @@ from pathlib import Path
 PACKAGE_DIR = Path(__file__).resolve().parent
 FIXTURE_DIR = PACKAGE_DIR / "fixture"
 
-FIXTURE_IMAGE = os.environ.get("TERRARIUM_FIXTURE_IMAGE", "terrarium-fixture-react:p1-s3")
-SANDBOX_NETWORK = os.environ.get("TERRARIUM_SANDBOX_NETWORK", "terrarium-sandbox")
-SANDBOX_HOST = os.environ.get("TERRARIUM_SANDBOX_HOST", "sandbox.local")
-NANO_CPUS = int(os.environ.get("TERRARIUM_SANDBOX_NANO_CPUS", str(500_000_000)))
-MEM_LIMIT = os.environ.get("TERRARIUM_SANDBOX_MEM_LIMIT", "256m")
-PIDS_LIMIT = int(os.environ.get("TERRARIUM_SANDBOX_PIDS_LIMIT", "128"))
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
+
+def fixture_image() -> str:
+    return os.environ.get("TERRARIUM_FIXTURE_IMAGE", "terrarium-fixture-react:p1-s3")
+
+
+def sandbox_network() -> str:
+    return os.environ.get("TERRARIUM_SANDBOX_NETWORK", "terrarium-sandbox")
+
+
+def sandbox_host() -> str:
+    """Windows cannot resolve *.sandbox.local. Use nip.io so subdomains hit 127.0.0.1."""
+    return os.environ.get("TERRARIUM_SANDBOX_HOST", "127.0.0.1.nip.io")
+
+
+def nano_cpus() -> int:
+    return int(os.environ.get("TERRARIUM_SANDBOX_NANO_CPUS", str(500_000_000)))
+
+
+def mem_limit() -> str:
+    return os.environ.get("TERRARIUM_SANDBOX_MEM_LIMIT", "256m")
+
+
+def pids_limit() -> int:
+    return int(os.environ.get("TERRARIUM_SANDBOX_PIDS_LIMIT", "128"))
+
+
 CONTAINER_PREFIX = "terrarium-sandbox-"
+
+# Import-time aliases so existing callers keep working after dotenv load.
+FIXTURE_IMAGE = fixture_image()
+SANDBOX_NETWORK = sandbox_network()
+SANDBOX_HOST = sandbox_host()
+NANO_CPUS = nano_cpus()
+MEM_LIMIT = mem_limit()
+PIDS_LIMIT = pids_limit()
+
