@@ -186,7 +186,7 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 
 ### Phase 2 — Core Agents
 
-- [ ] [P2-S1](docs/stories/P2-S1-intent-agent.md) Intent Agent
+- [x] [P2-S1](docs/stories/P2-S1-intent-agent.md) Intent Agent
 - [ ] [P2-S2](docs/stories/P2-S2-code-generator.md) Code Generator Agent
 - [ ] [P2-S3](docs/stories/P2-S3-editor-agent.md) Editor Agent
 - [ ] [P2-S4](docs/stories/P2-S4-self-healing-agent.md) Self-Healing Agent (max 3)

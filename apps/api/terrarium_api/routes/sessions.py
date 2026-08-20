@@ -28,16 +28,21 @@ async def create_session(
         raise HTTPException(status_code=422, detail="prompt must not be empty")
 
     redis = _redis(request)
-    session_id = uuid4().hex
     log = SessionEventLog(redis)
-    await log.append(
-        make_event("session.created", session_id, {"actorId": DEV_USER})
-    )
+    if body.sessionId:
+        if not await log.exists(body.sessionId):
+            raise HTTPException(status_code=404, detail="Unknown sessionId")
+        session_id = body.sessionId
+    else:
+        session_id = uuid4().hex
+        await log.append(
+            make_event("session.created", session_id, {"actorId": DEV_USER})
+        )
     job = await redis.enqueue_job(
         "run_stub_session",
         session_id,
         body.prompt,
-        _job_id=f"session:{session_id}",
+        _job_id=f"session:{session_id}:{uuid4().hex}",
     )
     if job is None:
         raise HTTPException(status_code=503, detail="Could not enqueue the session job.")
@@ -51,7 +56,11 @@ async def session_events(session_id: str, request: Request) -> StreamingResponse
     if not await log.exists(session_id):
         raise HTTPException(status_code=404, detail="Unknown sessionId")
 
-    last_id = request.headers.get("last-event-id") or "0-0"
+    last_id = (
+        request.query_params.get("lastEventId")
+        or request.headers.get("last-event-id")
+        or "0-0"
+    )
 
     async def generate():
         async for item in log.iter_events(session_id, last_id=last_id):

@@ -43,6 +43,15 @@ export type SessionEventName = z.infer<typeof sessionEventNameSchema>;
 export const fileMapSchema = z.record(z.string());
 export type FileMap = z.infer<typeof fileMapSchema>;
 
+export const intentPhaseSchema = z.enum(["greeting", "clarify", "ready"]);
+export type IntentPhase = z.infer<typeof intentPhaseSchema>;
+
+export const conversationTurnSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  text: z.string(),
+});
+export type ConversationTurn = z.infer<typeof conversationTurnSchema>;
+
 export const intentSchema = z.object({
   kind: intentKindSchema,
   stack: stackSchema,
@@ -50,6 +59,24 @@ export const intentSchema = z.object({
   toolId: z.string().optional(),
 });
 export type Intent = z.infer<typeof intentSchema>;
+
+/** Fields already frozen on AgentJob / Intent, plus optional chat history. */
+export const intentAgentInputSchema = z.object({
+  prompt: z.string(),
+  sessionId: z.string().optional(),
+  files: fileMapSchema.optional(),
+  toolId: z.string().optional(),
+  conversation: z.array(conversationTurnSchema).optional(),
+});
+export type IntentAgentInput = z.infer<typeof intentAgentInputSchema>;
+
+/** Chat extras live here only. Code Generator / Editor parse `intentSchema`. */
+export const intentAgentOutputSchema = intentSchema.extend({
+  phase: intentPhaseSchema.optional(),
+  reply: z.string().optional(),
+  questions: z.array(z.string()).optional(),
+});
+export type IntentAgentOutput = z.infer<typeof intentAgentOutputSchema>;
 
 export const agentJobSchema = z.object({
   sessionId: z.string(),
@@ -89,6 +116,7 @@ export type SessionEvent = z.infer<typeof sessionEventSchema>;
  */
 export const createSessionRequestSchema = z.object({
   prompt: z.string(),
+  sessionId: z.string().optional(),
 });
 export type CreateSessionRequest = z.infer<typeof createSessionRequestSchema>;
 

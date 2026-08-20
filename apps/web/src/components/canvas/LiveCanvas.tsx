@@ -1,13 +1,15 @@
 import type { SessionEvent } from "@terrarium/contracts";
 import { EventPanel } from "./EventPanel";
-import { PreviewPanel } from "./PreviewPanel";
+import { PreviewPanel, type PreviewStatus } from "./PreviewPanel";
 
 export function LiveCanvas({
   events,
   previewUrl,
+  previewStatus,
 }: {
   events: SessionEvent[];
   previewUrl: string | null;
+  previewStatus: PreviewStatus;
 }) {
   return (
     <section className="flex min-w-0 flex-1 flex-col bg-canvas">
@@ -19,7 +21,7 @@ export function LiveCanvas({
       </header>
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden p-5 lg:grid-cols-2">
         <EventPanel events={events} />
-        <PreviewPanel previewUrl={previewUrl} />
+        <PreviewPanel previewUrl={previewUrl} status={previewStatus} />
       </div>
     </section>
   );

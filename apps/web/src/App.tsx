@@ -16,9 +16,16 @@ export default function App() {
           status={session.status}
           onPromptChange={session.setPrompt}
           onSubmit={session.onSubmit}
+          onSendChoice={session.sendPrompt}
         />
       }
-      canvas={<LiveCanvas events={session.events} previewUrl={session.previewUrl} />}
+      canvas={
+        <LiveCanvas
+          events={session.events}
+          previewUrl={session.previewUrl}
+          previewStatus={session.previewStatus}
+        />
+      }
     />
   );
 }

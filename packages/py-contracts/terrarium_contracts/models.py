@@ -28,6 +28,14 @@ SessionEventName = Literal[
 ]
 
 FileMap = dict[str, str]
+IntentPhase = Literal["greeting", "clarify", "ready"]
+
+
+class ConversationTurn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    role: Literal["user", "assistant"]
+    text: str
 
 
 class Intent(BaseModel):
@@ -37,6 +45,40 @@ class Intent(BaseModel):
     stack: Stack
     summary: str
     toolId: str | None = None
+
+
+class IntentAgentInput(BaseModel):
+    """Fields already frozen on AgentJob / Intent, plus optional chat history."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    prompt: str
+    sessionId: str | None = None
+    files: FileMap | None = None
+    toolId: str | None = None
+    conversation: list[ConversationTurn] | None = None
+
+
+class IntentAgentOutput(BaseModel):
+    """Intent plus chat-only fields. Other agents must parse Intent, not this."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: IntentKind
+    stack: Stack
+    summary: str
+    toolId: str | None = None
+    phase: IntentPhase = "ready"
+    reply: str | None = None
+    questions: list[str] | None = None
+
+    def as_intent(self) -> Intent:
+        return Intent(
+            kind=self.kind,
+            stack=self.stack,
+            summary=self.summary,
+            toolId=self.toolId,
+        )
 
 
 class ErrorContext(BaseModel):
@@ -76,6 +118,7 @@ class CreateSessionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     prompt: str
+    sessionId: str | None = None
 
 
 class CreateSessionResponse(BaseModel):
