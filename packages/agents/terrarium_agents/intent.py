@@ -1,4 +1,4 @@
-"""Intent Agent — reasoning receptionist. Returns Intent only. No Docker, no files."""
+"""Intent Agent — reasoning receptionist. Returns IntentAgentOutput. No Docker, no files."""
 
 from __future__ import annotations
 
@@ -7,7 +7,6 @@ import logging
 import re
 
 from terrarium_contracts import (
-    Intent,
     IntentAgentInput,
     IntentAgentOutput,
     IntentKind,
@@ -161,10 +160,10 @@ class IntentAgent:
         )
         return _enforce_rules(raw, inp)
 
-    def _classify_stub(self, inp: IntentAgentInput) -> Intent:
+    def _classify_stub(self, inp: IntentAgentInput) -> IntentAgentOutput:
         return _stub_intent(inp)
 
-    def _classify_gemini(self, inp: IntentAgentInput) -> Intent:
+    def _classify_gemini(self, inp: IntentAgentInput) -> IntentAgentOutput:
         from google.genai import types
 
         last_error: Exception | None = None
@@ -185,7 +184,7 @@ class IntentAgent:
                     ),
                 )
                 text = (response.text or "").strip()
-                return Intent.model_validate(_loads_json(text))
+                return IntentAgentOutput.model_validate(_loads_json(text))
             except Exception as error:  # noqa: BLE001 — retry then fail closed
                 last_error = error
                 logger.warning(
@@ -352,7 +351,7 @@ def _spec_enough(inp: IntentAgentInput) -> bool:
     return False
 
 
-def _stub_intent(inp: IntentAgentInput) -> Intent:
+def _stub_intent(inp: IntentAgentInput) -> IntentAgentOutput:
     prompt = inp.prompt.strip()
     stack: Stack = "fullstack" if _FULLSTACK_RE.search(prompt) else "react"
     kind: IntentKind = "new"
@@ -361,7 +360,7 @@ def _stub_intent(inp: IntentAgentInput) -> Intent:
 
     if kind == "modify":
         summary = _summary(prompt)
-        return Intent(
+        return IntentAgentOutput(
             kind=kind,
             stack=stack,
             summary=summary,
@@ -372,7 +371,7 @@ def _stub_intent(inp: IntentAgentInput) -> Intent:
         )
 
     if _is_greeting(prompt) and not _had_build_request(inp):
-        return Intent(
+        return IntentAgentOutput(
             kind="new",
             stack="react",
             summary="Chat greeting",
@@ -383,7 +382,7 @@ def _stub_intent(inp: IntentAgentInput) -> Intent:
 
     if _is_greeting(prompt) and _had_build_request(inp) and not _spec_enough(inp):
         asked = _last_assistant_questions(inp) or _stub_questions(_thread_idea(inp))
-        return Intent(
+        return IntentAgentOutput(
             kind="new",
             stack=stack,
             summary=_summary(_thread_idea(inp)),
@@ -397,7 +396,7 @@ def _stub_intent(inp: IntentAgentInput) -> Intent:
 
     if _spec_enough(inp) or (_non_greeting_user_turns(inp) == 1 and _is_detailed_spec(prompt)):
         summary = _summary(prompt if len(prompt) > 20 else idea)
-        return Intent(
+        return IntentAgentOutput(
             kind="new",
             stack=stack,
             summary=summary,
@@ -411,7 +410,7 @@ def _stub_intent(inp: IntentAgentInput) -> Intent:
         remaining = [question for question in prior if not _question_answered(question, prompt)]
         questions = remaining[:2] or _stub_questions(idea)[:2]
         numbered_ack = prompt if len(prompt) <= 40 else "that"
-        return Intent(
+        return IntentAgentOutput(
             kind="new",
             stack=stack,
             summary=_summary(idea),
@@ -421,7 +420,7 @@ def _stub_intent(inp: IntentAgentInput) -> Intent:
         )
 
     questions = _stub_questions(idea or prompt)
-    return Intent(
+    return IntentAgentOutput(
         kind="new",
         stack=stack,
         summary=_summary(idea),
@@ -507,7 +506,7 @@ def _lead_in(reply: str, questions: list[str]) -> str:
     return text or "I can build that. A few details so we get it right."
 
 
-def _enforce_rules(intent: Intent, inp: IntentAgentInput) -> Intent:
+def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAgentOutput:
     summary = " ".join(intent.summary.split()).strip() or _summary(inp.prompt)
     if len(summary) > _SUMMARY_MAX:
         summary = summary[: _SUMMARY_MAX - 1].rstrip() + "…"
@@ -534,6 +533,10 @@ def _enforce_rules(intent: Intent, inp: IntentAgentInput) -> Intent:
         phase = "greeting"
         questions = []
         summary = "Chat greeting"
+    elif not _is_greeting(inp.prompt) and phase == "greeting":
+        # Live models often repeat the greeting on the first build request.
+        phase = "clarify"
+        questions = questions or _stub_questions(_thread_idea(inp))
     elif thin_build and phase in {"greeting", "ready"}:
         phase = "clarify"
         questions = questions or _stub_questions(_thread_idea(inp))
@@ -586,7 +589,7 @@ def _enforce_rules(intent: Intent, inp: IntentAgentInput) -> Intent:
     elif phase == "greeting" and not (intent.reply or "").strip():
         reply = _greeting_reply()
 
-    return Intent(
+    return IntentAgentOutput(
         kind=kind,
         stack=intent.stack,
         summary=summary,

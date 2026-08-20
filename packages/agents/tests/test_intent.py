@@ -6,8 +6,8 @@ import os
 import re
 import unittest
 
-from terrarium_agents.intent import classify_intent
-from terrarium_contracts import ConversationTurn, Intent, IntentAgentInput
+from terrarium_agents.intent import _enforce_rules, classify_intent
+from terrarium_contracts import ConversationTurn, Intent, IntentAgentInput, IntentAgentOutput
 
 
 class IntentAgentTests(unittest.TestCase):
@@ -34,6 +34,49 @@ class IntentAgentTests(unittest.TestCase):
         self.assertEqual(intent.phase, "clarify")
         self.assertGreaterEqual(len(intent.questions or []), 2)
         self.assertLessEqual(len(intent.questions or []), 4)
+
+    def test_build_website_after_hey_asks_questions(self) -> None:
+        intent = classify_intent(
+            IntentAgentInput(
+                prompt="can you build a website",
+                conversation=[
+                    ConversationTurn(role="user", text="hey"),
+                    ConversationTurn(
+                        role="assistant",
+                        text="Hey — what should we build?",
+                    ),
+                ],
+            )
+        )
+        self.assertEqual(intent.phase, "clarify")
+        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assertFalse(re.search(r"what should we build", intent.reply or "", re.I))
+
+    def test_gemini_greeting_on_first_build_is_forced_to_clarify(self) -> None:
+        fake = IntentAgentOutput(
+            kind="new",
+            stack="react",
+            summary="Chat greeting",
+            phase="greeting",
+            reply="Hey — what should we build?",
+            questions=[],
+        )
+        intent = _enforce_rules(
+            fake,
+            IntentAgentInput(
+                prompt="can you build a website",
+                conversation=[
+                    ConversationTurn(role="user", text="hey"),
+                    ConversationTurn(
+                        role="assistant",
+                        text="Hey — what should we build?",
+                    ),
+                ],
+            ),
+        )
+        self.assertEqual(intent.phase, "clarify")
+        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assertFalse(re.search(r"what should we build", intent.reply or "", re.I))
 
     def test_build_website_after_hi_asks_questions(self) -> None:
         intent = classify_intent(
@@ -181,10 +224,26 @@ class IntentAgentTests(unittest.TestCase):
         self.assertEqual(intent.phase, "ready")
 
     def test_output_is_intent_shape(self) -> None:
-        intent = classify_intent(IntentAgentInput(prompt="Make a timer widget"))
-        self.assertIsInstance(intent, Intent)
-        dumped = intent.model_dump(exclude_none=True)
+        output = classify_intent(IntentAgentInput(prompt="Make a timer widget"))
+        self.assertIsInstance(output, IntentAgentOutput)
+        dumped = output.model_dump(exclude_none=True)
         self.assertTrue({"kind", "stack", "summary", "phase", "reply"} <= set(dumped))
+        frozen = output.as_intent()
+        self.assertIsInstance(frozen, Intent)
+        self.assertEqual(set(frozen.model_dump(exclude_none=True)), {"kind", "stack", "summary"})
+
+    def test_frozen_intent_rejects_chat_fields(self) -> None:
+        from pydantic import ValidationError
+
+        with self.assertRaises(ValidationError):
+            Intent.model_validate(
+                {
+                    "kind": "new",
+                    "stack": "react",
+                    "summary": "Timer",
+                    "phase": "ready",
+                }
+            )
 
     def test_does_not_import_docker_or_sandbox(self) -> None:
         path = Path(__file__).resolve().parents[1] / "terrarium_agents" / "intent.py"

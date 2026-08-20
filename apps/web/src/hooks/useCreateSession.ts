@@ -33,9 +33,6 @@ function previewStatus(
   phase: string | null,
   previewUrl: string | null,
 ): PreviewStatus {
-  if (busy && phase === "ready") {
-    return "building";
-  }
   if (busy) {
     return "intent";
   }
@@ -44,6 +41,9 @@ function previewStatus(
   }
   if (previewUrl && phase === "ready") {
     return "live";
+  }
+  if (phase === "ready") {
+    return "ready";
   }
   return "idle";
 }
@@ -58,6 +58,7 @@ export function useCreateSession() {
   const [intentPhase, setIntentPhase] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const sourceRef = useRef<EventSource | null>(null);
+  const sourceSessionRef = useRef<string | null>(null);
   const sessionIdRef = useRef<string | null>(null);
   const lastEventIdRef = useRef("0-0");
   const seenEventsRef = useRef(new Set<string>());
@@ -93,9 +94,17 @@ export function useCreateSession() {
   }
 
   function connectEvents(nextSessionId: string) {
-    if (sourceRef.current) {
-      sourceRef.current.onerror = null;
-      sourceRef.current.close();
+    const existing = sourceRef.current;
+    if (
+      existing &&
+      sourceSessionRef.current === nextSessionId &&
+      existing.readyState !== EventSource.CLOSED
+    ) {
+      return;
+    }
+    if (existing) {
+      existing.onerror = null;
+      existing.close();
     }
     const source = subscribeSessionEvents(nextSessionId, pushEvent, lastEventIdRef.current);
     source.onerror = () => {
@@ -108,22 +117,20 @@ export function useCreateSession() {
       }
     };
     sourceRef.current = source;
+    sourceSessionRef.current = nextSessionId;
   }
 
   function pushEvent(event: SessionEvent, eventId?: string) {
     if (eventId) {
       lastEventIdRef.current = eventId;
-      if (seenEventsRef.current.has(eventId)) {
-        return;
-      }
-      seenEventsRef.current.add(eventId);
     }
     const fingerprint = `${event.sessionId}:${event.at}:${event.name}`;
-    if (!eventId && seenEventsRef.current.has(fingerprint)) {
+    const keys = [eventId, fingerprint].filter((key): key is string => Boolean(key));
+    if (keys.some((key) => seenEventsRef.current.has(key))) {
       return;
     }
-    if (!eventId) {
-      seenEventsRef.current.add(fingerprint);
+    for (const key of keys) {
+      seenEventsRef.current.add(key);
     }
 
     setEvents((current) => [...current, event]);
@@ -136,23 +143,15 @@ export function useCreateSession() {
       const assistant: ChatItem = {
         kind: "assistant",
         id: crypto.randomUUID(),
-        text: reply || "Hey — what should we build?",
+        text: reply || (questions.length ? "I can build that. A few details so we get it right." : "Hey — what should we build?"),
         questions: questions.length ? questions : undefined,
         phase,
       };
-      if (phase === "ready") {
-        busyRef.current = true;
-        setChat((current) => withThinking([...withoutThinking(current), assistant], "Building preview"));
-        setBusy(true);
-        armTimeout();
-        setStatus(null);
-      } else {
-        busyRef.current = false;
-        setChat((current) => [...withoutThinking(current), assistant]);
-        setBusy(false);
-        clearTimeoutSafe();
-        setStatus(null);
-      }
+      busyRef.current = false;
+      setChat((current) => [...withoutThinking(current), assistant]);
+      setBusy(false);
+      clearTimeoutSafe();
+      setStatus(null);
     }
     if (event.name === "preview.ready") {
       const payload = previewReadyPayloadSchema.safeParse(event.payload);

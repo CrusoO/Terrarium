@@ -57,9 +57,6 @@ export const intentSchema = z.object({
   stack: stackSchema,
   summary: z.string(),
   toolId: z.string().optional(),
-  phase: intentPhaseSchema.optional(),
-  reply: z.string().optional(),
-  questions: z.array(z.string()).optional(),
 });
 export type Intent = z.infer<typeof intentSchema>;
 
@@ -73,8 +70,13 @@ export const intentAgentInputSchema = z.object({
 });
 export type IntentAgentInput = z.infer<typeof intentAgentInputSchema>;
 
-export const intentAgentOutputSchema = intentSchema;
-export type IntentAgentOutput = Intent;
+/** Chat extras live here only. Code Generator / Editor parse `intentSchema`. */
+export const intentAgentOutputSchema = intentSchema.extend({
+  phase: intentPhaseSchema.optional(),
+  reply: z.string().optional(),
+  questions: z.array(z.string()).optional(),
+});
+export type IntentAgentOutput = z.infer<typeof intentAgentOutputSchema>;
 
 export const agentJobSchema = z.object({
   sessionId: z.string(),

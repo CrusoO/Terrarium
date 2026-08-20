@@ -6,18 +6,10 @@ import logging
 from terrarium_api.settings import redis_settings
 from terrarium_agents import IntentError, classify_intent
 from terrarium_agents.llm import agents_mode, intent_model
-from terrarium_contracts import (
-    ConversationTurn,
-    Intent,
-    IntentAgentInput,
-    PreviewReadyPayload,
-    SandboxReadyPayload,
-)
-from terrarium_sandbox import SandboxError, SandboxRunner
+from terrarium_contracts import ConversationTurn, IntentAgentInput, IntentAgentOutput
 
 from terrarium_api.events import make_event
 from terrarium_api.session_log import SessionEventLog
-from terrarium_api.stub import echo_filemap
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +21,7 @@ def classify_session_intent(
     files: dict[str, str] | None = None,
     tool_id: str | None = None,
     conversation: list[ConversationTurn] | None = None,
-) -> Intent:
+) -> IntentAgentOutput:
     """Intent Agent only — no FileMap writes, no Docker."""
     return classify_intent(
         IntentAgentInput(
@@ -43,17 +35,21 @@ def classify_session_intent(
 
 
 async def run_stub_session(ctx: dict, session_id: str, prompt: str) -> None:
-    """Classify intent. Boot Docker only when phase is ready."""
+    """Classify intent and emit intent.classified. Does not write files or start Docker."""
     log = SessionEventLog(ctx["redis"])
     history = [
         ConversationTurn.model_validate(item)
         for item in await log.load_conversation(session_id)
     ]
+    files = await log.load_files(session_id)
+    tool_id = await log.load_tool_id(session_id)
     try:
         intent = await asyncio.to_thread(
             classify_session_intent,
             session_id,
             prompt,
+            files=files,
+            tool_id=tool_id,
             conversation=history,
         )
     except IntentError as error:
@@ -86,6 +82,8 @@ async def run_stub_session(ctx: dict, session_id: str, prompt: str) -> None:
     await log.save_conversation(
         session_id, [turn.model_dump() for turn in history]
     )
+    if intent.toolId:
+        await log.save_tool_id(session_id, intent.toolId)
 
     await log.append(
         make_event(
@@ -94,40 +92,6 @@ async def run_stub_session(ctx: dict, session_id: str, prompt: str) -> None:
             intent.model_dump(exclude_none=True),
         )
     )
-
-    if intent.phase != "ready":
-        return
-
-    files = echo_filemap(prompt)
-    await log.save_files(session_id, files)
-    await log.append(
-        make_event(
-            "sandbox.booting",
-            session_id,
-            {"files": list(files.keys())},
-        )
-    )
-    try:
-        handle = await asyncio.to_thread(SandboxRunner().start, session_id)
-    except SandboxError as error:
-        logger.exception("Sandbox start failed for %s", session_id)
-        await log.append(
-            make_event("sandbox.unhealthy", session_id, {"logs": str(error)})
-        )
-        return
-    except Exception as error:
-        logger.exception("Unexpected sandbox failure for %s", session_id)
-        await log.append(
-            make_event("sandbox.unhealthy", session_id, {"logs": str(error)})
-        )
-        return
-
-    ready = SandboxReadyPayload(
-        previewUrl=handle.previewUrl, containerId=handle.containerId
-    )
-    await log.append(make_event("sandbox.ready", session_id, ready.model_dump()))
-    preview = PreviewReadyPayload(previewUrl=handle.previewUrl)
-    await log.append(make_event("preview.ready", session_id, preview.model_dump()))
 
 
 async def on_startup(ctx: dict) -> None:

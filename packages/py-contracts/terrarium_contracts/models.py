@@ -45,9 +45,6 @@ class Intent(BaseModel):
     stack: Stack
     summary: str
     toolId: str | None = None
-    phase: IntentPhase = "ready"
-    reply: str | None = None
-    questions: list[str] | None = None
 
 
 class IntentAgentInput(BaseModel):
@@ -62,7 +59,26 @@ class IntentAgentInput(BaseModel):
     conversation: list[ConversationTurn] | None = None
 
 
-IntentAgentOutput = Intent
+class IntentAgentOutput(BaseModel):
+    """Intent plus chat-only fields. Other agents must parse Intent, not this."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: IntentKind
+    stack: Stack
+    summary: str
+    toolId: str | None = None
+    phase: IntentPhase = "ready"
+    reply: str | None = None
+    questions: list[str] | None = None
+
+    def as_intent(self) -> Intent:
+        return Intent(
+            kind=self.kind,
+            stack=self.stack,
+            summary=self.summary,
+            toolId=self.toolId,
+        )
 
 
 class ErrorContext(BaseModel):

@@ -1,6 +1,6 @@
 import { Box, CircularProgress, LinearProgress, Stack, Typography } from "@mui/material";
 
-export type PreviewStatus = "idle" | "intent" | "clarify" | "building" | "live";
+export type PreviewStatus = "idle" | "intent" | "clarify" | "ready" | "live";
 
 const COPY: Record<Exclude<PreviewStatus, "live">, { title: string; detail: string }> = {
   idle: {
@@ -15,9 +15,9 @@ const COPY: Record<Exclude<PreviewStatus, "live">, { title: string; detail: stri
     title: "Gathering a few details",
     detail: "Answer the questions in chat. The live preview starts after the spec is ready.",
   },
-  building: {
-    title: "Starting the sandbox",
-    detail: "Spec is locked. Booting the preview container…",
+  ready: {
+    title: "Spec is ready",
+    detail: "Intent is classified. Preview stays empty until Code Generator writes files.",
   },
 };
 
@@ -34,7 +34,7 @@ function SkeletonBars() {
 
 function PreviewPlaceholder({ status }: { status: Exclude<PreviewStatus, "live"> }) {
   const copy = COPY[status];
-  const active = status !== "idle";
+  const active = status === "intent" || status === "clarify";
 
   return (
     <Box
@@ -149,7 +149,7 @@ export function PreviewPanel({
           Generated tool
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {status === "live" ? "Live preview" : status === "idle" ? "Waiting" : "Not building yet"}
+          {status === "live" ? "Live preview" : status === "ready" ? "Spec ready" : status === "idle" ? "Waiting" : "Not building yet"}
         </Typography>
       </Box>
       {live ? (
