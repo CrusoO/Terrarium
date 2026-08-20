@@ -5,6 +5,7 @@ import {
   type SessionEvent,
 } from "@terrarium/contracts";
 import { createSession, subscribeSessionEvents } from "../api/sessions";
+import type { PreviewStatus } from "../components/canvas/PreviewPanel";
 import type { ChatItem } from "../types/chat";
 
 const THINKING_ID = "thinking";
@@ -27,6 +28,26 @@ function withThinking(items: ChatItem[], label: string): ChatItem[] {
   return [...withoutThinking(items), { kind: "thinking", id: THINKING_ID, label }];
 }
 
+function previewStatus(
+  busy: boolean,
+  phase: string | null,
+  previewUrl: string | null,
+): PreviewStatus {
+  if (busy && phase === "ready") {
+    return "building";
+  }
+  if (busy) {
+    return "intent";
+  }
+  if (phase === "clarify") {
+    return "clarify";
+  }
+  if (previewUrl && phase === "ready") {
+    return "live";
+  }
+  return "idle";
+}
+
 export function useCreateSession() {
   const [prompt, setPrompt] = useState("");
   const [events, setEvents] = useState<SessionEvent[]>([]);
@@ -34,6 +55,7 @@ export function useCreateSession() {
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [intentPhase, setIntentPhase] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const sourceRef = useRef<EventSource | null>(null);
   const sessionIdRef = useRef<string | null>(null);
@@ -110,10 +132,11 @@ export function useCreateSession() {
       const reply = stringField(payload, "reply");
       const phase = stringField(payload, "phase");
       const questions = stringList(payload, "questions");
+      setIntentPhase(phase);
       const assistant: ChatItem = {
         kind: "assistant",
         id: crypto.randomUUID(),
-        text: reply || "Hi — how can I help you today?",
+        text: reply || "Hey — what should we build?",
         questions: questions.length ? questions : undefined,
         phase,
       };
@@ -183,6 +206,7 @@ export function useCreateSession() {
     setBusy(true);
     setStatus(null);
     setPrompt("");
+    setIntentPhase("intent");
     armTimeout();
 
     try {
@@ -216,6 +240,7 @@ export function useCreateSession() {
     status,
     busy,
     previewUrl,
+    previewStatus: previewStatus(busy, intentPhase, previewUrl),
     sessionId,
     onSubmit,
     sendPrompt,

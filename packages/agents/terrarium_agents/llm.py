@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 AgentsMode = Literal["stub", "live"]
 
-DEFAULT_INTENT_MODEL = "gemini-3.1-flash-lite"
+DEFAULT_INTENT_MODEL = "gemini-3.5-flash-lite"
 
 
 def _load_dotenv() -> None:

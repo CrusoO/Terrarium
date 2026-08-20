@@ -52,11 +52,13 @@ PHASES (pick exactly one)
 
 WHEN TO USE EACH
 - "hi", "hello", "hey", "how are you", "what's up", "who are you", "thanks" → greeting
-- "hi, build me a calculator" → clarify (they asked for a tool; the hi is just tone)
-- "json converter" / "can you build a calculator" with no formats or operations → clarify
-- After you already asked questions, and they answered input + output (or said go ahead / just build it / whatever) → ready
+- After a greeting, the NEXT message that asks to build something is clarify, never another greeting
+- "hi, build me a calculator" / "can you build a website" → clarify (they asked for a tool)
+- "json converter" / "can you build a calculator" / "build a website" with no pages or details → clarify
+- After you already asked numbered spec questions, and they answered (or said go ahead / skip / just build it) → ready
 - A long first message that already names job + input + output → ready
 - Do not loop forever. After two rounds of answers, go ready even if a detail is missing — pick a sensible default and state it in reply.
+- Never reuse the greeting sentence once they have asked to build something.
 
 CLARIFY QUESTIONS (2–4, short, specific to THIS tool)
 - Converter: input format, output shape/download, mapping rules, extra features
@@ -73,7 +75,7 @@ SUMMARY
 
 REPLY STYLE
 - Sound like Cursor: direct, no filler, no "As an AI", no "Great question!".
-- Greeting: "Hi — how can I help you today? Tell me what you'd like to build."
+- Greeting: "Hey — what should we build?" Then the UI shows starter chips.
 - Clarify: "A JSON converter is doable. I need a few details before I brief the builder."
 - Ready: confirm the plan in plain language, including any default you assumed.
 
@@ -128,7 +130,8 @@ _SOCIAL_START_RE = re.compile(
 _BUILD_RE = re.compile(
     r"\b("
     r"buil[dt]|create|make|generate|scaffold|converter?|calculator|"
-    r"dashboard|form|tool|app|widget|bot|tracker|timer"
+    r"dashboard|form|tool|app|widget|bot|tracker|timer|"
+    r"website|web\s*site|webpage|landing\s*page|portfolio"
     r")\b",
     re.IGNORECASE,
 )
@@ -244,9 +247,23 @@ def _summary(prompt: str) -> str:
     return first[: _SUMMARY_MAX - 1].rstrip() + "…"
 
 
-def _user_turns(inp: IntentAgentInput) -> int:
-    prior = sum(1 for turn in (inp.conversation or []) if turn.role == "user")
+def _non_greeting_user_turns(inp: IntentAgentInput) -> int:
+    prior = sum(
+        1
+        for turn in (inp.conversation or [])
+        if turn.role == "user" and not _is_greeting(turn.text)
+    )
+    if _is_greeting(inp.prompt):
+        return prior
     return prior + 1
+
+
+def _looks_like_greeting_reply(reply: str) -> bool:
+    return bool(re.search(r"how can i help you today|what should we build", reply, re.I))
+
+
+def _greeting_reply() -> str:
+    return "Hey — what should we build?"
 
 
 def _is_greeting(prompt: str) -> bool:
@@ -292,8 +309,6 @@ def _last_assistant_questions(inp: IntentAgentInput) -> list[str]:
                 found.append(match.group(1).strip())
         if found:
             return found
-        if "?" in turn.text:
-            return [part.strip() for part in re.split(r"(?<=\?)\s+", turn.text) if "?" in part]
     return []
 
 
@@ -332,13 +347,9 @@ def _spec_enough(inp: IntentAgentInput) -> bool:
             return True
         if len(prompt) >= 50 and answered >= 1:
             return True
-    if _user_turns(inp) >= 3 and _had_build_request(inp):
+    if _non_greeting_user_turns(inp) >= 3 and _had_build_request(inp):
         return True
     return False
-
-
-def _greeting_reply() -> str:
-    return "Hi — how can I help you today? Tell me what you'd like to build."
 
 
 def _stub_intent(inp: IntentAgentInput) -> Intent:
@@ -384,7 +395,7 @@ def _stub_intent(inp: IntentAgentInput) -> Intent:
     idea = _thread_idea(inp)
     stack = "fullstack" if _FULLSTACK_RE.search(idea) else stack
 
-    if _spec_enough(inp) or (_user_turns(inp) == 1 and _is_detailed_spec(prompt)):
+    if _spec_enough(inp) or (_non_greeting_user_turns(inp) == 1 and _is_detailed_spec(prompt)):
         summary = _summary(prompt if len(prompt) > 20 else idea)
         return Intent(
             kind="new",
@@ -396,7 +407,7 @@ def _stub_intent(inp: IntentAgentInput) -> Intent:
         )
 
     prior = _last_assistant_questions(inp)
-    if prior and _user_turns(inp) >= 2:
+    if prior and _non_greeting_user_turns(inp) >= 2:
         remaining = [question for question in prior if not _question_answered(question, prompt)]
         questions = remaining[:2] or _stub_questions(idea)[:2]
         numbered_ack = prompt if len(prompt) <= 40 else "that"
@@ -433,6 +444,8 @@ def _clarify_lead_in(idea: str) -> str:
         return "A converter is doable. I need a few details before I brief the builder."
     if "calc" in lower:
         return "A calculator is doable. A few choices so we don't overbuild it:"
+    if "website" in lower or "web site" in lower or "landing" in lower:
+        return "A site is doable. A few details so the first preview matches what you meant."
     return "I can build that. A few details so the first preview matches what you meant."
 
 
@@ -461,6 +474,12 @@ def _stub_questions(prompt: str) -> list[str]:
             "Which fields should the form collect?",
             "What happens on submit (show a summary, download, or just validate)?",
             "Any required vs optional fields?",
+        ]
+    elif "website" in lower or "web site" in lower or "landing" in lower or "portfolio" in lower:
+        questions = [
+            "What kind of website is this (landing page, portfolio, restaurant, blog)?",
+            "Which pages do you need (home, about, contact)?",
+            "Any name, colors, or reference I should follow?",
         ]
     else:
         questions = [
@@ -503,11 +522,21 @@ def _enforce_rules(intent: Intent, inp: IntentAgentInput) -> Intent:
     phase: IntentPhase = intent.phase
     greeting = _is_greeting(inp.prompt) and not _had_build_request(inp)
     build_now = bool(_BUILD_RE.search(inp.prompt))
+    thin_build = (
+        kind == "new"
+        and not _has_existing_app(inp)
+        and (build_now or _had_build_request(inp))
+        and not _is_detailed_spec(inp.prompt)
+        and not _spec_enough(inp)
+    )
 
     if greeting:
         phase = "greeting"
         questions = []
         summary = "Chat greeting"
+    elif thin_build and phase in {"greeting", "ready"}:
+        phase = "clarify"
+        questions = questions or _stub_questions(_thread_idea(inp))
     elif phase == "greeting" and (build_now or _had_build_request(inp)):
         phase = "clarify"
     elif questions and phase == "ready":
@@ -517,7 +546,7 @@ def _enforce_rules(intent: Intent, inp: IntentAgentInput) -> Intent:
     elif (
         phase == "ready"
         and kind == "new"
-        and _user_turns(inp) == 1
+        and _non_greeting_user_turns(inp) == 1
         and not _is_detailed_spec(inp.prompt)
         and not _has_existing_app(inp)
     ):
@@ -545,6 +574,8 @@ def _enforce_rules(intent: Intent, inp: IntentAgentInput) -> Intent:
         reply = _greeting_reply()
     else:
         reply = _lead_in((intent.reply or "").strip(), questions)
+    if phase == "clarify" and (not reply or _looks_like_greeting_reply(reply)):
+        reply = _clarify_lead_in(_thread_idea(inp))
     if not reply:
         if phase == "greeting":
             reply = _greeting_reply()

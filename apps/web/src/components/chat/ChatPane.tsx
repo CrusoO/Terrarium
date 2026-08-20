@@ -1,4 +1,5 @@
 import { useEffect, useRef, type FormEvent } from "react";
+import { Avatar, Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import type { ChatItem } from "../../types/chat";
 import { ChatThread } from "./ChatThread";
 import { PromptForm } from "./PromptForm";
@@ -32,17 +33,76 @@ export function ChatPane({
   }, [chat]);
 
   return (
-    <aside className="flex h-[46%] w-full shrink-0 flex-col border-b border-line bg-white md:h-auto md:w-[380px] md:border-b-0 md:border-r">
-      <header className="border-b border-line px-5 py-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-maroon">Terrarium</p>
-        <h1 className="mt-1 text-lg font-semibold">App builder</h1>
-        <p className="mt-1 text-xs text-muted">
-          Chat first. I ask 2–4 questions, then we preview the tool.
-        </p>
-      </header>
-      <div ref={scrollerRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-        <ChatThread chat={chat} busy={busy} onSendChoice={onSendChoice} />
-      </div>
+    <Box
+      component="aside"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        width: { xs: "100%", md: 420 },
+        height: { xs: "50%", md: "100%" },
+        minHeight: 0,
+        flexShrink: 0,
+        borderRight: { md: 1 },
+        borderBottom: { xs: 1, md: 0 },
+        borderColor: "divider",
+        bgcolor: "background.default",
+      }}
+    >
+      <Stack
+        direction="row"
+        spacing={1.5}
+        sx={{
+          alignItems: "center",
+          px: 2,
+          py: 1.5,
+          borderBottom: 1,
+          borderColor: "divider",
+          bgcolor: "background.paper",
+        }}
+      >
+        <Avatar sx={{ bgcolor: "primary.main", width: 36, height: 36, fontSize: 15, fontWeight: 700 }}>T</Avatar>
+        <Box sx={{ minWidth: 0 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+              Terrarium
+            </Typography>
+            <Chip label="Live" size="small" color="success" variant="outlined" sx={{ height: 20, fontSize: 10 }} />
+          </Stack>
+          <Typography variant="caption" color="text.secondary" noWrap>
+            Describe a tool. I’ll ask a few questions, then preview it.
+          </Typography>
+        </Box>
+      </Stack>
+      <Box ref={scrollerRef} sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 1.5, py: 2 }}>
+        {chat.length === 0 ? (
+          <Stack direction="row" spacing={1.25} sx={{ alignItems: "flex-start" }}>
+            <Avatar sx={{ bgcolor: "primary.main", width: 28, height: 28, fontSize: 12, fontWeight: 700 }}>
+              T
+            </Avatar>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, display: "block", mb: 0.5 }}>
+                Terrarium
+              </Typography>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 1.5,
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: 3,
+                  bgcolor: "background.paper",
+                }}
+              >
+                <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                  Hey — what should we build?
+                </Typography>
+              </Paper>
+            </Box>
+          </Stack>
+        ) : (
+          <ChatThread chat={chat} busy={busy} onSendChoice={onSendChoice} />
+        )}
+      </Box>
       <PromptForm
         prompt={prompt}
         busy={busy}
@@ -50,6 +110,6 @@ export function ChatPane({
         onPromptChange={onPromptChange}
         onSubmit={onSubmit}
       />
-    </aside>
+    </Box>
   );
 }

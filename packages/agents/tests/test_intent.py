@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 import os
+import re
 import unittest
 
 from terrarium_agents.intent import classify_intent
@@ -18,6 +19,7 @@ class IntentAgentTests(unittest.TestCase):
         self.assertEqual(intent.phase, "greeting")
         self.assertEqual(intent.summary, "Chat greeting")
         self.assertTrue(intent.reply)
+        self.assertIn("build", (intent.reply or "").lower())
         self.assertFalse(intent.questions)
 
     def test_small_talk_is_greeting(self) -> None:
@@ -33,6 +35,23 @@ class IntentAgentTests(unittest.TestCase):
         self.assertGreaterEqual(len(intent.questions or []), 2)
         self.assertLessEqual(len(intent.questions or []), 4)
 
+    def test_build_website_after_hi_asks_questions(self) -> None:
+        intent = classify_intent(
+            IntentAgentInput(
+                prompt="can you build a website",
+                conversation=[
+                    ConversationTurn(role="user", text="hi"),
+                    ConversationTurn(
+                        role="assistant",
+                        text="Hi — how can I help you today? Tell me what you'd like to build.",
+                    ),
+                ],
+            )
+        )
+        self.assertEqual(intent.phase, "clarify")
+        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assertFalse(re.search(r"how can i help you today", intent.reply or "", re.I))
+
     def test_build_request_asks_questions(self) -> None:
         intent = classify_intent(
             IntentAgentInput(prompt="can you build a json converter")
@@ -42,6 +61,26 @@ class IntentAgentTests(unittest.TestCase):
         self.assertGreaterEqual(len(intent.questions or []), 2)
         self.assertLessEqual(len(intent.questions or []), 4)
         self.assertNotIn("1.", intent.reply or "")
+
+    def test_build_website_asks_questions(self) -> None:
+        intent = classify_intent(IntentAgentInput(prompt="can you build a website"))
+        self.assertEqual(intent.phase, "clarify")
+        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assertNotRegex(intent.reply or "", r"how can i help you today")
+
+    def test_library_app_after_hey_asks_questions(self) -> None:
+        intent = classify_intent(
+            IntentAgentInput(
+                prompt="can you build an library app",
+                conversation=[
+                    ConversationTurn(role="user", text="hey"),
+                    ConversationTurn(role="assistant", text="Hey — what should we build?"),
+                ],
+            )
+        )
+        self.assertEqual(intent.phase, "clarify")
+        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assertFalse(re.search(r"what should we build", intent.reply or "", re.I))
 
     def test_typo_built_calculator_asks_questions(self) -> None:
         intent = classify_intent(

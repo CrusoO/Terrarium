@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
-import { DEV_USER } from "@terrarium/contracts";
+import { Alert, IconButton, InputBase, Paper, Typography } from "@mui/material";
+import SendRoundedIcon from "@mui/icons-material/SendRounded";
 
 type PromptFormProps = {
   prompt: string;
@@ -10,36 +11,65 @@ type PromptFormProps = {
 };
 
 export function PromptForm({ prompt, busy, status, onPromptChange, onSubmit }: PromptFormProps) {
+  const canSend = prompt.trim().length > 0 && !busy;
+
   return (
-    <form onSubmit={onSubmit} className="border-t border-line p-4">
-      <label htmlFor="prompt" className="sr-only">
-        Ask for changes
-      </label>
-      <textarea
-        id="prompt"
-        rows={3}
-        value={prompt}
-        onChange={(change) => onPromptChange(change.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-            event.currentTarget.form?.requestSubmit();
-          }
+    <form onSubmit={onSubmit} style={{ padding: "8px 12px 12px" }}>
+      <Paper
+        elevation={0}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 0.5,
+          minHeight: 44,
+          px: 1.25,
+          py: 0.25,
+          border: 1,
+          borderColor: "divider",
+          borderRadius: 999,
+          bgcolor: "background.paper",
         }}
-        placeholder="Hi, or describe a tool — I’ll ask a few questions first…"
-        className="w-full resize-none rounded-xl border border-line bg-canvas px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-maroon"
-      />
-      <div className="mt-2 flex items-center justify-between">
-        <p className="text-[11px] text-muted">actor: {DEV_USER}</p>
-        <button
+      >
+        <InputBase
+          id="prompt"
+          multiline
+          minRows={1}
+          maxRows={4}
+          fullWidth
+          value={prompt}
+          onChange={(event) => onPromptChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              event.currentTarget.form?.requestSubmit();
+            }
+          }}
+          placeholder="Message Terrarium…"
+          sx={{ px: 0.5, py: 0.5, fontSize: 14, lineHeight: 1.4 }}
+        />
+        <IconButton
           type="submit"
-          disabled={busy}
-          className="rounded-lg bg-maroon px-3 py-1.5 text-sm font-medium text-white hover:bg-maroon-dark disabled:opacity-50"
+          color="primary"
+          disabled={!canSend}
+          aria-label="Send"
+          size="small"
+          sx={{
+            bgcolor: canSend ? "primary.main" : "action.hover",
+            color: canSend ? "primary.contrastText" : "text.disabled",
+            "&:hover": { bgcolor: canSend ? "primary.dark" : "action.hover" },
+          }}
         >
-          {busy ? "Sending…" : "Send"}
-        </button>
-      </div>
-      {status ? <p className="mt-2 text-xs text-maroon">{status}</p> : null}
+          <SendRoundedIcon fontSize="small" />
+        </IconButton>
+      </Paper>
+      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.75, px: 0.5 }}>
+        Enter to send · Shift+Enter for a new line
+      </Typography>
+      {status ? (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {status}
+        </Alert>
+      ) : null}
     </form>
   );
 }
