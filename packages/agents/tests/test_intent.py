@@ -245,6 +245,37 @@ class IntentAgentTests(unittest.TestCase):
                 }
             )
 
+    def test_live_mode_keeps_llm_questions_and_does_not_inject_stub_bank(self) -> None:
+        os.environ["TERRARIUM_AGENTS"] = "live"
+        try:
+            fake = IntentAgentOutput(
+                kind="new",
+                stack="react",
+                summary="Library app",
+                phase="clarify",
+                reply="A library app is doable. I need a few details.",
+                questions=[
+                    "Should patrons search by title, author, or ISBN?",
+                    "Do you need checkout and due dates?",
+                    "Who can add new books — staff only, or anyone?",
+                ],
+            )
+            intent = _enforce_rules(fake, IntentAgentInput(prompt="can you build a library app"))
+            self.assertEqual(intent.phase, "clarify")
+            self.assertEqual(
+                intent.questions,
+                [
+                    "Should patrons search by title, author, or ISBN?",
+                    "Do you need checkout and due dates?",
+                    "Who can add new books — staff only, or anyone?",
+                ],
+            )
+            self.assertFalse(
+                any("landing page" in (item or "").lower() for item in (intent.questions or []))
+            )
+        finally:
+            os.environ["TERRARIUM_AGENTS"] = "stub"
+
     def test_does_not_import_docker_or_sandbox(self) -> None:
         path = Path(__file__).resolve().parents[1] / "terrarium_agents" / "intent.py"
         tree = ast.parse(path.read_text(encoding="utf-8"))

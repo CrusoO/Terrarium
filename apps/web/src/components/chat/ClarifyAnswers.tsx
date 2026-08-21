@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { Box, Button, Chip, LinearProgress, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, LinearProgress, Paper, Stack, TextField, Typography } from "@mui/material";
 
 const SKIPPED = "Skip — use a sensible default";
 
@@ -9,94 +9,6 @@ type ClarifyAnswersProps = {
   onSend: (text: string) => void;
 };
 
-type ChipOption = { label: string; value: string };
-
-function chipsFor(question: string): { chips: ChipOption[]; multi: boolean } {
-  const q = question.toLowerCase();
-  if (/page|section/.test(q)) {
-    return {
-      multi: true,
-      chips: [
-        { label: "Home", value: "Home" },
-        { label: "About", value: "About" },
-        { label: "Contact", value: "Contact" },
-        { label: "Blog", value: "Blog" },
-        { label: "Pricing", value: "Pricing" },
-      ],
-    };
-  }
-  if (/purpose|topic|kind of website|genre|type of/.test(q)) {
-    return {
-      multi: false,
-      chips: [
-        { label: "Landing page", value: "Landing page" },
-        { label: "Portfolio", value: "Portfolio" },
-        { label: "Restaurant", value: "Restaurant" },
-        { label: "Blog", value: "Blog" },
-        { label: "Shop", value: "Small shop" },
-      ],
-    };
-  }
-  if (/color|brand|theme|visual|style/.test(q)) {
-    return {
-      multi: false,
-      chips: [
-        { label: "Light", value: "Light theme" },
-        { label: "Dark", value: "Dark theme" },
-        { label: "Maroon / brand", value: "Maroon brand colors" },
-      ],
-    };
-  }
-  if (/operat|basic|scientific/.test(q)) {
-    return {
-      multi: false,
-      chips: [
-        { label: "Basic + − × ÷", value: "Basic arithmetic" },
-        { label: "Scientific", value: "Scientific (trig, logs)" },
-        { label: "Percent / tax", value: "Percentage, tax, and tip" },
-      ],
-    };
-  }
-  if (/history/.test(q)) {
-    return {
-      multi: false,
-      chips: [
-        { label: "Yes, keep history", value: "Yes, keep a history" },
-        { label: "No history", value: "No history" },
-      ],
-    };
-  }
-  if (/input format|excel|csv|json/.test(q)) {
-    return {
-      multi: false,
-      chips: [
-        { label: "Excel", value: "Excel" },
-        { label: "CSV", value: "CSV" },
-        { label: "JSON", value: "JSON" },
-        { label: "Text", value: "Plain text" },
-      ],
-    };
-  }
-  if (/download|output/.test(q)) {
-    return {
-      multi: false,
-      chips: [
-        { label: "On screen", value: "Show on screen" },
-        { label: "Download a file", value: "Download a file" },
-        { label: "Both", value: "Show on screen and download" },
-      ],
-    };
-  }
-  return { chips: [], multi: false };
-}
-
-function splitValues(value: string): string[] {
-  return value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
 export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyAnswersProps) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>(() => questions.map(() => ""));
@@ -105,8 +17,7 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
 
   const last = step >= questions.length - 1;
   const current = questions[step] ?? "";
-  const { chips, multi } = chipsFor(current);
-  const selected = splitValues(answers[step] ?? "");
+  const filled = Boolean(answers[step]?.trim() || skipped[step]);
   const progress = ((step + 1) / questions.length) * 100;
 
   useEffect(() => {
@@ -122,20 +33,8 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
     );
   }
 
-  function toggleChip(value: string) {
-    if (multi) {
-      const next = selected.includes(value)
-        ? selected.filter((item) => item !== value)
-        : [...selected, value];
-      write(step, next.join(", "));
-      return;
-    }
-    write(step, value);
-    goNext(value);
-  }
-
-  function goNext(override?: string) {
-    const value = (override ?? answers[step] ?? "").trim();
+  function goNext() {
+    const value = (answers[step] ?? "").trim();
     if (!value && !skipped[step]) {
       return;
     }
@@ -157,15 +56,14 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
 
   function compose(extraSkip?: number): string {
     const nextSkipped = skipped.map((item, index) => item || extraSkip === index);
-    const nextAnswers = answers;
-    const anyTyped = nextAnswers.some((answer, index) => !nextSkipped[index] && answer.trim());
+    const anyTyped = answers.some((answer, index) => !nextSkipped[index] && answer.trim());
     if (!anyTyped) {
       return "Skip the questions";
     }
     return questions
       .map((question, index) => {
         const answer =
-          nextSkipped[index] || !nextAnswers[index]?.trim() ? SKIPPED : nextAnswers[index].trim();
+          nextSkipped[index] || !answers[index]?.trim() ? SKIPPED : answers[index].trim();
         return `${index + 1}. ${question}\n${answer}`;
       })
       .join("\n\n");
@@ -226,33 +124,16 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
         <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.4 }}>
           {current}
         </Typography>
-        {chips.length > 0 ? (
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", mt: 1.5 }}>
-            {chips.map((chip) => {
-              const on = selected.includes(chip.value);
-              return (
-                <Chip
-                  key={chip.value}
-                  label={chip.label}
-                  clickable={!disabled}
-                  disabled={disabled}
-                  color="primary"
-                  variant={on ? "filled" : "outlined"}
-                  onClick={() => toggleChip(chip.value)}
-                />
-              );
-            })}
-          </Stack>
-        ) : null}
         <TextField
           inputRef={inputRef}
           fullWidth
           size="small"
+          label="Your answer"
           value={skipped[step] ? "" : (answers[step] ?? "")}
           disabled={disabled}
           onChange={(event) => write(step, event.target.value)}
           onKeyDown={onKeyDown}
-          placeholder={multi ? "Or type pages…" : "Or type your own answer…"}
+          placeholder="Type your answer…"
           sx={{ mt: 1.5 }}
         />
       </Box>
@@ -283,7 +164,7 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
           <Button
             size="small"
             variant="contained"
-            disabled={disabled || (!answers[step]?.trim() && !skipped[step] && !last)}
+            disabled={disabled || (!filled && !last)}
             onClick={() => goNext()}
           >
             {last ? "Send" : "Continue"}
