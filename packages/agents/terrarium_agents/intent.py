@@ -64,6 +64,7 @@ CLARIFY QUESTIONS (2–4, short, specific to THIS tool)
 - Calculator: operations, history, presets/units, extra features
 - Other tools: main job, what they type/upload, what they see back, one must-have extra
 Never ask generic "tell me more". Never ask more than 4. Do not repeat questions they already answered.
+Write questions for THIS request only. Do not use a canned template (do not always ask landing/portfolio/pages unless that is what they asked for).
 
 KIND / STACK
 - modify ONLY if an existing FileMap or toolId is in context. Otherwise new.
@@ -448,6 +449,13 @@ def _clarify_lead_in(idea: str) -> str:
     return "I can build that. A few details so the first preview matches what you meant."
 
 
+def _fallback_questions(prompt: str) -> list[str]:
+    """Stub/CI only. Live Gemini questions must not be replaced by this bank."""
+    if agents_mode() != "stub":
+        return []
+    return _stub_questions(prompt)
+
+
 def _stub_questions(prompt: str) -> list[str]:
     lower = prompt.lower()
     if "convert" in lower or "json" in lower or "csv" in lower or "excel" in lower:
@@ -536,16 +544,16 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
     elif not _is_greeting(inp.prompt) and phase == "greeting":
         # Live models often repeat the greeting on the first build request.
         phase = "clarify"
-        questions = questions or _stub_questions(_thread_idea(inp))
+        questions = questions or _fallback_questions(_thread_idea(inp))
     elif thin_build and phase in {"greeting", "ready"}:
         phase = "clarify"
-        questions = questions or _stub_questions(_thread_idea(inp))
+        questions = questions or _fallback_questions(_thread_idea(inp))
     elif phase == "greeting" and (build_now or _had_build_request(inp)):
         phase = "clarify"
     elif questions and phase == "ready":
         phase = "clarify"
     elif phase == "clarify" and not questions:
-        questions = _stub_questions(_thread_idea(inp))
+        questions = _fallback_questions(_thread_idea(inp))
     elif (
         phase == "ready"
         and kind == "new"
@@ -554,9 +562,9 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
         and not _has_existing_app(inp)
     ):
         phase = "clarify"
-        questions = questions or _stub_questions(inp.prompt)
+        questions = questions or _fallback_questions(inp.prompt)
 
-    if phase == "clarify":
+    if phase == "clarify" and agents_mode() == "stub":
         if len(questions) < _MIN_QUESTIONS:
             extra = [
                 item
