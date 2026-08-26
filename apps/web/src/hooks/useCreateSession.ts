@@ -39,7 +39,7 @@ function previewStatus(
   if (phase === "clarify") {
     return "clarify";
   }
-  if (previewUrl && phase === "ready") {
+  if (previewUrl) {
     return "live";
   }
   if (phase === "ready") {

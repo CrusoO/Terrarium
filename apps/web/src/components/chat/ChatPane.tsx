@@ -38,13 +38,10 @@ export function ChatPane({
       sx={{
         display: "flex",
         flexDirection: "column",
-        width: { xs: "100%", md: 420 },
-        height: { xs: "50%", md: "100%" },
+        width: "100%",
+        height: "100%",
         minHeight: 0,
-        flexShrink: 0,
-        borderRight: { md: 1 },
-        borderBottom: { xs: 1, md: 0 },
-        borderColor: "divider",
+        flex: 1,
         bgcolor: "background.default",
       }}
     >
