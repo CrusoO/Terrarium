@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 AgentsMode = Literal["stub", "live"]
 
 DEFAULT_INTENT_MODEL = "gemini-3.5-flash-lite"
+DEFAULT_EDITOR_MODEL = "gemini-2.5-pro"
 
 
 def _load_dotenv() -> None:
@@ -71,6 +72,21 @@ def intent_model() -> str:
     return os.environ.get("TERRARIUM_MODEL_INTENT", DEFAULT_INTENT_MODEL).strip() or DEFAULT_INTENT_MODEL
 
 
+def editor_model() -> str:
+    return os.environ.get("TERRARIUM_MODEL_EDITOR", DEFAULT_EDITOR_MODEL).strip() or DEFAULT_EDITOR_MODEL
+
+
+def editor_gemini_api_key() -> str | None:
+    key = (
+        os.environ.get("GEMINI_API_KEY_EDITOR")
+        or os.environ.get("GOOGLE_API_KEY")
+        or os.environ.get("GEMINI_API_KEY")
+        or os.environ.get("GOOGLE_GENAI_API_KEY")
+        or ""
+    ).strip()
+    return key or None
+
+
 @lru_cache(maxsize=1)
 def gemini_client():
     from google import genai
@@ -79,6 +95,19 @@ def gemini_client():
     if not key:
         raise RuntimeError(
             "GEMINI_API_KEY is missing. Set it in .env or export it, "
+            "or set TERRARIUM_AGENTS=stub."
+        )
+    return genai.Client(api_key=key)
+
+
+@lru_cache(maxsize=1)
+def editor_gemini_client():
+    from google import genai
+
+    key = editor_gemini_api_key()
+    if not key:
+        raise RuntimeError(
+            "GEMINI_API_KEY_EDITOR is missing. Set it in .env or export it, "
             "or set TERRARIUM_AGENTS=stub."
         )
     return genai.Client(api_key=key)

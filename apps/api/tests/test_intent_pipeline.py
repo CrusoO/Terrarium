@@ -53,7 +53,7 @@ class SessionIntentPipelineTests(unittest.TestCase):
         self.assertEqual(intent.kind, "modify")
         self.assertIsNone(intent.toolId)
 
-    def test_worker_does_not_write_files_or_start_docker(self) -> None:
+    def test_worker_does_not_start_docker(self) -> None:
         from pathlib import Path
 
         source = (
@@ -61,4 +61,13 @@ class SessionIntentPipelineTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertNotIn("echo_filemap", source)
         self.assertNotIn("SandboxRunner", source)
-        self.assertNotIn("save_files", source)
+
+    def test_editor_gate_requires_ready_phase(self) -> None:
+        """A modify intent that is still clarifying must not trigger the editor."""
+        source_path = (
+            __import__("pathlib").Path(__file__).resolve().parents[1]
+            / "terrarium_api"
+            / "worker.py"
+        )
+        source = source_path.read_text(encoding="utf-8")
+        self.assertIn('intent.phase == "ready"', source)

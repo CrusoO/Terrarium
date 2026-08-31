@@ -19,3 +19,8 @@ terrarium-api = { workspace = true }
 terrarium-contracts = { workspace = true }
 terrarium-agents = { workspace = true }
 terrarium-sandbox = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

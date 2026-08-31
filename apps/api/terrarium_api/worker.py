@@ -4,9 +4,9 @@ import asyncio
 import logging
 
 from terrarium_api.settings import redis_settings
-from terrarium_agents import IntentError, classify_intent
+from terrarium_agents import EditorAgentError, IntentError, classify_intent, run_editor
 from terrarium_agents.llm import agents_mode, intent_model
-from terrarium_contracts import ConversationTurn, IntentAgentInput, IntentAgentOutput
+from terrarium_contracts import AgentJob, ConversationTurn, IntentAgentInput, IntentAgentOutput
 
 from terrarium_api.events import make_event
 from terrarium_api.session_log import SessionEventLog
@@ -90,6 +90,50 @@ async def run_stub_session(ctx: dict, session_id: str, prompt: str) -> None:
             "intent.classified",
             session_id,
             intent.model_dump(exclude_none=True),
+        )
+    )
+
+    if intent.kind == "modify" and intent.phase == "ready" and files:
+        await _run_editor_step(log, session_id, prompt, intent, files)
+
+
+async def _run_editor_step(
+    log: SessionEventLog,
+    session_id: str,
+    prompt: str,
+    intent: IntentAgentOutput,
+    files: dict[str, str],
+) -> None:
+    """Emit editor.started, run the editor agent, emit editor.completed."""
+    await log.append(make_event("editor.started", session_id))
+    try:
+        result = await asyncio.to_thread(
+            run_editor,
+            AgentJob(
+                sessionId=session_id,
+                intent=intent.as_intent(),
+                prompt=prompt,
+                files=files,
+            ),
+        )
+    except EditorAgentError as error:
+        logger.exception("Editor agent failed for %s", session_id)
+        await log.append(
+            make_event("sandbox.unhealthy", session_id, {"logs": str(error)})
+        )
+        return
+
+    merged = {**files, **result.files}
+    await log.save_files(session_id, merged)
+
+    await log.append(
+        make_event(
+            "editor.completed",
+            session_id,
+            {
+                "commitMessage": result.commitMessage,
+                "filesChanged": sorted(result.files.keys()),
+            },
         )
     )
 
