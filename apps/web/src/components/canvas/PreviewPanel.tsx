@@ -1,4 +1,8 @@
-import { Box, CircularProgress, LinearProgress, Stack, Typography } from "@mui/material";
+import KeyboardTabRoundedIcon from "@mui/icons-material/KeyboardTabRounded";
+import { Box, CircularProgress, IconButton, LinearProgress, Stack, Tooltip, Typography } from "@mui/material";
+import type { SessionEvent } from "@terrarium/contracts";
+import { useSplitControls } from "../layout/SplitControls";
+import { EventLogButton } from "./EventLogButton";
 
 export type PreviewStatus = "idle" | "intent" | "clarify" | "ready" | "live";
 
@@ -44,77 +48,37 @@ function PreviewPlaceholder({ status }: { status: Exclude<PreviewStatus, "live">
         minHeight: 0,
         alignItems: "center",
         justifyContent: "center",
-        p: 3,
-        background:
-          "linear-gradient(45deg,#f6f3f2 25%,transparent 25%,transparent 75%,#f6f3f2 75%), linear-gradient(45deg,#f6f3f2 25%,transparent 25%,transparent 75%,#f6f3f2 75%)",
-        backgroundSize: "24px 24px",
-        backgroundPosition: "0 0, 12px 12px",
+        px: 4,
+        bgcolor: "background.default",
       }}
     >
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: 380,
-          border: 1,
-          borderColor: "divider",
-          borderRadius: 3,
-          overflow: "hidden",
-          bgcolor: "background.paper",
-          boxShadow: "0 12px 40px rgba(76,13,28,0.08)",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            px: 1.5,
-            py: 1,
-            borderBottom: 1,
-            borderColor: "divider",
-            bgcolor: "background.default",
-          }}
-        >
-          <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#e8b4bc" }} />
-          <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#e8b4bc" }} />
-          <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#e8b4bc" }} />
-          <Box
-            sx={{
-              ml: 1,
-              flex: 1,
-              height: 18,
-              borderRadius: 99,
-              bgcolor: "background.paper",
-              border: 1,
-              borderColor: "divider",
-            }}
-          />
-        </Box>
-        {active ? <LinearProgress /> : <Box sx={{ height: 4, bgcolor: "divider" }} />}
-        <Stack sx={{ alignItems: "center", px: 3, py: 3, textAlign: "center" }}>
-          {active ? (
-            <CircularProgress size={28} thickness={4} sx={{ mb: 1.5, color: "primary.main" }} />
-          ) : null}
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-            {copy.title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, lineHeight: 1.5 }}>
-            {copy.detail}
-          </Typography>
-          <SkeletonBars />
-        </Stack>
-      </Box>
+      <Stack sx={{ alignItems: "center", maxWidth: 420, textAlign: "center" }}>
+        {active ? <LinearProgress sx={{ width: 160, mb: 2, borderRadius: 99 }} /> : null}
+        {active ? (
+          <CircularProgress size={26} thickness={4} sx={{ mb: 1.5, color: "primary.main" }} />
+        ) : null}
+        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          {copy.title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, lineHeight: 1.6 }}>
+          {copy.detail}
+        </Typography>
+        <SkeletonBars />
+      </Stack>
     </Box>
   );
 }
 
 export function PreviewPanel({
+  events,
   previewUrl,
   status,
 }: {
+  events: SessionEvent[];
   previewUrl: string | null;
   status: PreviewStatus;
 }) {
+  const split = useSplitControls();
   const live = status === "live" && Boolean(previewUrl);
 
   return (
@@ -122,11 +86,9 @@ export function PreviewPanel({
       sx={{
         display: "flex",
         flexDirection: "column",
+        flex: 1,
         minHeight: 0,
         overflow: "hidden",
-        border: 1,
-        borderColor: "divider",
-        borderRadius: 3,
         bgcolor: "background.paper",
       }}
     >
@@ -148,27 +110,28 @@ export function PreviewPanel({
         >
           Generated tool
         </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {status === "live" ? "Live preview" : status === "ready" ? "Spec ready" : status === "idle" ? "Waiting" : "Not building yet"}
-        </Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <EventLogButton events={events} />
+          <Typography variant="caption" color="text.secondary">
+            {status === "live" ? "Live preview" : status === "ready" ? "Spec ready" : status === "idle" ? "Waiting" : "Not building yet"}
+          </Typography>
+          {split ? (
+            <Tooltip title="Hide chat">
+              <IconButton size="small" aria-label="Hide chat" onClick={split.collapseChat}>
+                <KeyboardTabRoundedIcon sx={{ fontSize: 18, transform: "scaleX(-1)" }} />
+              </IconButton>
+            </Tooltip>
+          ) : null}
+        </Stack>
       </Box>
       {live ? (
-        <>
-          <Typography
-            variant="caption"
-            sx={{ px: 2, py: 0.75, borderBottom: 1, borderColor: "divider", fontFamily: "monospace", wordBreak: "break-all" }}
-            color="text.secondary"
-          >
-            {previewUrl}
-          </Typography>
-          <Box
-            component="iframe"
-            title="Generated tool preview"
-            src={previewUrl ?? undefined}
-            sandbox="allow-scripts allow-same-origin allow-forms"
-            sx={{ flex: 1, minHeight: 0, border: 0, bgcolor: "background.paper" }}
-          />
-        </>
+        <Box
+          component="iframe"
+          title="Generated tool preview"
+          src={previewUrl ?? undefined}
+          sandbox="allow-scripts allow-same-origin allow-forms"
+          sx={{ flex: 1, minHeight: 0, border: 0, bgcolor: "background.paper" }}
+        />
       ) : (
         <PreviewPlaceholder status={status === "live" ? "idle" : status} />
       )}
