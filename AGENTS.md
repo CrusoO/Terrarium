@@ -1,6 +1,6 @@
 # Terrarium — agent instructions
 
-Read [PLAN.md](PLAN.md) before writing code. Architecture in PLAN.md is frozen. Do not reopen the stack, pipeline, or package boundaries in a story. Follow [copilot-instruction.md](copilot-instruction.md) (ponytail) on every change.
+Read [PLAN.md](PLAN.md) before writing code. Architecture in PLAN.md is frozen. Do not reopen the stack, pipeline, or package boundaries in a story.
 
 ## Starting a story
 

@@ -232,7 +232,7 @@ def complete_json(
     """Structured JSON from NVIDIA NIM and/or Gemini. None in stub mode or if every provider fails."""
     if agents_mode() != "live":
         return None
-    # ponytail: hosted meta/llama-3.3-70b-instruct returned 410 Gone. Prefer Gemini unless caller opts into NIM.
+    # Hosted meta/llama-3.3-70b-instruct returned 410 Gone. Prefer Gemini unless caller opts into NIM.
     prefer_nvidia = bool(nvidia_first)
     providers: list[str] = []
     if prefer_nvidia:

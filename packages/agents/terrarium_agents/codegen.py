@@ -15,14 +15,14 @@ _SAFE_PATH = re.compile(r"^(?!\.)[a-zA-Z0-9._/-]+$")
 _ALLOWED_SUFFIX = {".html", ".css", ".js", ".json", ".md", ".svg", ".txt"}
 _KNOWN_STACKS = frozenset({"react", "fullstack"})
 _MAX_FILE_BYTES = 256_000
-# ponytail: keyword scan, not a real architecture pass. Upgrade: always take the LLM plan when live models stay cheap.
+# Keyword scan, not a real architecture pass. Upgrade: always take the LLM plan when live models stay cheap.
 _COMPLEX = re.compile(
     r"\b(auth|logins?|sign[- ]?up|dashboard|admin|crm|inventory|kanban|"
     r"checkout|payments?|roles?|permissions?|multi[- ]page|multiple screens|"
     r"websocket|real[- ]?time|saas|onboarding|settings page|workflow)\b",
     re.I,
 )
-# ponytail: first-match layout by UI shape. Upgrade: Intent.layout once the contract grows.
+# First-match layout by UI shape. Upgrade: Intent.layout once the contract grows.
 _BOARD_RE = re.compile(
     r"\b(tic[\s-]*tac|chess|bingo|memory game|puzzle|tiles?|board game|\bgames?\b)\b",
     re.I,
@@ -48,7 +48,7 @@ _ROOT_BLOCK = re.compile(r":root\s*\{[^}]*\}", re.S)
 Complexity = Literal["basic", "complex"]
 Layout = Literal["board", "form", "list", "split"]
 ThemeName = Literal["maroon", "light", "dark", "modern"]
-# ponytail: look tag from the parent UI, not a contract field. Upgrade: CreateSessionRequest.look.
+# Look tag from the parent UI, not a contract field. Upgrade: CreateSessionRequest.look.
 _LOOK_TAG = re.compile(r"\[look=(modern|classic|dark)\]|look:\s*(modern|classic|dark)", re.I)
 
 _THEMES: dict[ThemeName, dict[str, str]] = {
@@ -225,7 +225,7 @@ def _stamp_theme(css: str, theme: ThemeName) -> str:
 
 _BUTTON_TYPE = re.compile(r"<button(?![^>]*\btype\s*=)", re.I)
 
-# ponytail: LLM overlays often ship a pretty UI with dead clicks / broken eval. Pin a working engine.
+# LLM overlays often ship a pretty UI with dead clicks / broken eval. Pin a working engine.
 _CLICKABLE_CSS = """
 button, input, select, textarea, a, [role="button"] {
   pointer-events: auto !important;
