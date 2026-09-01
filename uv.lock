@@ -923,6 +923,7 @@ source = { editable = "packages/agents" }
 dependencies = [
     { name = "certifi" },
     { name = "google-genai" },
+    { name = "httpx" },
     { name = "python-dotenv" },
     { name = "terrarium-contracts" },
     { name = "truststore" },
@@ -932,6 +933,7 @@ dependencies = [
 requires-dist = [
     { name = "certifi", specifier = ">=2024.0" },
     { name = "google-genai", specifier = ">=1.40" },
+    { name = "httpx", specifier = ">=0.28" },
     { name = "python-dotenv", specifier = ">=1.0" },
     { name = "terrarium-contracts", editable = "packages/py-contracts" },
     { name = "truststore", specifier = ">=0.10" },
@@ -944,6 +946,7 @@ source = { editable = "apps/api" }
 dependencies = [
     { name = "arq" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "python-dotenv" },
     { name = "redis" },
     { name = "terrarium-agents" },
@@ -956,6 +959,7 @@ dependencies = [
 requires-dist = [
     { name = "arq", specifier = ">=0.26" },
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.28" },
     { name = "python-dotenv", specifier = ">=1.0" },
     { name = "redis", specifier = ">=5.2" },
     { name = "terrarium-agents", editable = "packages/agents" },

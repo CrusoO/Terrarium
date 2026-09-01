@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contact · {{TITLE}}</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="root" class="site">
+      <header class="site-header">
+        <a class="logo" href="index.html">{{TITLE}}</a>
+        <nav class="site-nav">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="contact.html" aria-current="page">Contact</a>
+        </nav>
+      </header>
+      <main class="section">
+        <p class="eyebrow">Contact</p>
+        <h1>Contact</h1>
+        <form id="contact-form" class="contact-form card">
+          <label>
+            Name
+            <input name="name" autocomplete="name" />
+          </label>
+          <label>
+            Email
+            <input name="email" type="email" autocomplete="email" />
+          </label>
+          <label>
+            Message
+            <textarea name="message" rows="4"></textarea>
+          </label>
+          <button type="submit">Send</button>
+        </form>
+        <p id="contact-status" class="hint" hidden>Thanks — this preview has no server, so the note stays on this page.</p>
+      </main>
+      <footer class="site-footer">{{TITLE}}</footer>
+    </div>
+    <script src="js/nav.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

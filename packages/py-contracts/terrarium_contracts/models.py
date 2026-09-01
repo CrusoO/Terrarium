@@ -127,6 +127,12 @@ class CreateSessionResponse(BaseModel):
     sessionId: str
 
 
+class SessionFilesResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    files: FileMap
+
+
 class SandboxReadyPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

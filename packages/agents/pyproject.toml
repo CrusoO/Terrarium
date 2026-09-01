@@ -5,6 +5,11 @@ description = "Intent, Code Generator, Editor, Self-Healing, Smart Match — fil
 requires-python = ">=3.12"
 dependencies = [
     "terrarium-contracts",
+    "google-genai>=1.40",
+    "httpx>=0.28",
+    "python-dotenv>=1.0",
+    "certifi>=2024.0",
+    "truststore>=0.10",
 ]
 
 [build-system]

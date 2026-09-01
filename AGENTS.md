@@ -4,7 +4,7 @@ Read [PLAN.md](PLAN.md) before writing code. Architecture in PLAN.md is frozen. 
 
 ## Starting a story
 
-1. User names a story ID (`P1-S1` … `P6-S4`) or a phase.
+1. User names a story ID (`P1-S1` … `P6-S4`, plus `P2-S5`) or a phase.
 2. Read `docs/stories/<id>-*.md` and the Contract changes section.
 3. If contracts change, edit `packages/contracts` (Zod) and `packages/py-contracts` (Pydantic) first.
 4. Touch only the packages listed on the story.

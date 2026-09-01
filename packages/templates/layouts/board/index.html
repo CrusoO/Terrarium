@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{TITLE}}</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="root">
+      <header>
+        <p class="eyebrow">Terrarium · Board</p>
+        <h1>{{TITLE}}</h1>
+        <p class="lede">{{SUMMARY}}</p>
+      </header>
+      <main>
+        <div id="board" class="board" role="grid" aria-label="Game board"></div>
+        <p id="status" class="hint"></p>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

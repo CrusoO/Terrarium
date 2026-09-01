@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import unittest
+from pathlib import Path
 
 from terrarium_api.events import make_event
 from terrarium_api.worker import classify_session_intent
@@ -53,21 +54,20 @@ class SessionIntentPipelineTests(unittest.TestCase):
         self.assertEqual(intent.kind, "modify")
         self.assertIsNone(intent.toolId)
 
-    def test_worker_does_not_start_docker(self) -> None:
-        from pathlib import Path
-
-        source = (
-            Path(__file__).resolve().parents[1] / "terrarium_api" / "worker.py"
+    def test_worker_starts_sandbox_agents_do_not(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        worker = (root / "terrarium_api" / "worker.py").read_text(encoding="utf-8")
+        codegen = (
+            root.parents[1] / "packages" / "agents" / "terrarium_agents" / "codegen.py"
         ).read_text(encoding="utf-8")
-        self.assertNotIn("echo_filemap", source)
-        self.assertNotIn("SandboxRunner", source)
+        self.assertIn("SandboxRunner", worker)
+        self.assertNotIn("echo_filemap", worker)
+        self.assertNotIn("SandboxRunner", codegen)
+        self.assertNotIn("import docker", codegen)
 
     def test_editor_gate_requires_ready_phase(self) -> None:
         """A modify intent that is still clarifying must not trigger the editor."""
-        source_path = (
-            __import__("pathlib").Path(__file__).resolve().parents[1]
-            / "terrarium_api"
-            / "worker.py"
-        )
-        source = source_path.read_text(encoding="utf-8")
+        source = (
+            Path(__file__).resolve().parents[1] / "terrarium_api" / "worker.py"
+        ).read_text(encoding="utf-8")
         self.assertIn('intent.phase == "ready"', source)

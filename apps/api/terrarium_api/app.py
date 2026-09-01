@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from terrarium_api.routes.health import router as health_router
+from terrarium_api.routes.preview import router as preview_router
 from terrarium_api.routes.sessions import router as sessions_router
 from terrarium_api.settings import redis_settings
 
@@ -37,5 +38,6 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(health_router)
+    app.include_router(preview_router)
     app.include_router(sessions_router)
     return app

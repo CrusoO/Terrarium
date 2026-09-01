@@ -22,7 +22,7 @@ Mixed-language monorepo. The parent UI is TypeScript; orchestration, agents, and
 
 **Shared:**
 
-- `packages/templates` — `react` and `fullstack` starter kits (files only, filled in P2-S2)
+- `packages/templates` — vanilla FileMaps: one shell + four layout recipes (`board`, `form`, `list`, `split`). `split` is a multi-page site shape. Published tools are the library in P5.
 - `infra/` — Compose: Postgres, Redis, Traefik, sandbox network
 
 **Live tool:** the parent canvas is always an **iframe** of the sandbox preview URL. Never inline generated HTML. Never use Monaco (or CodeMirror/Sandpack) as the running app. A later optional **Code** tab may mount Monaco to *view* source; that tab is not a current story and is not the preview.
@@ -70,7 +70,17 @@ LLM placement, model defaults, and why Intent stays cheap while Code Generator/E
 - Self-heal is max **3** retries, then emit `heal.exhausted` and show the error in chat.
 - Preview is always an iframe URL from the sandbox proxy. Never inline generated HTML in the parent. Monaco is not the live canvas.
 - Smart Match never auto-overwrites the user. Offer “Use existing” vs “Build new”.
+- First-time generate uses **layout recipes**, not a kit per product and not scraped HTML. Git holds a shell + CSS tokens + four layouts (`board`, `form`, `list`, `split`). The overlay model fills the product.
 - Change only the packages listed on the story. Mark the story done in this file when acceptance criteria pass.
+
+## Later phases (layout recipes)
+
+Do not add `calculator.html` / `tic-tac-toe.html` kits and do not scrape the web. Overlay stays vanilla HTML/CSS/JS in nginx — no npm or React in the sandbox.
+
+- **P2-S3 Editor** — patch the current FileMap. Keep `:root` tokens and layout landmarks (`board` / `#tool-form` / list Store / `.site` + `.split`).
+- **P3 iframe** — still a sandbox preview URL.
+- **P4-S2 Publish** — store the FileMap. That snapshot is the only growing library.
+- **P5 Smart Match** — clone a published FileMap; skip Code Generator on an accepted hit.
 
 ## Frozen contracts
 
@@ -187,7 +197,7 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 ### Phase 2 — Core Agents
 
 - [x] [P2-S1](docs/stories/P2-S1-intent-agent.md) Intent Agent
-- [ ] [P2-S2](docs/stories/P2-S2-code-generator.md) Code Generator Agent
+- [x] [P2-S2](docs/stories/P2-S2-code-generator.md) Code Generator Agent
 - [ ] [P2-S3](docs/stories/P2-S3-editor-agent.md) Editor Agent
 - [ ] [P2-S4](docs/stories/P2-S4-self-healing-agent.md) Self-Healing Agent (max 3)
 

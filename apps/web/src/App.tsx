@@ -24,6 +24,9 @@ export default function App() {
           events={session.events}
           previewUrl={session.previewUrl}
           previewStatus={session.previewStatus}
+          files={session.files}
+          tab={session.canvasTab}
+          onTabChange={session.setCanvasTab}
         />
       }
     />

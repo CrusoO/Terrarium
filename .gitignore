@@ -4,6 +4,7 @@ dist/
 .m365rc.json
 .env
 .env.*
+!.env.example
 *.log
 .DS_Store
 Thumbs.db
@@ -16,3 +17,6 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+infra/certs/*.pem
+infra/certs/*.cer
+~$*
