@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{TITLE}}</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="root">
+      <header>
+        <p class="eyebrow">Terrarium · Form</p>
+        <h1>{{TITLE}}</h1>
+        <p class="lede">{{SUMMARY}}</p>
+      </header>
+      <main class="form-stack">
+        <form id="tool-form" class="card">
+          <label>
+            Input
+            <input id="input" name="input" autocomplete="off" />
+          </label>
+          <button type="submit">Go</button>
+        </form>
+        <output id="result" class="card" for="input"></output>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

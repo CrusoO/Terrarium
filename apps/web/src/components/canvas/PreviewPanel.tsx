@@ -1,12 +1,23 @@
 import KeyboardTabRoundedIcon from "@mui/icons-material/KeyboardTabRounded";
-import { Box, CircularProgress, IconButton, LinearProgress, Stack, Tooltip, Typography } from "@mui/material";
-import type { SessionEvent } from "@terrarium/contracts";
+import { Box, Chip, CircularProgress, IconButton, LinearProgress, Stack, Tooltip, Typography } from "@mui/material";
+import type { FileMap, SessionEvent } from "@terrarium/contracts";
 import { useSplitControls } from "../layout/SplitControls";
+import { CodePanel } from "./CodePanel";
 import { EventLogButton } from "./EventLogButton";
 
-export type PreviewStatus = "idle" | "intent" | "clarify" | "ready" | "live";
+export type PreviewStatus = "idle" | "intent" | "clarify" | "ready" | "live" | "draft" | "updating";
 
-const COPY: Record<Exclude<PreviewStatus, "live">, { title: string; detail: string }> = {
+const STATUS_LABEL: Record<PreviewStatus, string> = {
+  idle: "Waiting",
+  intent: "Not building yet",
+  clarify: "Not building yet",
+  ready: "Spec ready",
+  draft: "Draft preview",
+  updating: "Writing files",
+  live: "Live preview",
+};
+
+const COPY: Record<Exclude<PreviewStatus, "live" | "draft" | "updating">, { title: string; detail: string }> = {
   idle: {
     title: "Preview waits for a spec",
     detail: "Describe a tool in chat. I’ll ask a few questions first — the sandbox stays empty until then.",
@@ -36,7 +47,7 @@ function SkeletonBars() {
   );
 }
 
-function PreviewPlaceholder({ status }: { status: Exclude<PreviewStatus, "live"> }) {
+function PreviewPlaceholder({ status }: { status: Exclude<PreviewStatus, "live" | "draft" | "updating"> }) {
   const copy = COPY[status];
   const active = status === "intent" || status === "clarify";
 
@@ -69,17 +80,41 @@ function PreviewPlaceholder({ status }: { status: Exclude<PreviewStatus, "live">
   );
 }
 
+export function iframeSrc(previewUrl: string): string {
+  if (previewUrl.startsWith("/")) {
+    return previewUrl.endsWith("/") ? previewUrl : `${previewUrl}/`;
+  }
+  try {
+    const parsed = new URL(previewUrl);
+    const host = parsed.hostname;
+    if (host.includes("nip.io") || host.endsWith(".sandbox.local") || host.endsWith(".localhost")) {
+      const slug = host.split(".")[0];
+      if (slug) return `/preview/${slug}/`;
+    }
+  } catch {
+    return previewUrl;
+  }
+  return previewUrl;
+}
+
 export function PreviewPanel({
   events,
   previewUrl,
   status,
+  files = null,
+  tab = "preview",
+  onTabChange,
 }: {
   events: SessionEvent[];
   previewUrl: string | null;
   status: PreviewStatus;
+  files?: FileMap | null;
+  tab?: "preview" | "code";
+  onTabChange?: (tab: "preview" | "code") => void;
 }) {
   const split = useSplitControls();
-  const live = status === "live" && Boolean(previewUrl);
+  const src = previewUrl ? iframeSrc(previewUrl) : null;
+  const showFrame = Boolean(src) && (status === "live" || status === "draft" || status === "updating");
 
   return (
     <Box
@@ -111,9 +146,23 @@ export function PreviewPanel({
           Generated tool
         </Typography>
         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Chip
+            label="Preview"
+            size="small"
+            variant={tab === "preview" ? "filled" : "outlined"}
+            color={tab === "preview" ? "primary" : "default"}
+            onClick={() => onTabChange?.("preview")}
+          />
+          <Chip
+            label="Code"
+            size="small"
+            variant={tab === "code" ? "filled" : "outlined"}
+            color={tab === "code" ? "primary" : "default"}
+            onClick={() => onTabChange?.("code")}
+          />
           <EventLogButton events={events} />
           <Typography variant="caption" color="text.secondary">
-            {status === "live" ? "Live preview" : status === "ready" ? "Spec ready" : status === "idle" ? "Waiting" : "Not building yet"}
+            {STATUS_LABEL[status]}
           </Typography>
           {split ? (
             <Tooltip title="Hide chat">
@@ -124,16 +173,23 @@ export function PreviewPanel({
           ) : null}
         </Stack>
       </Box>
-      {live ? (
+      {showFrame ? (
         <Box
           component="iframe"
           title="Generated tool preview"
-          src={previewUrl ?? undefined}
+          src={src ?? undefined}
           sandbox="allow-scripts allow-same-origin allow-forms"
-          sx={{ flex: 1, minHeight: 0, border: 0, bgcolor: "background.paper" }}
+          sx={{
+            display: tab === "preview" ? "block" : "none",
+            flex: 1,
+            minHeight: 0,
+            border: 0,
+            bgcolor: "background.paper",
+          }}
         />
-      ) : (
-        <PreviewPlaceholder status={status === "live" ? "idle" : status} />
+      ) : null}
+      {tab === "code" ? <CodePanel files={files} /> : showFrame ? null : (
+        <PreviewPlaceholder status={status === "live" || status === "draft" || status === "updating" ? "idle" : status} />
       )}
     </Box>
   );

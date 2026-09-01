@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    host: true,
     port: 5173,
     proxy: {
       "/sessions": {
@@ -21,6 +22,7 @@ export default defineConfig({
         },
       },
       "/health": "http://127.0.0.1:3001",
+      "/preview": "http://127.0.0.1:3001",
     },
   },
 });

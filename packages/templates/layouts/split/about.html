@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>About · {{TITLE}}</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="root" class="site">
+      <header class="site-header">
+        <a class="logo" href="index.html">{{TITLE}}</a>
+        <nav class="site-nav">
+          <a href="index.html">Home</a>
+          <a href="about.html" aria-current="page">About</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </header>
+      <main class="section">
+        <p class="eyebrow">About</p>
+        <h1>About</h1>
+        <p class="lede">{{SUMMARY}}</p>
+      </main>
+      <footer class="site-footer">{{TITLE}}</footer>
+    </div>
+    <script src="js/nav.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+import io
 import re
+import tarfile
 import time
+from pathlib import Path
 
 import docker
 from docker.errors import ImageNotFound, NotFound
-from terrarium_contracts import HealthReport, SandboxHandle
+from terrarium_contracts import FileMap, HealthReport, SandboxHandle
 
 from terrarium_sandbox import config
 
 _SESSION_SLUG = re.compile(r"[^a-z0-9-]+")
+_HTML_ROOT = "/usr/share/nginx/html"
 
 
 class SandboxError(RuntimeError):
@@ -24,13 +28,11 @@ def session_slug(session_id: str) -> str:
     return slug
 
 
-def preview_hostname(session_id: str, host: str | None = None) -> str:
-    # Prefix "s-" so a hex sessionId is not parsed as IPv6 by nip.io.
-    return f"s-{session_slug(session_id)}.{host or config.sandbox_host()}"
-
-
-def preview_url(session_id: str, host: str | None = None) -> str:
-    return f"http://{preview_hostname(session_id, host)}"
+def preview_url(session_id: str, host: str = config.SANDBOX_HOST) -> str:
+    slug = session_slug(session_id)
+    if config.preview_mode() == "host":
+        return f"http://{slug}.{host}"
+    return f"/preview/{slug}/"
 
 
 def container_name(session_id: str) -> str:
@@ -43,7 +45,7 @@ class SandboxRunner:
     def __init__(self, client: docker.DockerClient | None = None) -> None:
         self.client = client or docker.from_env()
 
-    def start(self, session_id: str) -> SandboxHandle:
+    def start(self, session_id: str, files: FileMap | None = None) -> SandboxHandle:
         slug = session_slug(session_id)
         name = container_name(session_id)
         self.stop(session_id)
@@ -51,34 +53,40 @@ class SandboxRunner:
         self._ensure_fixture_image()
 
         router = f"sandbox-{slug}"
-        container = self.client.containers.run(
-            config.fixture_image(),
-            name=name,
-            detach=True,
-            nano_cpus=config.nano_cpus(),
-            mem_limit=config.mem_limit(),
-            memswap_limit=config.mem_limit(),
-            pids_limit=config.pids_limit(),
-            network=config.sandbox_network(),
-            publish_all_ports=False,
-            labels={
+        run_kwargs: dict = {
+            "name": name,
+            "detach": True,
+            "nano_cpus": config.NANO_CPUS,
+            "mem_limit": config.MEM_LIMIT,
+            "memswap_limit": config.MEM_LIMIT,
+            "pids_limit": config.PIDS_LIMIT,
+            "network": config.SANDBOX_NETWORK,
+            "publish_all_ports": False,
+            "labels": {
                 "terrarium.session": session_id,
                 "traefik.enable": "true",
-                "traefik.docker.network": config.sandbox_network(),
-                f"traefik.http.routers.{router}.rule": f"Host(`{preview_hostname(session_id)}`)",
+                "traefik.docker.network": config.SANDBOX_NETWORK,
+                f"traefik.http.routers.{router}.rule": f"Host(`{slug}.{config.SANDBOX_HOST}`)",
                 f"traefik.http.routers.{router}.entrypoints": "web",
                 f"traefik.http.services.{router}.loadbalancer.server.port": "80",
+                f"traefik.http.routers.{router}-path.rule": f"PathPrefix(`/preview/{slug}`)",
+                f"traefik.http.routers.{router}-path.entrypoints": "web",
+                f"traefik.http.routers.{router}-path.middlewares": f"{router}-strip",
+                f"traefik.http.middlewares.{router}-strip.stripprefix.prefixes": f"/preview/{slug}",
             },
-            security_opt=["no-new-privileges:true"],
-            read_only=True,
-            tmpfs={
+            "security_opt": ["no-new-privileges:true"],
+            "read_only": files is None,
+            "tmpfs": {
                 "/var/cache/nginx": "size=8m,mode=1777",
                 "/var/run": "size=1m,mode=1777",
                 "/tmp": "size=8m,mode=1777",
                 "/var/log/nginx": "size=2m,mode=1777",
             },
-        )
+        }
+        container = self.client.containers.run(config.FIXTURE_IMAGE, **run_kwargs)
         self._wait_until_running(container)
+        if files:
+            _write_filemap(container, files)
         return SandboxHandle(
             sessionId=session_id,
             previewUrl=preview_url(session_id),
@@ -111,21 +119,22 @@ class SandboxRunner:
         try:
             container = self.client.containers.get(name)
         except NotFound:
-            return
-        container.remove(force=True)
+            container = None
+        if container is not None:
+            container.remove(force=True)
 
     def _ensure_network(self) -> None:
         try:
-            self.client.networks.get(config.sandbox_network())
+            self.client.networks.get(config.SANDBOX_NETWORK)
         except NotFound as error:
             raise SandboxError(
-                f'Docker network "{config.sandbox_network()}" is missing. '
+                f'Docker network "{config.SANDBOX_NETWORK}" is missing. '
                 "Start infra with: npx pnpm@9.15.4 infra:up"
             ) from error
 
     def _ensure_fixture_image(self) -> None:
         try:
-            self.client.images.get(config.fixture_image())
+            self.client.images.get(config.FIXTURE_IMAGE)
             return
         except ImageNotFound:
             pass
@@ -133,7 +142,7 @@ class SandboxRunner:
             raise SandboxError(f"Fixture Dockerfile missing at {config.FIXTURE_DIR}")
         self.client.images.build(
             path=str(config.FIXTURE_DIR),
-            tag=config.fixture_image(),
+            tag=config.FIXTURE_IMAGE,
             rm=True,
         )
 
@@ -150,6 +159,26 @@ class SandboxRunner:
                 )
             time.sleep(0.25)
         raise SandboxError(f"Sandbox container did not reach running within {timeout_s}s")
+
+
+def _write_filemap(container, files: FileMap) -> None:
+    """Copy FileMap through the Docker API. Works when the worker itself is in Docker."""
+    buf = io.BytesIO()
+    wrote = False
+    with tarfile.open(fileobj=buf, mode="w") as tar:
+        for rel, body in files.items():
+            rel_path = Path(rel)
+            if rel_path.is_absolute() or ".." in rel_path.parts:
+                continue
+            data = body.encode("utf-8")
+            info = tarfile.TarInfo(name=rel_path.as_posix())
+            info.size = len(data)
+            info.mode = 0o644
+            tar.addfile(info, io.BytesIO(data))
+            wrote = True
+    if not wrote:
+        raise SandboxError("FileMap did not contain any safe relative paths")
+    container.put_archive(_HTML_ROOT, buf.getvalue())
 
 
 def _decode_logs(raw: bytes | str) -> str:

@@ -5,7 +5,7 @@ from uuid import uuid4
 from arq.connections import ArqRedis
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
-from terrarium_contracts import CreateSessionRequest, CreateSessionResponse, DEV_USER
+from terrarium_contracts import CreateSessionRequest, CreateSessionResponse, DEV_USER, SessionFilesResponse
 
 from terrarium_api.events import make_event
 from terrarium_api.session_log import SessionEventLog
@@ -47,6 +47,15 @@ async def create_session(
     if job is None:
         raise HTTPException(status_code=503, detail="Could not enqueue the session job.")
     return CreateSessionResponse(sessionId=session_id)
+
+
+@router.get("/sessions/{session_id}/files", response_model=SessionFilesResponse)
+async def session_files(session_id: str, request: Request) -> SessionFilesResponse:
+    redis = _redis(request)
+    log = SessionEventLog(redis)
+    if not await log.exists(session_id):
+        raise HTTPException(status_code=404, detail="Unknown sessionId")
+    return SessionFilesResponse(files=await log.load_files(session_id) or {})
 
 
 @router.get("/sessions/{session_id}/events")

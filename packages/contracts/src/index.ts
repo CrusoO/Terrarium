@@ -113,6 +113,7 @@ export type SessionEvent = z.infer<typeof sessionEventSchema>;
  *
  * preview.ready payload is PreviewReadyPayload.
  * sandbox.ready payload is SandboxReadyPayload.
+ * GET /sessions/:sessionId/files returns SessionFilesResponse.
  */
 export const createSessionRequestSchema = z.object({
   prompt: z.string(),
@@ -124,6 +125,11 @@ export const createSessionResponseSchema = z.object({
   sessionId: z.string(),
 });
 export type CreateSessionResponse = z.infer<typeof createSessionResponseSchema>;
+
+export const sessionFilesResponseSchema = z.object({
+  files: fileMapSchema,
+});
+export type SessionFilesResponse = z.infer<typeof sessionFilesResponseSchema>;
 
 export const sandboxReadyPayloadSchema = z.object({
   previewUrl: z.string(),

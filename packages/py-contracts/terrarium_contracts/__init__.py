@@ -18,6 +18,7 @@ from terrarium_contracts.models import (
     SandboxReadyPayload,
     SessionEvent,
     SessionEventName,
+    SessionFilesResponse,
     Stack,
     ToolRole,
 )
@@ -42,6 +43,7 @@ __all__ = [
     "SandboxReadyPayload",
     "SessionEvent",
     "SessionEventName",
+    "SessionFilesResponse",
     "Stack",
     "ToolRole",
 ]

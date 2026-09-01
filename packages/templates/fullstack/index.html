@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{TITLE}}</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="root">
+      <header>
+        <p class="eyebrow">Terrarium · Full stack</p>
+        <h1>{{TITLE}}</h1>
+        <p class="lede">{{SUMMARY}}</p>
+      </header>
+      <main class="grid">
+        <section class="card">
+          <h2>Add item</h2>
+          <form id="form">
+            <label>
+              Title
+              <input id="title" name="title" required placeholder="Item name" />
+            </label>
+            <button type="submit">Save</button>
+          </form>
+        </section>
+        <section class="card">
+          <h2>Store</h2>
+          <p class="hint">In-browser store (stand-in for an API).</p>
+          <ul id="list"></ul>
+        </section>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

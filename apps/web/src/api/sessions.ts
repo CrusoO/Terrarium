@@ -2,8 +2,10 @@ import {
   createSessionRequestSchema,
   createSessionResponseSchema,
   sessionEventSchema,
+  sessionFilesResponseSchema,
   type CreateSessionRequest,
   type CreateSessionResponse,
+  type FileMap,
   type SessionEvent,
 } from "@terrarium/contracts";
 
@@ -22,6 +24,16 @@ export async function createSession(
     throw new Error(`POST /sessions failed (${response.status}).`);
   }
   return created.data;
+}
+
+export async function fetchSessionFiles(sessionId: string): Promise<FileMap> {
+  const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/files`);
+  const json: unknown = await response.json().catch(() => null);
+  const parsed = sessionFilesResponseSchema.safeParse(json);
+  if (!response.ok || !parsed.success) {
+    throw new Error(`GET /sessions/${sessionId}/files failed (${response.status}).`);
+  }
+  return parsed.data.files;
 }
 
 export function subscribeSessionEvents(

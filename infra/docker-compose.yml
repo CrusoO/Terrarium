@@ -47,6 +47,66 @@ services:
       - terrarium
       - sandbox
 
+  api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.app
+    command: ["uvicorn", "terrarium_api.main:app", "--host", "0.0.0.0", "--port", "3001"]
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      TERRARIUM_TEMPLATES_DIR: /app/packages/templates
+      TERRARIUM_EXTRA_CA_FILE: /etc/terrarium/certs/zscaler-root.pem
+    volumes:
+      - ./certs:/etc/terrarium/certs:ro
+    ports:
+      - "3001:3001"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3001/health')",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks:
+      - terrarium
+      - sandbox
+
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.app
+    command: ["arq", "terrarium_api.worker.WorkerSettings"]
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      TERRARIUM_TEMPLATES_DIR: /app/packages/templates
+      TERRARIUM_SANDBOX_NETWORK: terrarium-sandbox
+      TERRARIUM_EXTRA_CA_FILE: /etc/terrarium/certs/zscaler-root.pem
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./certs:/etc/terrarium/certs:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - terrarium
+
 networks:
   terrarium:
     name: terrarium

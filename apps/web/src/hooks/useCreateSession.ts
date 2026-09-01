@@ -2,9 +2,10 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   createSessionRequestSchema,
   previewReadyPayloadSchema,
+  type FileMap,
   type SessionEvent,
 } from "@terrarium/contracts";
-import { createSession, subscribeSessionEvents } from "../api/sessions";
+import { createSession, fetchSessionFiles, subscribeSessionEvents } from "../api/sessions";
 import type { PreviewStatus } from "../components/canvas/PreviewPanel";
 import type { ChatItem } from "../types/chat";
 
@@ -33,14 +34,20 @@ function previewStatus(
   phase: string | null,
   previewUrl: string | null,
 ): PreviewStatus {
+  if (previewUrl) {
+    if (busy) {
+      return "updating";
+    }
+    if (phase === "clarify") {
+      return "draft";
+    }
+    return "live";
+  }
   if (busy) {
     return "intent";
   }
   if (phase === "clarify") {
     return "clarify";
-  }
-  if (previewUrl) {
-    return "live";
   }
   if (phase === "ready") {
     return "ready";
@@ -55,6 +62,8 @@ export function useCreateSession() {
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [files, setFiles] = useState<FileMap | null>(null);
+  const [canvasTab, setCanvasTab] = useState<"preview" | "code">("preview");
   const [intentPhase, setIntentPhase] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const sourceRef = useRef<EventSource | null>(null);
@@ -162,7 +171,15 @@ export function useCreateSession() {
         setBusy(false);
         clearTimeoutSafe();
         setStatus(null);
+        void fetchSessionFiles(event.sessionId)
+          .then(setFiles)
+          .catch(() => undefined);
       }
+    }
+    if (event.name === "codegen.completed") {
+      void fetchSessionFiles(event.sessionId)
+        .then(setFiles)
+        .catch(() => undefined);
     }
     if (event.name === "sandbox.unhealthy") {
       busyRef.current = false;
@@ -239,6 +256,9 @@ export function useCreateSession() {
     status,
     busy,
     previewUrl,
+    files,
+    canvasTab,
+    setCanvasTab,
     previewStatus: previewStatus(busy, intentPhase, previewUrl),
     sessionId,
     onSubmit,
