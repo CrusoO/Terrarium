@@ -1,7 +1,30 @@
 import { Avatar, Box, Chip, Paper, Stack, Typography } from "@mui/material";
+import type { SessionEvent } from "@terrarium/contracts";
 import type { ChatItem } from "../../types/chat";
+import { AgentTrace } from "./AgentTrace";
 import { ClarifyAnswers } from "./ClarifyAnswers";
 import { ThinkingIndicator } from "./ThinkingIndicator";
+
+type ThreadBlock =
+  | { kind: "item"; item: ChatItem }
+  | { kind: "events"; events: SessionEvent[] };
+
+function groupChat(chat: ChatItem[]): ThreadBlock[] {
+  const blocks: ThreadBlock[] = [];
+  for (const item of chat) {
+    if (item.kind === "event") {
+      const last = blocks[blocks.length - 1];
+      if (last?.kind === "events") {
+        last.events.push(item.event);
+      } else {
+        blocks.push({ kind: "events", events: [item.event] });
+      }
+      continue;
+    }
+    blocks.push({ kind: "item", item });
+  }
+  return blocks;
+}
 
 type ChatThreadProps = {
   chat: ChatItem[];
@@ -101,10 +124,28 @@ export function ChatThread({ chat, busy = false, onSendChoice }: ChatThreadProps
   }
 
   const activeId = latestUnansweredAssistantId(chat);
+  const blocks = groupChat(chat);
 
   return (
     <Stack component="ol" spacing={2} sx={{ m: 0, p: 0, listStyle: "none" }}>
-      {chat.map((item) => {
+      {blocks.map((block, blockIndex) => {
+        if (block.kind === "events") {
+          return (
+            <Stack
+              component="li"
+              key={`events-${block.events[0]?.at ?? blockIndex}`}
+              direction="row"
+              spacing={1.25}
+              sx={{ alignItems: "flex-start" }}
+            >
+              <TerrariumAvatar />
+              <Paper elevation={0} sx={{ flex: 1, px: 1.5, py: 1.25, border: 1, borderColor: "divider", borderRadius: 3 }}>
+                <AgentTrace events={block.events} live={busy} />
+              </Paper>
+            </Stack>
+          );
+        }
+        const item = block.item;
         if (item.kind === "user") {
           return (
             <Box component="li" key={item.id}>
