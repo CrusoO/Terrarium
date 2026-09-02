@@ -204,7 +204,7 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 ### Phase 3 — Real-time UX
 
 - [x] [P3-S1](docs/stories/P3-S1-split-screen.md) Split-screen chat + iframe
-- [ ] [P3-S2](docs/stories/P3-S2-sse-event-stream.md) SSE event stream in chat
+- [x] [P3-S2](docs/stories/P3-S2-sse-event-stream.md) SSE event stream in chat
 - [ ] [P3-S3](docs/stories/P3-S3-live-iframe-refresh.md) Live iframe refresh
 - [ ] [P3-S4](docs/stories/P3-S4-healing-ux.md) Healing UX
 
