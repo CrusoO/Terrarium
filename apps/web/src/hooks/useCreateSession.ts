@@ -63,6 +63,7 @@ export function useCreateSession() {
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewKey, setPreviewKey] = useState(0);
   const [files, setFiles] = useState<FileMap | null>(null);
   const [canvasTab, setCanvasTab] = useState<"preview" | "code">("preview");
   const [intentPhase, setIntentPhase] = useState<string | null>(null);
@@ -191,10 +192,18 @@ export function useCreateSession() {
       clearTimeoutSafe();
       setStatus(null);
     }
+    if (event.name === "editor.completed") {
+      // Stay busy so previewStatus shows "updating" while the sandbox rebuilds.
+      busyRef.current = true;
+      setBusy(true);
+    }
     if (event.name === "preview.ready") {
       const payload = previewReadyPayloadSchema.safeParse(event.payload);
       if (payload.success) {
         setPreviewUrl(payload.data.previewUrl);
+        // Increment so the iframe key changes and the browser reloads the frame,
+        // even when the sandbox URL is identical to the previous preview.
+        setPreviewKey((k) => k + 1);
         setChat((current) => withoutThinking(current));
         busyRef.current = false;
         setBusy(false);
@@ -286,6 +295,7 @@ export function useCreateSession() {
     status,
     busy,
     previewUrl,
+    previewKey,
     files,
     canvasTab,
     setCanvasTab,

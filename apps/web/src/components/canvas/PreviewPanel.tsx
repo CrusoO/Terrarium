@@ -20,7 +20,7 @@ const STATUS_LABEL: Record<PreviewStatus, string> = {
 const COPY: Record<Exclude<PreviewStatus, "live" | "draft" | "updating">, { title: string; detail: string }> = {
   idle: {
     title: "Preview waits for a spec",
-    detail: "Describe a tool in chat. I’ll ask a few questions first — the sandbox stays empty until then.",
+    detail: "Describe a tool in chat. I'll ask a few questions first — the sandbox stays empty until then.",
   },
   intent: {
     title: "Reading your request",
@@ -80,6 +80,11 @@ function PreviewPlaceholder({ status }: { status: Exclude<PreviewStatus, "live" 
   );
 }
 
+/**
+ * Normalise a sandbox previewUrl for the iframe src.
+ * nip.io / .sandbox.local / .localhost URLs are rewritten through the local
+ * Traefik proxy so the browser never makes a cross-origin request.
+ */
 export function iframeSrc(previewUrl: string): string {
   if (previewUrl.startsWith("/")) {
     return previewUrl.endsWith("/") ? previewUrl : `${previewUrl}/`;
@@ -104,6 +109,7 @@ export function PreviewPanel({
   files = null,
   tab = "preview",
   onTabChange,
+  refreshKey = 0,
 }: {
   events: SessionEvent[];
   previewUrl: string | null;
@@ -111,6 +117,8 @@ export function PreviewPanel({
   files?: FileMap | null;
   tab?: "preview" | "code";
   onTabChange?: (tab: "preview" | "code") => void;
+  /** Increment to force the iframe to reload (cache-bust after editor.completed). */
+  refreshKey?: number;
 }) {
   const split = useSplitControls();
   const src = previewUrl ? iframeSrc(previewUrl) : null;
@@ -173,23 +181,38 @@ export function PreviewPanel({
           ) : null}
         </Stack>
       </Box>
+
       {showFrame ? (
-        <Box
-          component="iframe"
-          title="Generated tool preview"
-          src={src ?? undefined}
-          sandbox="allow-scripts allow-same-origin allow-forms"
-          sx={{
-            display: tab === "preview" ? "block" : "none",
-            flex: 1,
-            minHeight: 0,
-            border: 0,
-            bgcolor: "background.paper",
-          }}
-        />
+        <Box sx={{ position: "relative", flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          {/* Progress bar overlay shown while the sandbox is applying editor changes */}
+          {status === "updating" ? (
+            <LinearProgress
+              sx={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 1 }}
+            />
+          ) : null}
+          <Box
+            key={refreshKey}
+            component="iframe"
+            title="Generated tool preview"
+            src={src ?? undefined}
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            sx={{
+              display: tab === "preview" ? "block" : "none",
+              flex: 1,
+              minHeight: 0,
+              border: 0,
+              bgcolor: "background.paper",
+            }}
+          />
+        </Box>
       ) : null}
-      {tab === "code" ? <CodePanel files={files} /> : showFrame ? null : (
-        <PreviewPlaceholder status={status === "live" || status === "draft" || status === "updating" ? "idle" : status} />
+
+      {tab === "code" ? (
+        <CodePanel files={files} />
+      ) : showFrame ? null : (
+        <PreviewPlaceholder
+          status={status === "live" || status === "draft" || status === "updating" ? "idle" : status}
+        />
       )}
     </Box>
   );
