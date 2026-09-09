@@ -27,6 +27,7 @@ export default function App() {
           files={session.files}
           tab={session.canvasTab}
           onTabChange={session.setCanvasTab}
+          refreshKey={session.previewKey}
         />
       }
     />
