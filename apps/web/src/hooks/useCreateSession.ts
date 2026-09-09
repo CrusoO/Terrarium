@@ -10,6 +10,7 @@ import type { PreviewStatus } from "../components/canvas/PreviewPanel";
 import type { ChatItem } from "../types/chat";
 
 const THINKING_ID = "thinking";
+const RECONNECT_MAX = 8;
 
 function stringField(payload: Record<string, unknown> | undefined, key: string): string {
   const value = payload?.[key];
@@ -72,6 +73,8 @@ export function useCreateSession() {
   const lastEventIdRef = useRef("0-0");
   const seenEventsRef = useRef(new Set<string>());
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptsRef = useRef(0);
   const busyRef = useRef(false);
 
   useEffect(() => {
@@ -79,6 +82,9 @@ export function useCreateSession() {
       sourceRef.current?.close();
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current);
+      }
+      if (reconnectTimerRef.current) {
+        window.clearTimeout(reconnectTimerRef.current);
       }
     };
   }, []);
@@ -102,9 +108,26 @@ export function useCreateSession() {
     }
   }
 
-  function connectEvents(nextSessionId: string) {
+  function scheduleReconnect(sessionId: string) {
+    if (reconnectTimerRef.current) {
+      window.clearTimeout(reconnectTimerRef.current);
+    }
+    if (reconnectAttemptsRef.current >= RECONNECT_MAX) {
+      setStatus("Lost the session event stream.");
+      return;
+    }
+    const delay = Math.min(800 * 2 ** reconnectAttemptsRef.current, 12_000);
+    reconnectAttemptsRef.current += 1;
+    reconnectTimerRef.current = window.setTimeout(() => {
+      reconnectTimerRef.current = null;
+      connectEvents(sessionId, true);
+    }, delay);
+  }
+
+  function connectEvents(nextSessionId: string, force = false) {
     const existing = sourceRef.current;
     if (
+      !force &&
       existing &&
       sourceSessionRef.current === nextSessionId &&
       existing.readyState !== EventSource.CLOSED
@@ -116,14 +139,16 @@ export function useCreateSession() {
       existing.close();
     }
     const source = subscribeSessionEvents(nextSessionId, pushEvent, lastEventIdRef.current);
+    source.onopen = () => {
+      reconnectAttemptsRef.current = 0;
+    };
     source.onerror = () => {
-      if (source.readyState === EventSource.CLOSED) {
-        busyRef.current = false;
-        setBusy(false);
-        clearTimeoutSafe();
-        setChat((current) => withoutThinking(current));
-        setStatus("Lost the session event stream.");
+      source.onerror = null;
+      source.close();
+      if (sourceRef.current === source) {
+        sourceRef.current = null;
       }
+      scheduleReconnect(nextSessionId);
     };
     sourceRef.current = source;
     sourceSessionRef.current = nextSessionId;
@@ -143,6 +168,10 @@ export function useCreateSession() {
     }
 
     setEvents((current) => [...current, event]);
+    setChat((current) => [
+      ...withoutThinking(current),
+      { kind: "event", id: eventId || fingerprint, event },
+    ]);
     if (event.name === "intent.classified") {
       const payload = event.payload;
       const reply = stringField(payload, "reply");
@@ -230,6 +259,7 @@ export function useCreateSession() {
       if (sessionIdRef.current !== created.sessionId) {
         lastEventIdRef.current = "0-0";
         seenEventsRef.current.clear();
+        reconnectAttemptsRef.current = 0;
       }
       sessionIdRef.current = created.sessionId;
       setSessionId(created.sessionId);
