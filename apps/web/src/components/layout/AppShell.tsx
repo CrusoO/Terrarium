@@ -73,7 +73,7 @@ export function AppShell({ chat, canvas }: { chat: ReactNode; canvas: ReactNode 
               sx={{
                 width: { xs: 32, md: 3 },
                 height: { xs: 3, md: 32 },
-                borderRadius: 99,
+                borderRadius: 1,
                 bgcolor: "primary.main",
                 opacity: split.dragging ? 1 : 0.35,
               }}

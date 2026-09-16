@@ -88,7 +88,7 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
   }
 
   return (
-    <Paper variant="outlined" sx={{ mt: 1.5, overflow: "hidden", borderRadius: 3 }}>
+    <Paper variant="outlined" sx={{ mt: 1.5, overflow: "hidden", borderRadius: 2 }}>
       <LinearProgress variant="determinate" value={progress} />
       <Stack
         direction="row"
@@ -113,7 +113,7 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
                 opacity: index === step ? 1 : 0.45,
                 height: 6,
                 width: index === step ? 20 : 8,
-                borderRadius: 99,
+                borderRadius: 1,
               }}
             />
           ))}

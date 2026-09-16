@@ -3,6 +3,9 @@ from __future__ import annotations
 import asyncio
 import html
 import logging
+import posixpath
+import re
+from pathlib import Path
 
 from terrarium_agents import (
     CodeGeneratorError,
@@ -49,6 +52,11 @@ from terrarium_api.settings import redis_settings
 logger = logging.getLogger(__name__)
 
 PREVIEW_STAGE_DELAY_SECONDS = 1.15
+_RESOLVABLE_IMPORT_SUFFIXES = (".js", ".jsx", ".ts", ".tsx", ".json", ".css", ".svg")
+_RELATIVE_IMPORT_RE = re.compile(
+    r"""(?:import|export)\s+(?:[^'"()]+?\s+from\s*)?['"](\.{1,2}/[^'"]+)['"]|import\s*\(\s*['"](\.{1,2}/[^'"]+)['"]\s*\)""",
+    re.M,
+)
 
 
 def _ordered_file_paths(files: dict[str, str]) -> list[str]:
@@ -165,37 +173,37 @@ def _skeleton_html(plan_payload: dict[str, object], stage: int = 3) -> str:
         "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n"
         f"  <title>{title}</title>\n"
         "  <style>\n"
-        f"    :root {{ color-scheme: {'dark' if dark else 'light'}; font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; --bg:{'#f8fafc' if not dark else '#151827'}; --panel:{'#ffffff' if not dark else '#20233a'}; --line:{'#e5e7eb' if not dark else '#3a3f61'}; --soft:{'#eef2ff' if not dark else '#2d3358'}; --fill:{'#f8fafc' if not dark else '#252a46'}; --ink:{'#172033' if not dark else '#f8fafc'}; --muted:{'#64748b' if not dark else '#b8c0d9'}; --accent:#8a1238; --accent2:#7c3aed; --accent3:#0ea5e9; --accent4:#f97316; }}\n"
+        f"    :root {{ color-scheme: {'dark' if dark else 'light'}; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; --bg:{'#f6f7f9' if not dark else '#111318'}; --panel:{'#ffffff' if not dark else '#1a1d24'}; --line:{'#e5e7eb' if not dark else '#30343d'}; --soft:{'#f3f4f6' if not dark else '#242832'}; --fill:{'#eef0f3' if not dark else '#20242d'}; --ink:{'#20242c' if not dark else '#f4f5f7'}; --muted:{'#737a86' if not dark else '#a7adb8'}; --accent:#d1d5db; --accent2:#e5e7eb; --accent3:#f3f4f6; --accent4:#cbd5e1; }}\n"
         "    * { box-sizing: border-box; }\n"
-        "    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 12% 10%, rgba(124,58,237,.20), transparent 28%), radial-gradient(circle at 88% 18%, rgba(14,165,233,.18), transparent 26%), radial-gradient(circle at 50% 100%, rgba(249,115,22,.14), transparent 30%), var(--bg); color: var(--ink); padding: clamp(20px, 4vw, 48px); }\n"
-        "    .preview { width: min(1040px, 100%); min-height: calc(100vh - clamp(40px, 8vw, 96px)); margin: 0 auto; border: 1px solid var(--line); border-radius: 28px; background: rgba(255,255,255,.86); box-shadow: 0 24px 70px rgba(15,23,42,.12); overflow: hidden; backdrop-filter: blur(18px); animation: preview-reveal .55s cubic-bezier(.16,1,.3,1) both; }\n"
+        "    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 15% 8%, rgba(255,255,255,.9), transparent 30%), radial-gradient(circle at 86% 14%, rgba(229,231,235,.72), transparent 28%), linear-gradient(135deg,#f8fafc,#eef1f5 46%,#f7f8fa); color: var(--ink); padding: clamp(20px, 4vw, 48px); }\n"
+        "    .preview { width: min(1040px, 100%); min-height: calc(100vh - clamp(40px, 8vw, 96px)); margin: 0 auto; border: 1px solid rgba(209,213,219,.86); border-radius: 20px; background: rgba(255,255,255,.88); box-shadow: 0 24px 70px rgba(15,23,42,.10); overflow: hidden; backdrop-filter: blur(18px); animation: preview-reveal .55s cubic-bezier(.16,1,.3,1) both; }\n"
         "    body[data-build-stage='0'] .preview { filter: blur(5px); opacity: .78; }\n"
         "    header { min-height: 86px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px 32px; }\n"
         "    h1 { margin: 0 0 8px; font-size: clamp(20px, 2.5vw, 30px); letter-spacing: -.03em; filter: blur(1.4px); opacity: .78; animation: clarify .9s ease .25s both; }\n"
         "    p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 13px; }\n"
-        "    .title-block i, .title-block b, .wireframe-preview span, .wireframe-hero, article p, article span, .calc-display.skeleton-text, .calc-keys.ghost button, .board-preview div { display: block; border-radius: 999px; background: linear-gradient(90deg, rgba(138,18,56,.10), rgba(124,58,237,.18), rgba(14,165,233,.12)); background-size: 220% 100%; animation: shimmer 1.6s ease-in-out infinite; }\n"
+        "    .title-block i, .title-block b, .wireframe-preview span, .wireframe-hero, article p, article span, .calc-display.skeleton-text, .calc-keys.ghost button, .board-preview div { display: block; border-radius: 10px; background: linear-gradient(90deg, rgba(229,231,235,.88), rgba(248,250,252,.96), rgba(209,213,219,.82)); background-size: 220% 100%; animation: shimmer 1.6s ease-in-out infinite; }\n"
         "    .title-block i { width: min(260px, 45vw); height: 28px; margin-bottom: 12px; } .title-block b { width: min(360px, 55vw); height: 12px; }\n"
         "    nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }\n"
-        "    nav span, button { width: 120px; height: 34px; border: 1px solid var(--line); border-radius: 999px; padding: 9px 13px; background: linear-gradient(90deg, rgba(138,18,56,.10), rgba(124,58,237,.18), rgba(14,165,233,.12)); background-size: 220% 100%; color: transparent; font-weight: 700; font-size: 12px; animation: shimmer 1.6s ease-in-out infinite; }\n"
+        "    nav span, button { width: 120px; height: 34px; border: 1px solid var(--line); border-radius: 10px; padding: 9px 13px; background: linear-gradient(90deg, rgba(229,231,235,.88), rgba(248,250,252,.96), rgba(209,213,219,.82)); background-size: 220% 100%; color: transparent; font-weight: 700; font-size: 12px; animation: shimmer 1.6s ease-in-out infinite; }\n"
         "    nav span { opacity: 0; filter: blur(5px); animation: pop-in .72s cubic-bezier(.34,1.56,.64,1) both; }\n"
         "    nav span:nth-child(1) { animation-delay: .18s; } nav span:nth-child(2) { animation-delay: .42s; } nav span:nth-child(3) { animation-delay: .66s; } nav span:nth-child(4) { animation-delay: .9s; }\n"
         "    main { padding: 32px; }\n"
         "    .wireframe-preview { display: grid; gap: 22px; max-width: 760px; margin: 0 auto; padding-top: 36px; }\n"
-        "    .wireframe-hero { height: 170px; border-radius: 32px; opacity: .62; filter: blur(3px); }\n"
-        "    .wireframe-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; } .wireframe-row span { height: 84px; border-radius: 22px; opacity: .42; }\n"
+        "    .wireframe-hero { height: 170px; border-radius: 18px; opacity: .62; filter: blur(3px); }\n"
+        "    .wireframe-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; } .wireframe-row span { height: 84px; border-radius: 14px; opacity: .42; }\n"
         "    .wireframe-stack { display: grid; gap: 14px; } .wireframe-stack span { height: 42px; opacity: .5; }\n"
         "    .card-preview, .list-preview { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }\n"
-        "    article, .calculator-preview, .board-preview { background: linear-gradient(135deg, rgba(255,255,255,.70), rgba(238,242,255,.82)); border: 1px solid var(--line); border-radius: 24px; padding: 22px; box-shadow: 0 18px 42px rgba(15,23,42,.08); }\n"
+        "    article, .calculator-preview, .board-preview { background: linear-gradient(135deg, rgba(255,255,255,.86), rgba(243,244,246,.84)); border: 1px solid var(--line); border-radius: 16px; padding: 22px; box-shadow: 0 18px 42px rgba(15,23,42,.07); }\n"
         "    article { opacity: 0; filter: blur(8px); transform: translateY(22px) scale(.97); animation: card-reveal .8s cubic-bezier(.16,1,.3,1) both; } article:nth-child(1) { animation-delay: .1s; } article:nth-child(2) { animation-delay: .35s; } article:nth-child(3) { animation-delay: .6s; } article:nth-child(4) { animation-delay: .85s; }\n"
         "    article strong { display: block; margin-bottom: 14px; font-size: 13px; color: var(--muted); filter: blur(2px); opacity: .38; animation: clarify .9s ease .45s both; }\n"
         "    article p { height: 12px; margin-top: 10px; } article .short { width: 62%; }\n"
         "    .list-preview article { display: grid; grid-template-columns: 42px 1fr; align-items: center; column-gap: 14px; } .list-preview span { width: 42px; height: 42px; border-radius: 14px; grid-row: span 2; }\n"
-        "    .calculator-preview { max-width: 420px; margin: 0 auto; background: linear-gradient(160deg,#4f46e5,#8a1238 58%,#f97316); transform-origin: center; opacity: 0; filter: blur(10px); animation: card-reveal .9s cubic-bezier(.16,1,.3,1) .15s both; }\n"
+        "    .calculator-preview { max-width: 420px; margin: 0 auto; background: linear-gradient(160deg,#f8fafc,#e5e7eb 58%,#d1d5db); transform-origin: center; opacity: 0; filter: blur(10px); animation: card-reveal .9s cubic-bezier(.16,1,.3,1) .15s both; }\n"
         "    .calculator-preview.building { opacity: .7; filter: blur(4px); }\n"
-        "    .calc-display { height: 76px; display:flex; align-items:center; justify-content:flex-end; padding: 0 22px; color: white; font-size: 32px; font-weight: 800; background: rgba(255,255,255,.14); border-radius: 999px; filter: blur(2px); animation: clarify 1.1s ease .5s both; }\n"
+        "    .calc-display { height: 76px; display:flex; align-items:center; justify-content:flex-end; padding: 0 22px; color: transparent; font-size: 32px; font-weight: 800; background: rgba(255,255,255,.68); border-radius: 14px; filter: blur(2px); animation: clarify 1.1s ease .5s both; }\n"
         "    .calc-keys { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }\n"
         "    .calc-keys button { min-height: 52px; font-size: 18px; opacity: 0; filter: blur(5px); transform: scale(.84); animation: pop-in .52s cubic-bezier(.34,1.56,.64,1) both; }\n"
-        "    .calc-keys.ghost button { border-color: rgba(255,255,255,.26); color: transparent; box-shadow: none; }\n"
+        "    .calc-keys.ghost button { border-color: rgba(148,163,184,.32); color: transparent; box-shadow: none; }\n"
         "    .calc-keys button:nth-child(1) { animation-delay: .8s; } .calc-keys button:nth-child(2) { animation-delay: .95s; } .calc-keys button:nth-child(3) { animation-delay: 1.1s; } .calc-keys button:nth-child(4) { animation-delay: 1.25s; }\n"
         "    .calc-keys button:nth-child(5) { animation-delay: 1.4s; } .calc-keys button:nth-child(6) { animation-delay: 1.55s; } .calc-keys button:nth-child(7) { animation-delay: 1.7s; } .calc-keys button:nth-child(8) { animation-delay: 1.85s; }\n"
         "    .calc-keys button:nth-child(9) { animation-delay: 2s; } .calc-keys button:nth-child(10) { animation-delay: 2.15s; } .calc-keys button:nth-child(11) { animation-delay: 2.3s; } .calc-keys button:nth-child(12) { animation-delay: 2.45s; }\n"
@@ -326,11 +334,47 @@ def _validate_filemap_structure(files: dict[str, str]) -> tuple[bool, str | None
     has_styles = "<style" in html_lower or any(p.endswith(".css") for p in files)
     if not has_scripts and not has_styles:
         return False, "App has no scripts or styles - likely incomplete generation"
+
+    missing_import = _missing_relative_import(files)
+    if missing_import:
+        return False, missing_import
     
     # All checks passed
     logger.info("FileMap validation passed: %d files, %d KB total", 
                 len(files), sum(len(c) for c in files.values()) // 1024)
     return True, None
+
+
+def _missing_relative_import(files: dict[str, str]) -> str | None:
+    module_paths = tuple(
+        path
+        for path in files
+        if Path(path).suffix.lower() in {".js", ".jsx", ".ts", ".tsx"}
+    )
+    for path in module_paths:
+        for match in _RELATIVE_IMPORT_RE.finditer(files[path]):
+            spec = match.group(1) or match.group(2) or ""
+            if not _resolve_relative_import(path, spec, files):
+                return f"{path} imports missing module {spec}"
+    return None
+
+
+def _resolve_relative_import(source_path: str, specifier: str, files: dict[str, str]) -> str | None:
+    source_dir = posixpath.dirname(source_path.replace("\\", "/"))
+    target = posixpath.normpath(posixpath.join(source_dir, specifier))
+    if target.startswith("../"):
+        return None
+    if target in files:
+        return target
+    target_suffix = Path(target).suffix.lower()
+    candidates = [target] if target_suffix else []
+    if not target_suffix:
+        candidates.extend(f"{target}{suffix}" for suffix in _RESOLVABLE_IMPORT_SUFFIXES)
+        candidates.extend(f"{target}/index{suffix}" for suffix in _RESOLVABLE_IMPORT_SUFFIXES)
+    for candidate in candidates:
+        if candidate in files:
+            return candidate
+    return None
 
 
 def _llm_fields(purpose: str) -> dict[str, object]:

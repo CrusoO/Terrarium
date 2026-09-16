@@ -199,10 +199,10 @@ export function AgentTrace({ events, live }: { events: SessionEvent[]; live: boo
                         fontSize: "0.75rem",
                         lineHeight: 1.5,
                         fontFamily: "var(--font-mono)",
-                        bgcolor: "background.default",
-                        px: 1,
-                        py: 0.5,
-                        borderRadius: 1,
+                        bgcolor: "#f8fafc",
+                        px: 1.25,
+                        py: 0.75,
+                        borderRadius: 1.5,
                         border: 1,
                         borderColor: "divider"
                       }}
