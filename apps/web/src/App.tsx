@@ -17,6 +17,7 @@ export default function App() {
           onPromptChange={session.setPrompt}
           onSubmit={session.onSubmit}
           onSendChoice={session.sendPrompt}
+          onRetryAnyway={session.retryAnyway}
         />
       }
       canvas={
@@ -25,8 +26,11 @@ export default function App() {
           previewUrl={session.previewUrl}
           previewStatus={session.previewStatus}
           files={session.files}
+          streamFiles={session.streamFiles}
+          sessionId={session.sessionId}
           tab={session.canvasTab}
           onTabChange={session.setCanvasTab}
+          onRuntimeError={session.onPreviewRuntimeError}
           refreshKey={session.previewKey}
         />
       }

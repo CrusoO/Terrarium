@@ -5,10 +5,17 @@ from uuid import uuid4
 from arq.connections import ArqRedis
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
-from terrarium_contracts import CreateSessionRequest, CreateSessionResponse, DEV_USER, SessionFilesResponse
+from terrarium_contracts import (
+    CreateSessionRequest,
+    CreateSessionResponse,
+    DEV_USER,
+    RuntimeErrorRequest,
+    SessionFilesResponse,
+)
 
 from terrarium_api.events import make_event
 from terrarium_api.session_log import SessionEventLog
+from terrarium_api.session_lock import acquire_session_lock, release_session_lock
 
 router = APIRouter()
 
@@ -38,13 +45,24 @@ async def create_session(
         await log.append(
             make_event("session.created", session_id, {"actorId": DEV_USER})
         )
+    lock_token = await acquire_session_lock(redis, session_id)
+    if lock_token is None:
+        raise HTTPException(
+            status_code=409,
+            detail="A build is already running for this session.",
+        )
     job = await redis.enqueue_job(
         "run_stub_session",
         session_id,
         body.prompt,
+        lock_token,
+        body.frontendStack,
+        body.backendNeed,
+        body.backendStack,
         _job_id=f"session:{session_id}:{uuid4().hex}",
     )
     if job is None:
+        await release_session_lock(redis, session_id, lock_token)
         raise HTTPException(status_code=503, detail="Could not enqueue the session job.")
     return CreateSessionResponse(sessionId=session_id)
 
@@ -56,6 +74,30 @@ async def session_files(session_id: str, request: Request) -> SessionFilesRespon
     if not await log.exists(session_id):
         raise HTTPException(status_code=404, detail="Unknown sessionId")
     return SessionFilesResponse(files=await log.load_files(session_id) or {})
+
+
+@router.post("/sessions/{session_id}/runtime-errors")
+async def report_runtime_error(
+    session_id: str, body: RuntimeErrorRequest, request: Request
+) -> dict[str, bool]:
+    redis = _redis(request)
+    log = SessionEventLog(redis)
+    if not await log.exists(session_id):
+        raise HTTPException(status_code=404, detail="Unknown sessionId")
+    lock_token = await acquire_session_lock(redis, session_id)
+    if lock_token is None:
+        return {"accepted": False}
+    job = await redis.enqueue_job(
+        "run_runtime_error_heal",
+        session_id,
+        body.model_dump(exclude_none=True),
+        lock_token,
+        _job_id=f"runtime-error:{session_id}:{uuid4().hex}",
+    )
+    if job is None:
+        await release_session_lock(redis, session_id, lock_token)
+        raise HTTPException(status_code=503, detail="Could not enqueue runtime repair.")
+    return {"accepted": True}
 
 
 @router.get("/sessions/{session_id}/events")

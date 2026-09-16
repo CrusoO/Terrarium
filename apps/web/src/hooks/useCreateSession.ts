@@ -2,16 +2,18 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   createSessionRequestSchema,
   previewReadyPayloadSchema,
+  previewStreamFilePayloadSchema,
   type FileMap,
+  type RuntimeErrorRequest,
   type SessionEvent,
 } from "@terrarium/contracts";
-import { createSession, fetchSessionFiles, subscribeSessionEvents } from "../api/sessions";
+import { createSession, fetchSessionFiles, reportRuntimeError, subscribeSessionEvents } from "../api/sessions";
 import type { PreviewStatus } from "../components/canvas/PreviewPanel";
 import type { ChatItem } from "../types/chat";
 
 const THINKING_ID = "thinking";
 const RECONNECT_MAX = 8;
-
+const AGENT_TIMEOUT_MS = 420_000;
 function stringField(payload: Record<string, unknown> | undefined, key: string): string {
   const value = payload?.[key];
   return typeof value === "string" ? value : "";
@@ -34,6 +36,7 @@ function previewStatus(
   busy: boolean,
   phase: string | null,
   previewUrl: string | null,
+  streamFiles: FileMap | null,
 ): PreviewStatus {
   if (previewUrl) {
     if (busy) {
@@ -43,6 +46,9 @@ function previewStatus(
       return "draft";
     }
     return "live";
+  }
+  if (streamFiles?.["index.html"]) {
+    return busy ? "updating" : "draft";
   }
   if (busy) {
     return "intent";
@@ -65,6 +71,7 @@ export function useCreateSession() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewKey, setPreviewKey] = useState(0);
   const [files, setFiles] = useState<FileMap | null>(null);
+  const [streamFiles, setStreamFiles] = useState<FileMap | null>(null);
   const [canvasTab, setCanvasTab] = useState<"preview" | "code">("preview");
   const [intentPhase, setIntentPhase] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -77,6 +84,8 @@ export function useCreateSession() {
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const busyRef = useRef(false);
+  const lastPromptRef = useRef("");
+  const lastRuntimeErrorRef = useRef("");
 
   useEffect(() => {
     return () => {
@@ -99,7 +108,7 @@ export function useCreateSession() {
       setBusy(false);
       setChat((current) => withoutThinking(current));
       setStatus("The agent took too long. Send the message again.");
-    }, 45_000);
+    }, AGENT_TIMEOUT_MS);
   }
 
   function clearTimeoutSafe() {
@@ -178,6 +187,7 @@ export function useCreateSession() {
       const reply = stringField(payload, "reply");
       const phase = stringField(payload, "phase");
       const questions = stringList(payload, "questions");
+      const keepBuilding = phase === "ready";
       setIntentPhase(phase);
       const assistant: ChatItem = {
         kind: "assistant",
@@ -186,10 +196,17 @@ export function useCreateSession() {
         questions: questions.length ? questions : undefined,
         phase,
       };
-      busyRef.current = false;
-      setChat((current) => [...withoutThinking(current), assistant]);
-      setBusy(false);
-      clearTimeoutSafe();
+      busyRef.current = keepBuilding;
+      setChat((current) => {
+        const next = [...withoutThinking(current), assistant];
+        return keepBuilding ? withThinking(next, "Generating code") : next;
+      });
+      setBusy(keepBuilding);
+      if (keepBuilding) {
+        armTimeout();
+      } else {
+        clearTimeoutSafe();
+      }
       setStatus(null);
     }
     if (event.name === "editor.completed") {
@@ -197,10 +214,31 @@ export function useCreateSession() {
       busyRef.current = true;
       setBusy(true);
     }
+    if (event.name === "preview.stream.started") {
+      setStreamFiles(null);
+      setPreviewUrl(null);
+      setPreviewKey((k) => k + 1);
+    }
+    if (event.name === "preview.stream.file") {
+      const payload = previewStreamFilePayloadSchema.safeParse(event.payload);
+      if (payload.success) {
+        setStreamFiles((current) => ({
+          ...(current ?? {}),
+          ...(payload.data.files ?? {}),
+          [payload.data.path]: payload.data.content,
+        }));
+        setFiles((current) => ({
+          ...(current ?? {}),
+          ...(payload.data.files ?? {}),
+          [payload.data.path]: payload.data.content,
+        }));
+      }
+    }
     if (event.name === "preview.ready") {
       const payload = previewReadyPayloadSchema.safeParse(event.payload);
       if (payload.success) {
         setPreviewUrl(payload.data.previewUrl);
+        setStreamFiles(null);
         // Increment so the iframe key changes and the browser reloads the frame,
         // even when the sandbox URL is identical to the previous preview.
         setPreviewKey((k) => k + 1);
@@ -219,20 +257,32 @@ export function useCreateSession() {
         .then(setFiles)
         .catch(() => undefined);
     }
-    if (event.name === "sandbox.unhealthy") {
-      busyRef.current = false;
-      setBusy(false);
-      clearTimeoutSafe();
-      setChat((current) => withoutThinking(current));
+    if (event.name === "heal.attempt") {
+      const raw = event.payload?.attempt;
+      const attempt = typeof raw === "number" ? raw : Number(raw) || 1;
+      busyRef.current = true;
+      setBusy(true);
+      setStatus(null);
+      setChat((current) => withThinking(current, `Retry ${attempt}/3`));
+      armTimeout();
+    }
+    if (event.name === "heal.exhausted") {
       const logs =
         event.payload && typeof event.payload.logs === "string"
           ? event.payload.logs
           : "";
-      setStatus(
-        logs
-          ? `Build failed: ${logs}`
-          : "Sandbox failed to start. Check Docker Desktop and infra:up."
-      );
+      busyRef.current = false;
+      setBusy(false);
+      clearTimeoutSafe();
+      setStatus(null);
+      setChat((current) => [
+        ...withoutThinking(current),
+        { kind: "heal-exhausted", id: crypto.randomUUID(), logs },
+      ]);
+    }
+    if (event.name === "sandbox.unhealthy") {
+      // Healer may emit heal.attempt next. Stay busy until that or heal.exhausted.
+      setStatus(null);
     }
   }
 
@@ -250,6 +300,7 @@ export function useCreateSession() {
       return;
     }
 
+    lastPromptRef.current = parsed.data.prompt;
     busyRef.current = true;
     setChat((current) =>
       withThinking(
@@ -282,9 +333,42 @@ export function useCreateSession() {
     }
   }
 
+  async function onPreviewRuntimeError(error: RuntimeErrorRequest) {
+    const currentSessionId = sessionIdRef.current;
+    if (!currentSessionId) {
+      return;
+    }
+    const fingerprint = `${error.message}:${error.filename ?? ""}:${error.lineno ?? ""}`;
+    if (lastRuntimeErrorRef.current === fingerprint) {
+      return;
+    }
+    lastRuntimeErrorRef.current = fingerprint;
+    busyRef.current = true;
+    setBusy(true);
+    setStatus(null);
+    setChat((current) => withThinking(current, "Healing runtime error"));
+    armTimeout();
+    const accepted = await reportRuntimeError(currentSessionId, error).catch(() => false);
+    if (!accepted) {
+      busyRef.current = false;
+      setBusy(false);
+      clearTimeoutSafe();
+      setChat((current) => withoutThinking(current));
+      setStatus("The preview reported an error, but the repair job could not be queued.");
+    }
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await sendPrompt(prompt);
+  }
+
+  function retryAnyway() {
+    const text = lastPromptRef.current.trim();
+    if (!text) {
+      return;
+    }
+    void sendPrompt(text);
   }
 
   return {
@@ -297,11 +381,14 @@ export function useCreateSession() {
     previewUrl,
     previewKey,
     files,
+    streamFiles,
     canvasTab,
     setCanvasTab,
-    previewStatus: previewStatus(busy, intentPhase, previewUrl),
+    previewStatus: previewStatus(busy, intentPhase, previewUrl, streamFiles),
     sessionId,
     onSubmit,
     sendPrompt,
+    onPreviewRuntimeError,
+    retryAnyway,
   };
 }

@@ -10,7 +10,7 @@ Mixed-language monorepo. The parent UI is TypeScript; orchestration, agents, and
 
 **JavaScript (pnpm):**
 
-- `apps/web` — Parent UI (Vite + React + TypeScript + Tailwind)
+- `apps/web` — Parent UI (Vite + React + TypeScript + MUI)
 - `packages/contracts` — Zod schemas and TS types for the parent (HTTP DTOs, events)
 
 **Python (uv workspace):**
@@ -18,14 +18,14 @@ Mixed-language monorepo. The parent UI is TypeScript; orchestration, agents, and
 - `apps/api` — Orchestration API (FastAPI + Uvicorn)
 - `packages/py-contracts` — Pydantic v2 models with the same names and JSON fields as Zod
 - `packages/agents` — Intent, Code Generator, Editor, Self-Healing, Smart Match
-- `packages/sandbox` — Docker runner, health, sleep/wake, preview URLs
+- `packages/sandbox` — Docker runner, static/React/Node runtime detection, health, sleep/wake, preview URLs
 
 **Shared:**
 
-- `packages/templates` — vanilla FileMaps: one shell + four layout recipes (`board`, `form`, `list`, `split`). `split` is a multi-page site shape. Published tools are the library in P5.
+- `packages/templates` — starter shapes and fixtures. Live Code Generator returns a validated `FileMap`; templates are not booted directly.
 - `infra/` — Compose: Postgres, Redis, Traefik, sandbox network
 
-**Live tool:** the parent canvas is always an **iframe** of the sandbox preview URL. Never inline generated HTML. Never use Monaco (or CodeMirror/Sandpack) as the running app. A later optional **Code** tab may mount Monaco to *view* source; that tab is not a current story and is not the preview.
+**Live tool:** the completed app is always an **iframe** of the sandbox preview URL. Interim build previews may stream an ephemeral iframe `srcdoc` scaffold, but the final running app comes from Docker. Never use Monaco (or CodeMirror/Sandpack) as the running app. The Code tab views source only.
 
 Why: FastAPI is the agent/orchestration runtime; React stays the builder chrome; Docker matches the product diagram; Postgres for tools/users; Redis + ARQ for long agent jobs (Python equivalent of a Redis job queue); Traefik for `{sessionId}.sandbox.local` iframe URLs. JSON field names stay camelCase so web and API share one wire format.
 
@@ -60,7 +60,7 @@ HTTP path: `POST /sessions` → Redis/ARQ job → SSE `/sessions/{id}/events` �
 
 Phase 5 Smart Match runs **before** Code Generator. Phase 6 auth is the only identity source; until then use the `dev-user` stub from contracts.
 
-LLM placement, model defaults, and why Intent stays cheap while Code Generator/Editor stay large are in [`docs/llm-agents.md`](docs/llm-agents.md). Phase 1 uses no LLM. Agents live in `packages/agents` only.
+LLM placement, model defaults, and why Intent stays cheap while Code Generator/Editor stay large are in [`docs/llm-agents.md`](docs/llm-agents.md). Phase 1 uses no LLM. Agents live in `packages/agents` only. Current live routing logs the provider, model, and selection reason on agent events.
 
 ## Hard rules (every story)
 
@@ -68,16 +68,16 @@ LLM placement, model defaults, and why Intent stays cheap while Code Generator/E
 - Agents never talk to Docker. They return a `FileMap`. Only `packages/sandbox` starts or stops containers.
 - Generated apps run only in Docker with CPU, memory, PID, and network limits. Never on the API host.
 - Self-heal is max **3** retries, then emit `heal.exhausted` and show the error in chat.
-- Preview is always an iframe URL from the sandbox proxy. Never inline generated HTML in the parent. Monaco is not the live canvas.
+- Final preview is always an iframe URL from the sandbox proxy. The progressive build scaffold can use iframe `srcdoc` before Docker is ready. Monaco is not the live canvas.
 - Smart Match never auto-overwrites the user. Offer “Use existing” vs “Build new”.
-- First-time generate uses **layout recipes**, not a kit per product and not scraped HTML. Git holds a shell + CSS tokens + four layouts (`board`, `form`, `list`, `split`). The overlay model fills the product.
+- First-time generate is a validated **model FileMap**. Default output is React/Vite; the Intent Agent may ask whether a backend is needed and choose optional Node/Express. If live providers return no parseable JSON, use the deterministic component fallback. Unsafe or malformed files are rejected and routed through heal.
 - Change only the packages listed on the story. Mark the story done in this file when acceptance criteria pass.
 
-## Later phases (layout recipes)
+## Later phases (model FileMap)
 
-Do not add `calculator.html` / `tic-tac-toe.html` kits and do not scrape the web. Overlay stays vanilla HTML/CSS/JS in nginx — no npm or React in the sandbox.
+Do not add product kits and do not scrape the web. Generated apps run from `FileMap`s in Docker. The sandbox supports static nginx, React/Vite, and React plus Node/Express when the prompt requires a backend.
 
-- **P2-S3 Editor** — patch the current FileMap. Keep `:root` tokens and layout landmarks (`board` / `#tool-form` / list Store / `.site` + `.split`).
+- **P2-S3 Editor** — patch the current model FileMap.
 - **P3 iframe** — still a sandbox preview URL.
 - **P4-S2 Publish** — store the FileMap. That snapshot is the only growing library.
 - **P5 Smart Match** — clone a published FileMap; skip Code Generator on an accepted hit.
@@ -88,6 +88,9 @@ Implement these shapes in `packages/contracts` (Zod) and `packages/py-contracts`
 
 ```ts
 export type Stack = "react" | "fullstack";
+export type FrontendStack = "vanilla" | "react";
+export type BackendNeed = "auto" | "yes" | "no";
+export type BackendStack = "none" | "node-express";
 export type IntentKind = "new" | "modify";
 export type ToolRole = "owner" | "editor" | "viewer";
 export type RuntimeStatus = "booting" | "running" | "unhealthy" | "sleeping" | "stopped";
@@ -106,6 +109,9 @@ export type SessionEventName =
   | "sandbox.unhealthy"
   | "heal.attempt"
   | "heal.exhausted"
+  | "preview.stream.started"
+  | "preview.stream.file"
+  | "preview.stream.completed"
   | "preview.ready";
 
 export type FileMap = Record<string, string>; // path → contents
@@ -115,6 +121,8 @@ export type Intent = {
   stack: Stack;
   summary: string;
   toolId?: string;
+  frontendStack?: FrontendStack;
+  backendStack?: BackendStack;
 };
 
 export type AgentJob = {
@@ -122,7 +130,10 @@ export type AgentJob = {
   intent: Intent;
   prompt: string;
   files?: FileMap;
-  errorContext?: { logs: string; health: RuntimeStatus };
+  errorContext?: { logs: string; health: RuntimeStatus; healAttempt?: number };
+  frontendStack?: FrontendStack;
+  backendNeed?: BackendNeed;
+  backendStack?: BackendStack;
 };
 
 export type AgentResult = {
@@ -135,6 +146,23 @@ export type SessionEvent = {
   sessionId: string;
   at: string; // ISO timestamp
   payload?: Record<string, unknown>;
+};
+
+export type PreviewStreamFilePayload = {
+  path: string;
+  content: string;
+  files?: FileMap;
+  complete?: boolean;
+};
+
+export type RuntimeErrorRequest = {
+  message: string;
+  source: "frontend" | "backend";
+  stack?: string;
+  filename?: string;
+  lineno?: number;
+  colno?: number;
+  recentChange?: string;
 };
 
 export type SandboxHandle = {
@@ -155,7 +183,10 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 
 - `POST /sessions` body `CreateSessionRequest` → `CreateSessionResponse`. Enqueues an ARQ job. Does not run agents inline.
 - `GET /sessions/{sessionId}/events` is SSE. Each `data:` line is a `SessionEvent`. Replay uses SSE `id` / `Last-Event-ID`.
+- `GET /sessions/{sessionId}/files` returns the latest session `FileMap` for the Code tab.
+- `POST /sessions/{sessionId}/runtime-errors` reports iframe runtime errors into the self-heal path.
 - `sandbox.ready` payload: `{ previewUrl, containerId }`
+- `preview.stream.started` / `preview.stream.file` / `preview.stream.completed` payloads drive the progressive build scaffold.
 - `preview.ready` payload: `{ previewUrl }` — parent sets iframe `src` to that URL only.
 
 ## Package boundaries
@@ -187,6 +218,8 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 
 ## Phase checklist
 
+Current status: Phase 1, Phase 2, and Phase 3 are complete. Phase 4, Phase 5, and Phase 6 remain.
+
 ### Phase 1 — Foundation and Sandbox
 
 - [x] [P1-S1](docs/stories/P1-S1-monorepo-and-contracts.md) Monorepo + Compose + contracts skeleton
@@ -198,15 +231,15 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 
 - [x] [P2-S1](docs/stories/P2-S1-intent-agent.md) Intent Agent
 - [x] [P2-S2](docs/stories/P2-S2-code-generator.md) Code Generator Agent
-- [ ] [P2-S3](docs/stories/P2-S3-editor-agent.md) Editor Agent
-- [ ] [P2-S4](docs/stories/P2-S4-self-healing-agent.md) Self-Healing Agent (max 3)
+- [x] [P2-S3](docs/stories/P2-S3-editor-agent.md) Editor Agent
+- [x] [P2-S4](docs/stories/P2-S4-self-healing-agent.md) Self-Healing Agent (max 3)
 
 ### Phase 3 — Real-time UX
 
 - [x] [P3-S1](docs/stories/P3-S1-split-screen.md) Split-screen chat + iframe
 - [x] [P3-S2](docs/stories/P3-S2-sse-event-stream.md) SSE event stream in chat
-- [ ] [P3-S3](docs/stories/P3-S3-live-iframe-refresh.md) Live iframe refresh
-- [ ] [P3-S4](docs/stories/P3-S4-healing-ux.md) Healing UX
+- [x] [P3-S3](docs/stories/P3-S3-live-iframe-refresh.md) Live iframe refresh
+- [x] [P3-S4](docs/stories/P3-S4-healing-ux.md) Healing UX
 
 ### Phase 4 — Save, sleep, dashboard
 

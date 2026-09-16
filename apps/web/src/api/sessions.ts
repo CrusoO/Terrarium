@@ -1,11 +1,13 @@
 import {
   createSessionRequestSchema,
   createSessionResponseSchema,
+  runtimeErrorRequestSchema,
   sessionEventSchema,
   sessionFilesResponseSchema,
   type CreateSessionRequest,
   type CreateSessionResponse,
   type FileMap,
+  type RuntimeErrorRequest,
   type SessionEvent,
 } from "@terrarium/contracts";
 
@@ -34,6 +36,20 @@ export async function fetchSessionFiles(sessionId: string): Promise<FileMap> {
     throw new Error(`GET /sessions/${sessionId}/files failed (${response.status}).`);
   }
   return parsed.data.files;
+}
+
+export async function reportRuntimeError(
+  sessionId: string,
+  request: RuntimeErrorRequest
+): Promise<boolean> {
+  const body = runtimeErrorRequestSchema.parse(request);
+  const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/runtime-errors`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const json: unknown = await response.json().catch(() => null);
+  return response.ok && Boolean((json as { accepted?: unknown } | null)?.accepted);
 }
 
 export function subscribeSessionEvents(

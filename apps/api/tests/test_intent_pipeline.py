@@ -61,6 +61,8 @@ class SessionIntentPipelineTests(unittest.TestCase):
             root.parents[1] / "packages" / "agents" / "terrarium_agents" / "codegen.py"
         ).read_text(encoding="utf-8")
         self.assertIn("SandboxRunner", worker)
+        self.assertIn("heal.attempt", worker)
+        self.assertIn("heal.exhausted", worker)
         self.assertNotIn("echo_filemap", worker)
         self.assertNotIn("SandboxRunner", codegen)
         self.assertNotIn("import docker", codegen)

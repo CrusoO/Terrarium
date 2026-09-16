@@ -18,14 +18,21 @@ AgentsMode = Literal["stub", "live"]
 JsonPurpose = Literal["plan", "codegen"]
 
 DEFAULT_INTENT_MODEL = "gemini-3.5-flash-lite"
-DEFAULT_EDITOR_MODEL = "gemini-2.5-pro"
+DEFAULT_EDITOR_MODEL = "gemini-3.5-flash-lite"  # Updated: gemini-2.5-pro is deprecated
 DEFAULT_GEMINI_CODEGEN_MODEL = "gemini-3.5-flash-lite"
-DEFAULT_NVIDIA_PLAN_MODEL = "meta/llama-3.3-70b-instruct"
-DEFAULT_NVIDIA_CODEGEN_MODEL = "meta/llama-3.3-70b-instruct"
+DEFAULT_NVIDIA_PLAN_MODEL = "nvidia/llama-3.1-nemotron-ultra-253b-v1"
+DEFAULT_NVIDIA_CODEGEN_MODEL = "mistralai/codestral-22b-instruct-v0.1"
 DEFAULT_NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
+DEFAULT_BEDROCK_MODEL = "anthropic.claude-sonnet-4-6"
+DEFAULT_BEDROCK_REGION = "eu-central-1"
+DEFAULT_BEDROCK_READ_TIMEOUT_S = 45.0
+DEFAULT_BEDROCK_CONNECT_TIMEOUT_S = 10.0
+DEFAULT_GEMINI_JSON_TIMEOUT_MS = 25_000
+DEFAULT_NVIDIA_JSON_TIMEOUT_S = 30.0
 
 _FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.I)
 _THINK = re.compile(r"<think>.*?</think>", re.I | re.S)
+_LOG_EXCERPT_CHARS = 1800
 
 logger = logging.getLogger(__name__)
 _ACTIVE_BUNDLE: str | None = None
@@ -147,11 +154,75 @@ def nvidia_base_url() -> str:
     )
 
 
+def nvidia_plan_model() -> str:
+    return (
+        os.environ.get("TERRARIUM_NVIDIA_PLAN_MODEL", DEFAULT_NVIDIA_PLAN_MODEL).strip()
+        or DEFAULT_NVIDIA_PLAN_MODEL
+    )
+
+
+def nvidia_codegen_model() -> str:
+    return (
+        os.environ.get("TERRARIUM_NVIDIA_CODEGEN_MODEL", DEFAULT_NVIDIA_CODEGEN_MODEL)
+        .strip()
+        or DEFAULT_NVIDIA_CODEGEN_MODEL
+    )
+
+
+def bedrock_region() -> str:
+    return (
+        os.environ.get("AWS_REGION")
+        or os.environ.get("AWS_DEFAULT_REGION")
+        or DEFAULT_BEDROCK_REGION
+    ).strip() or DEFAULT_BEDROCK_REGION
+
+
+def bedrock_model() -> str:
+    return (os.environ.get("BEDROCK_MODEL") or DEFAULT_BEDROCK_MODEL).strip() or DEFAULT_BEDROCK_MODEL
+
+
+def bedrock_read_timeout_s() -> float:
+    raw = os.environ.get("BEDROCK_READ_TIMEOUT_S", "").strip()
+    if not raw:
+        return DEFAULT_BEDROCK_READ_TIMEOUT_S
+    try:
+        return max(5.0, float(raw))
+    except ValueError:
+        return DEFAULT_BEDROCK_READ_TIMEOUT_S
+
+
+def bedrock_connect_timeout_s() -> float:
+    raw = os.environ.get("BEDROCK_CONNECT_TIMEOUT_S", "").strip()
+    if not raw:
+        return DEFAULT_BEDROCK_CONNECT_TIMEOUT_S
+    try:
+        return max(2.0, float(raw))
+    except ValueError:
+        return DEFAULT_BEDROCK_CONNECT_TIMEOUT_S
+
+
+def bedrock_ready() -> bool:
+    return bool(
+        (os.environ.get("AWS_ACCESS_KEY_ID") or "").strip()
+        and (os.environ.get("AWS_SECRET_ACCESS_KEY") or "").strip()
+    )
+
+
+def bedrock_model_ids(model: str, region: str | None = None) -> list[str]:
+    """EU Bedrock often needs the inference-profile prefix `eu.`."""
+    name = model.strip()
+    ids = [name]
+    where = (region or bedrock_region()).lower()
+    if where.startswith("eu") and not name.startswith(("eu.", "us.", "apac.")):
+        ids.append(f"eu.{name}")
+    return ids
+
+
 def agents_mode() -> AgentsMode:
     explicit = os.environ.get("TERRARIUM_AGENTS", "").strip().lower()
     if explicit in {"stub", "live"}:
         return explicit  # type: ignore[return-value]
-    return "live" if gemini_api_key() or nvidia_api_key() else "stub"
+    return "live" if gemini_api_key() or nvidia_api_key() or bedrock_ready() else "stub"
 
 
 def intent_model() -> str:
@@ -229,42 +300,57 @@ def complete_json(
     purpose: JsonPurpose = "codegen",
     nvidia_first: bool | None = None,
 ) -> dict[str, Any] | None:
-    """Structured JSON from NVIDIA NIM and/or Gemini. None in stub mode or if every provider fails."""
+    """Structured JSON from Bedrock (Claude), then Gemini / NVIDIA. None in stub mode."""
     if agents_mode() != "live":
         return None
-    # Hosted meta/llama-3.3-70b-instruct returned 410 Gone. Prefer Gemini unless caller opts into NIM.
     prefer_nvidia = bool(nvidia_first)
     providers: list[str] = []
     if prefer_nvidia:
         if nvidia_api_key():
             providers.append("nvidia")
+        if bedrock_ready():
+            providers.append("bedrock")
         if gemini_api_key():
             providers.append("gemini")
     else:
+        if bedrock_ready():
+            providers.append("bedrock")
         if gemini_api_key():
             providers.append("gemini")
         if nvidia_api_key():
             providers.append("nvidia")
-    model = plan_model() if purpose == "plan" else codegen_model()
+    model = (
+        nvidia_codegen_model()
+        if prefer_nvidia and nvidia_api_key() and purpose == "codegen"
+        else bedrock_model()
+        if bedrock_ready()
+        else (plan_model() if purpose == "plan" else codegen_model())
+    )
     logger.info(
-        "LLM %s starting providers=%s model=%s nvidia_first=%s",
+        "LLM %s starting providers=%s model=%s",
         purpose,
         ",".join(providers) or "none",
         model,
-        prefer_nvidia,
     )
     started = time.monotonic()
+    last_provider = providers[-1] if providers else "none"
+    last_model = model
     for provider in providers:
-        used_model = (
-            (model if not _looks_like_gemini(model) else DEFAULT_NVIDIA_CODEGEN_MODEL)
-            if provider == "nvidia"
-            else (model if _looks_like_gemini(model) else DEFAULT_GEMINI_CODEGEN_MODEL)
-        )
-        payload = (
-            _nvidia_json(system, user, used_model)
-            if provider == "nvidia"
-            else _gemini_json(system, user, used_model)
-        )
+        if provider == "bedrock":
+            used_model = bedrock_model()
+            payload = _bedrock_json(system, user, used_model)
+        elif provider == "nvidia":
+            used_model = (
+                nvidia_plan_model()
+                if purpose == "plan"
+                else nvidia_codegen_model()
+            )
+            payload = _nvidia_json(system, user, used_model)
+        else:
+            used_model = model if _looks_like_gemini(model) else DEFAULT_GEMINI_CODEGEN_MODEL
+            payload = _gemini_json(system, user, used_model)
+        last_provider = provider
+        last_model = used_model
         elapsed_ms = int((time.monotonic() - started) * 1000)
         if payload is not None:
             record_llm_call(
@@ -279,12 +365,81 @@ def complete_json(
         logger.warning("LLM %s got no JSON from %s; trying next provider", purpose, provider)
     record_llm_call(
         purpose=purpose,
-        provider=providers[-1] if providers else "none",
-        model=model,
+        provider=last_provider,
+        model=last_model,
         duration_ms=int((time.monotonic() - started) * 1000),
         ok=False,
     )
-    logger.warning("LLM %s failed on every provider; using template fallback", purpose)
+    logger.warning("LLM %s failed on every provider; returning no JSON", purpose)
+    return None
+
+
+def _bedrock_json(system: str, user: str, model: str) -> dict[str, Any] | None:
+    if not bedrock_ready():
+        return None
+    try:
+        import boto3
+        from botocore.config import Config
+        from botocore.exceptions import ClientError
+    except ImportError:
+        logger.warning("Bedrock skipped: boto3 is not installed")
+        return None
+    region = bedrock_region()
+    body = json.dumps(
+        {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 16000,
+            "temperature": 0.3,
+            "system": system,
+            "messages": [{"role": "user", "content": user}],
+        }
+    )
+    client = boto3.client(
+        "bedrock-runtime",
+        region_name=region,
+        config=Config(
+            connect_timeout=bedrock_connect_timeout_s(),
+            read_timeout=bedrock_read_timeout_s(),
+            retries={"max_attempts": 1, "mode": "standard"},
+        ),
+    )
+    last_error: Exception | None = None
+    started = time.monotonic()
+    for model_id in bedrock_model_ids(model, region):
+        logger.info("Bedrock invoke_model start model=%s region=%s", model_id, region)
+        try:
+            response = client.invoke_model(
+                modelId=model_id,
+                contentType="application/json",
+                accept="application/json",
+                body=body,
+            )
+            raw = json.loads(response["body"].read())
+            chunks = raw.get("content") or []
+            text = "".join(
+                part.get("text", "") if isinstance(part, dict) else str(part)
+                for part in chunks
+            )
+            parsed = _loads_object(text.strip())
+            _log_model_text("Bedrock", model_id, text, parsed)
+            logger.info(
+                "Bedrock finished model=%s in %.1fs json=%s",
+                model_id,
+                time.monotonic() - started,
+                parsed is not None,
+            )
+            return parsed
+        except ClientError as error:
+            last_error = error
+            code = (error.response or {}).get("Error", {}).get("Code", "")
+            logger.warning("Bedrock ClientError model=%s code=%s: %s", model_id, code, error)
+            continue
+        except Exception as error:
+            last_error = error
+            logger.warning("Bedrock failed model=%s: %s", model_id, error)
+            continue
+    if last_error:
+        logger.warning("Bedrock exhausted model ids for %s: %s", model, last_error)
     return None
 
 
@@ -306,10 +461,12 @@ def _gemini_json(system: str, user: str, model: str) -> dict[str, Any] | None:
                 automatic_function_calling=types.AutomaticFunctionCallingConfig(
                     disable=True
                 ),
-                http_options=types.HttpOptions(timeout=45_000),
+                http_options=types.HttpOptions(timeout=DEFAULT_GEMINI_JSON_TIMEOUT_MS),
             ),
         )
-        parsed = _loads_object((response.text or "").strip())
+        text = (response.text or "").strip()
+        parsed = _loads_object(text)
+        _log_model_text("Gemini", model, text, parsed)
         logger.info(
             "Gemini finished model=%s in %.1fs json=%s",
             model,
@@ -345,7 +502,7 @@ def _nvidia_json(system: str, user: str, model: str) -> dict[str, Any] | None:
             {"role": "user", "content": user},
         ]
         started = time.monotonic()
-        with httpx.Client(timeout=90.0, verify=cert_bundle() or True) as client:
+        with httpx.Client(timeout=DEFAULT_NVIDIA_JSON_TIMEOUT_S, verify=cert_bundle() or True) as client:
             logger.info("NVIDIA chat.completions start model=%s", model)
             data = None
             for use_json_object in (True, False):
@@ -383,7 +540,9 @@ def _nvidia_json(system: str, user: str, model: str) -> dict[str, Any] | None:
                 part.get("text", "") if isinstance(part, dict) else str(part)
                 for part in content
             )
-        parsed = _loads_object(str(content).strip())
+        text = str(content).strip()
+        parsed = _loads_object(text)
+        _log_model_text("NVIDIA", model, text, parsed)
         logger.info(
             "NVIDIA finished model=%s in %.1fs json=%s",
             model,
@@ -410,3 +569,26 @@ def _loads_object(text: str) -> dict[str, Any] | None:
     except json.JSONDecodeError:
         return None
     return data if isinstance(data, dict) else None
+
+
+def _log_model_text(
+    provider: str, model: str, text: str, parsed: dict[str, Any] | None
+) -> None:
+    excerpt = _log_excerpt(text)
+    if parsed is None:
+        logger.warning("%s returned non-JSON model=%s excerpt=%s", provider, model, excerpt)
+        return
+    logger.info(
+        "%s parsed JSON model=%s keys=%s excerpt=%s",
+        provider,
+        model,
+        sorted(str(key) for key in parsed.keys())[:20],
+        excerpt,
+    )
+
+
+def _log_excerpt(text: str) -> str:
+    compact = text.replace("\r", "\\r").replace("\n", "\\n")
+    if len(compact) <= _LOG_EXCERPT_CHARS:
+        return compact
+    return compact[:_LOG_EXCERPT_CHARS] + "...[truncated]"

@@ -9,10 +9,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from terrarium_contracts import AgentJob, AgentResult, FileMap, Intent, Stack
+from terrarium_contracts import AgentJob, AgentResult, BackendStack, FileMap, FrontendStack, Intent, Stack
 
 _SAFE_PATH = re.compile(r"^(?!\.)[a-zA-Z0-9._/-]+$")
-_ALLOWED_SUFFIX = {".html", ".css", ".js", ".json", ".md", ".svg", ".txt"}
+_ALLOWED_SUFFIX = {".html", ".css", ".js", ".jsx", ".json", ".md", ".svg", ".txt"}
+_ALLOWED_NAMES = {"README.md", ".env.example"}
 _KNOWN_STACKS = frozenset({"react", "fullstack"})
 _MAX_FILE_BYTES = 256_000
 # Keyword scan, not a real architecture pass. Upgrade: always take the LLM plan when live models stay cheap.
@@ -37,6 +38,12 @@ _FORM_RE = re.compile(
 )
 _LIST_RE = re.compile(
     r"\b(track|todo|task|dashboard|inventory|crm|list|recipe|note|item)\b", re.I
+)
+_BACKEND_NEEDED_RE = re.compile(
+    r"\b(auth|logins?|sign[- ]?up|users?|shared|database|db|backend|server|"
+    r"api keys?|secrets?|payments?|email|upload|file processing|multi[- ]?user|"
+    r"roles?|permissions?|websocket|real[- ]?time)\b",
+    re.I,
 )
 _CDN_RE = re.compile(
     r"unpkg\.com|cdnjs\.cloudflare|jsdelivr\.net|esm\.sh|skypack\.dev|"
@@ -110,6 +117,11 @@ class SessionPlan:
     notes: str
     layout: Layout = "form"
     theme: ThemeName = "maroon"
+    architecture: str = ""
+    approach: str = ""
+    structure: tuple[str, ...] = ()
+    frontend_stack: FrontendStack = "react"
+    backend_stack: BackendStack = "none"
 
     def to_payload(self) -> dict[str, object]:
         return {
@@ -121,6 +133,11 @@ class SessionPlan:
             "notes": self.notes,
             "layout": self.layout,
             "theme": self.theme,
+            "architecture": self.architecture,
+            "approach": self.approach,
+            "structure": list(self.structure),
+            "frontendStack": self.frontend_stack,
+            "backendStack": self.backend_stack,
         }
 
 
@@ -176,7 +193,13 @@ def pick_layout(job: AgentJob) -> Layout:
 
 
 def pick_theme(job: AgentJob) -> ThemeName:
-    blob = f"{job.intent.summary} {job.prompt}"
+    """
+    Dynamically choose theme based on app type and context.
+    Gemini approach: theme matches the app's purpose/mood.
+    """
+    blob = f"{job.intent.summary} {job.prompt}".lower()
+    
+    # Explicit user preference
     tagged = _LOOK_TAG.search(blob)
     if tagged:
         value = (tagged.group(1) or tagged.group(2)).lower()
@@ -185,13 +208,33 @@ def pick_theme(job: AgentJob) -> ThemeName:
         if value == "modern":
             return "modern"
         return "dark"
-    if re.search(r"\b(dark mode|dark theme|\bdark\b)", blob, re.I):
+    
+    # Dark mode keywords
+    if re.search(r"\b(dark mode|dark theme|\bdark\b|night mode|black theme)", blob, re.I):
         return "dark"
-    if re.search(r"\bmodern (ui|design|look)\b", blob, re.I):
+    
+    # Modern tech/productivity apps
+    if re.search(r"\b(dashboard|analytics|metrics|admin|saas|crm|modern|tech|productivity)\b", blob, re.I):
         return "modern"
-    if re.search(r"\b(light mode|light theme|\blight\b)", blob, re.I):
+    
+    # Professional/business apps
+    if re.search(r"\b(business|professional|enterprise|corporate|invoice|timesheet)\b", blob, re.I):
         return "light"
-    return "maroon"
+    
+    # Creative/fun apps
+    if re.search(r"\b(game|fun|playground|creative|art|music|entertainment)\b", blob, re.I):
+        return "modern"
+    
+    # Default to light for most utility apps (calculators, converters, etc.)
+    if re.search(r"\b(calculat|convert|timer|tool|utility|helper)\b", blob, re.I):
+        return "light"
+    
+    # Notepad/writing apps - warm but neutral
+    if re.search(r"\b(note|write|editor|text|journal|blog)\b", blob, re.I):
+        return "light"
+    
+    # Fallback to light (neutral, professional)
+    return "light"
 
 
 def _root_css(theme: ThemeName) -> str:
@@ -207,7 +250,7 @@ def _root_css(theme: ThemeName) -> str:
         f"  --radius: {tokens['radius']};\n"
         "  color: var(--ink);\n"
         "  background: var(--bg);\n"
-        '  font-family: "Segoe UI", system-ui, sans-serif;\n'
+        '  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;\n'
         "}"
     )
 
@@ -339,15 +382,26 @@ def _looks_like_keypad(html: str) -> bool:
     return "keypad" in lower or "calc-keys" in lower
 
 
+_REACT_DEFAULT_IMPORT_RE = re.compile(r"^\s*import\s+React(?:\s|,)\s*from\s*['\"]react['\"]", re.M)
+
+
+def _ensure_react_default_imports(files: FileMap) -> FileMap:
+    out = dict(files)
+    for path, body in files.items():
+        if not path.endswith(".jsx"):
+            continue
+        if "<" not in body or _REACT_DEFAULT_IMPORT_RE.search(body):
+            continue
+        out[path] = "import React from 'react';\n" + body
+    return out
+
+
 def _finalize_files(files: FileMap, layout: Layout | None = None) -> FileMap:
     """Make overlay FileMaps clickable even when the model ships a pretty-but-broken UI."""
     html = files.get("index.html", "")
     css = files.get("styles.css", "")
     js = files.get("app.js", "")
     css += _CLICKABLE_CSS
-    if layout == "split" or "site-nav" in html:
-        if ".site-header" not in css:
-            css += "\n" + _site_css()
     if _looks_like_keypad(html):
         html = _BUTTON_TYPE.sub('<button type="button"', html)
         css += _KEYPAD_CSS
@@ -366,7 +420,7 @@ def _finalize_files(files: FileMap, layout: Layout | None = None) -> FileMap:
         out["styles.css"] = css
     if js:
         out["app.js"] = js
-    return out
+    return _ensure_react_default_imports(out)
 
 
 def _load_kit(relative: str) -> FileMap:
@@ -411,13 +465,33 @@ def _require_new(job: AgentJob) -> None:
 
 def detect_complexity(job: AgentJob) -> Complexity:
     blob = f"{job.intent.stack} {job.intent.summary} {job.prompt}"
-    if job.intent.stack == "fullstack" or _COMPLEX.search(blob):
+    if resolve_backend_stack(job) != "none" or job.intent.stack == "fullstack" or _COMPLEX.search(blob):
         return "complex"
     return "basic"
 
 
+def resolve_frontend_stack(job: AgentJob) -> FrontendStack:
+    selected = job.frontendStack or job.intent.frontendStack
+    return selected if selected in {"vanilla", "react"} else "react"
+
+
+def resolve_backend_stack(job: AgentJob) -> BackendStack:
+    if job.backendStack in {"none", "node-express"}:
+        return job.backendStack
+    if job.backendNeed == "yes":
+        return "node-express"
+    if job.backendNeed == "no":
+        return "none"
+    if job.intent.backendStack in {"none", "node-express"}:
+        return job.intent.backendStack
+    blob = f"{job.intent.summary} {job.prompt}"
+    return "node-express" if _BACKEND_NEEDED_RE.search(blob) else "none"
+
+
 def build_session_plan(job: AgentJob) -> SessionPlan:
-    """Simple apps skip the LLM. Complex apps ask NVIDIA/Gemini for a design, then clamp to a layout recipe."""
+    """Requirements → architecture / approach / structure, then clamp to a layout recipe."""
+    from terrarium_agents.llm import agents_mode
+
     _require_new(job)
     complexity = detect_complexity(job)
     stack: Stack = "fullstack" if complexity == "complex" else "react"
@@ -429,16 +503,16 @@ def build_session_plan(job: AgentJob) -> SessionPlan:
         job.intent.summary[:80],
     )
     heuristic = _heuristic_plan(job, complexity, stack)
-    if complexity == "basic":
-        logger.info("Plan %s skipped LLM (simple app)", job.sessionId)
+    if agents_mode() != "live" and complexity == "basic":
+        logger.info("Plan %s skipped LLM (stub + simple app)", job.sessionId)
         return heuristic
     logger.info("Plan %s calling architecture model", job.sessionId)
     payload = _maybe_llm_plan(job, heuristic)
     if payload:
         logger.info("Plan %s used LLM architecture JSON", job.sessionId)
-    else:
-        logger.warning("Plan %s LLM missed; using heuristic fullstack plan", job.sessionId)
-    return _plan_from_payload(payload, fallback=heuristic) if payload else heuristic
+        return _plan_from_payload(payload, fallback=heuristic)
+    logger.warning("Plan %s LLM missed; using heuristic plan", job.sessionId)
+    return heuristic
 
 
 def draft_files(
@@ -458,37 +532,44 @@ def draft_files(
 
 
 def generate(job: AgentJob, plan: SessionPlan | None = None) -> AgentResult:
-    """Fill a layout recipe from Intent. New apps only. Never talks to Docker."""
+    """Model FileMap only. New apps only. Never talks to Docker. Never serves a layout recipe."""
+    from terrarium_agents.llm import agents_mode
+
     _require_new(job)
     resolved = plan or build_session_plan(job)
     logger.info(
-        "Generate %s filling layout=%s theme=%s stack=%s complexity=%s",
+        "Generate %s from model plan layout=%s stack=%s complexity=%s",
         job.sessionId,
         resolved.layout,
-        resolved.theme,
         resolved.stack,
         resolved.complexity,
     )
-    files = draft_files(
-        job, stack=resolved.stack, layout=resolved.layout, theme=resolved.theme
-    )
-    overlay = _maybe_llm_overlay(job, files, resolved)
-    if overlay:
-        merged = {**files, **overlay}
-        if _is_static_preview(merged):
-            files = merged
-            logger.info("Generate %s applied LLM overlay files=%s", job.sessionId, list(overlay))
-        else:
+    overlay = _maybe_llm_overlay(job, resolved)
+    overlay_error = _static_preview_error(overlay) if overlay else None
+    if overlay and overlay_error is None:
+        files = overlay
+        logger.info("Generate %s used model FileMap files=%s", job.sessionId, list(files))
+    elif agents_mode() != "live" or overlay_error is None:
+        files = _stub_generated_files(job, resolved)
+        if agents_mode() == "live":
             logger.warning(
-                "Generate %s overlay rejected (needs vanilla HTML/CSS/JS, no CDN); keeping template",
+                "Generate %s using deterministic FileMap fallback because live providers returned no JSON",
                 job.sessionId,
             )
+        else:
+            logger.info("Generate %s stub FileMap (no layout recipe)", job.sessionId)
     else:
-        logger.warning("Generate %s no LLM overlay; serving filled layout", job.sessionId)
-    if "styles.css" in files:
-        files["styles.css"] = _stamp_theme(files["styles.css"], resolved.theme)
-    files = _finalize_files(files, layout=resolved.layout)
-    if not _has_html_document(files.get("index.html", "")):
+        reason = overlay_error or (
+            "model JSON did not contain any safe files. Expected "
+            '{"files":{"index.html":"...","styles.css":"...","app.js":"..."}}'
+        )
+        logger.warning("Generate %s rejected model FileMap: %s", job.sessionId, reason)
+        raise CodeGeneratorError(
+            f"The coding model did not return a runnable FileMap: {reason}. "
+            "Not serving a template."
+        )
+    files = _finalize_files(files)
+    if not _has_html_document(_entry_html(files)):
         raise CodeGeneratorError("Generator output is missing a valid index.html")
     _assert_file_sizes(files)
     return AgentResult(
@@ -497,10 +578,429 @@ def generate(job: AgentJob, plan: SessionPlan | None = None) -> AgentResult:
     )
 
 
+def _stub_generated_files(job: AgentJob, plan: SessionPlan) -> FileMap:
+    """
+    CI/stub only. Not a product template and not shown when agents are live.
+    Now generates component-based structure instead of flat 3 files.
+    """
+    title = html.escape(
+        (job.intent.summary or job.prompt or "New tool").strip().split("\n")[0][:80]
+        or "New tool",
+        quote=True,
+    )
+    summary = html.escape((job.intent.summary or title).strip()[:400], quote=True)
+    raw_title = (job.intent.summary or job.prompt or "New tool").strip().split("\n")[0][:80] or "New tool"
+    if plan.frontend_stack == "react" and plan.backend_stack == "node-express":
+        return _stub_react_node_files(raw_title, job.prompt, plan)
+    if plan.frontend_stack == "react":
+        return _stub_react_files(raw_title, job.prompt, plan)
+    
+    # Base files with component structure
+    files: FileMap = {
+        "index.html": (
+            "<!doctype html>\n<html lang=\"en\">\n<head>\n"
+            f"  <meta charset=\"utf-8\"/>\n  <title>{title}</title>\n"
+            "  <link rel=\"stylesheet\" href=\"styles.css\"/>\n</head>\n<body>\n"
+            f"  <main id=\"app\">\n    <h1>{title}</h1>\n    <p>{summary}</p>\n  </main>\n"
+            "  <script src=\"app.js\" type=\"module\"></script>\n</body>\n</html>\n"
+        ),
+        "styles.css": (
+            ":root { --bg: #f7f7f8; --ink: #171717; --accent: #1d4ed8; }\n"
+            "body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; "
+            "background: var(--bg); color: var(--ink); }\n"
+            "main { max-width: 800px; margin: 0 auto; }\n"
+        ),
+        "app.js": (
+            "// Main application entry point\n"
+            "console.log('App initialized');\n"
+            "document.addEventListener('DOMContentLoaded', function () {\n"
+            "  console.log('DOM ready');\n"
+            "});\n"
+        ),
+    }
+    
+    # Add component files based on plan
+    for name in plan.files:
+        if name in files:
+            continue
+        if name.endswith(".html"):
+            files[name] = files["index.html"].replace(title, f"{title} - {name}")
+        elif name.endswith(".js"):
+            component_name = name.replace("components/", "").replace("utils/", "").replace(".js", "")
+            files[name] = (
+                f"// {component_name} module\n"
+                f"export function init{component_name.replace('-', '').title()}() {{\n"
+                "  console.log('Component initialized');\n"
+                "}\n"
+            )
+        elif name.endswith(".css"):
+            files[name] = f"/* {name} styles */\n"
+    
+    return files
+
+
+def _section_from_text(value: str, fallback_body: str) -> dict[str, str]:
+    raw = value.strip()
+    if " — " in raw:
+        heading, body = raw.split(" — ", 1)
+    elif " - " in raw:
+        heading, body = raw.split(" - ", 1)
+    else:
+        heading, body = raw, fallback_body
+    heading = re.sub(r"^\d+[\).]\s*", "", heading).strip()[:64] or "Feature"
+    body = body.strip()[:180] or fallback_body
+    return {"title": heading, "body": body}
+
+
+def _fallback_sections(plan: SessionPlan, prompt: str) -> list[dict[str, str]]:
+    defaults_by_layout: dict[Layout, list[str]] = {
+        "split": [
+            "Hero experience — Strong first impression with the product promise, audience, and primary action.",
+            "Featured collection — Curated cards that make the main offering feel browsable and complete.",
+            "Detail view — Focused section for deeper information, specs, benefits, and context.",
+            "Trust signals — Polished supporting content for credibility, quality, and confidence.",
+            "Action flow — Clear next step so the page feels useful instead of decorative.",
+            "Responsive polish — Layout adapts cleanly from desktop to mobile.",
+        ],
+        "list": [
+            "Overview — Clear dashboard summary with the most important information first.",
+            "Organized items — Scannable rows and cards with useful metadata.",
+            "Filters — Quick controls for narrowing and finding content.",
+            "Progress — Visual state that shows what needs attention.",
+            "Details — Secondary information without cluttering the main view.",
+            "Actions — Practical buttons that make the tool interactive.",
+        ],
+        "form": [
+            "Input area — Focused controls for the user's main task.",
+            "Live result — Immediate output area that makes the tool feel responsive.",
+            "History — Saved recent entries for continuity.",
+            "Options — Useful settings without overwhelming the interface.",
+        ],
+        "board": [
+            "Game board — Clear visual play area with strong spacing.",
+            "Score panel — Current status, turns, and progress.",
+            "Controls — Restart and interaction controls.",
+            "Rules — Concise guidance for the user.",
+        ],
+    }
+    source = list(plan.screens) or list(plan.structure) or defaults_by_layout[plan.layout]
+    sections = [
+        _section_from_text(item, defaults_by_layout[plan.layout][index % len(defaults_by_layout[plan.layout])].split(" — ", 1)[1])
+        for index, item in enumerate(source[:6])
+    ]
+    while len(sections) < min(4, len(defaults_by_layout[plan.layout])):
+        sections.append(_section_from_text(defaults_by_layout[plan.layout][len(sections)], "Useful generated section."))
+    if not sections:
+        sections.append({"title": "Generated experience", "body": prompt[:160] or "A focused app generated from your request."})
+    return sections[:6]
+
+
+def _summary_sentence(plan: SessionPlan, title: str) -> str:
+    notes = re.sub(r"\s+", " ", plan.notes or "").strip()
+    if notes:
+        notes = notes.split("\n", 1)[0].split(". ", 1)[0].strip(". ")
+    if not notes or notes.lower().startswith("react "):
+        notes = f"A polished, responsive {title.lower()} with prompt-specific sections and working local state."
+    return notes[:220]
+
+
+def _stub_react_files(title: str, prompt: str, plan: SessionPlan | None = None) -> FileMap:
+    title_json = json.dumps(title)
+    fallback_plan = plan or SessionPlan(
+        complexity="basic",
+        stack="react",
+        screens=(title,),
+        data=(),
+        files=(),
+        notes=prompt[:300],
+    )
+    sections_json = json.dumps(_fallback_sections(fallback_plan, prompt), indent=2)
+    subtitle_json = json.dumps(_summary_sentence(fallback_plan, title))
+    eyebrow = {
+        "split": "Modern website",
+        "list": "Interactive workspace",
+        "form": "Smart web tool",
+        "board": "Playable experience",
+    }[fallback_plan.layout]
+    eyebrow_json = json.dumps(eyebrow)
+    return {
+        "package.json": json.dumps(
+            {
+                "name": "terrarium-react-app",
+                "private": True,
+                "version": "0.0.0",
+                "type": "module",
+                "scripts": {"dev": "vite --host 0.0.0.0", "build": "vite build", "preview": "vite preview --host 0.0.0.0"},
+                "dependencies": {"@vitejs/plugin-react": "^latest", "vite": "^latest", "react": "^latest", "react-dom": "^latest"},
+                "devDependencies": {},
+            },
+            indent=2,
+        ),
+        "index.html": (
+            "<!doctype html>\n<html lang=\"en\">\n<head>\n"
+            "  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n"
+            f"  <title>{html.escape(title)}</title>\n</head>\n<body>\n"
+            "  <div id=\"root\"></div>\n  <script type=\"module\" src=\"/src/main.jsx\"></script>\n"
+            "</body>\n</html>\n"
+        ),
+        "src/main.jsx": (
+            "import React from 'react';\n"
+            "import { createRoot } from 'react-dom/client';\n"
+            "import App from './App.jsx';\n"
+            "import './styles/global.css';\n\n"
+            "createRoot(document.getElementById('root')).render(<App />);\n"
+        ),
+        "src/App.jsx": (
+            "import { AppShell } from './components/AppShell.jsx';\n"
+            "import { useLocalState } from './hooks/useLocalState.js';\n\n"
+            f"const initialSections = {sections_json};\n\n"
+            "export default function App() {\n"
+            "  const [sections, setSections] = useLocalState('terrarium-sections', initialSections);\n"
+            f"  return <AppShell title={title_json} eyebrow={eyebrow_json} subtitle={subtitle_json} sections={{sections}} onSectionsChange={{setSections}} />;\n"
+            "}\n"
+        ),
+        "src/components/AppShell.jsx": (
+            "import { useMemo, useState } from 'react';\n"
+            "import { Hero } from './Hero.jsx';\n"
+            "import { FeatureGrid } from './FeatureGrid.jsx';\n"
+            "import { DetailPanel } from './DetailPanel.jsx';\n"
+            "import { ContactForm } from './ContactForm.jsx';\n"
+            "import { Toolbar } from './Toolbar.jsx';\n\n"
+            "export function AppShell({ title, eyebrow, subtitle, sections, onSectionsChange }) {\n"
+            "  const [activeIndex, setActiveIndex] = useState(0);\n"
+            "  const [mode, setMode] = useState('overview');\n"
+            "  const activeSection = sections[activeIndex] ?? sections[0];\n"
+            "  const metrics = useMemo(() => [sections.length, activeIndex + 1, mode === 'contact' ? 'Contact' : 'Explore'], [sections.length, activeIndex, mode]);\n"
+            "  function addSection() {\n"
+            "    const next = { title: `Custom idea ${sections.length + 1}`, body: 'New interactive section added during the live preview.' };\n"
+            "    onSectionsChange([...sections, next]);\n"
+            "    setActiveIndex(sections.length);\n"
+            "  }\n"
+            "  return (\n"
+            "    <main className=\"app-shell\">\n"
+            "      <Toolbar mode={mode} onModeChange={setMode} onAdd={addSection} />\n"
+            "      <Hero title={title} eyebrow={eyebrow} subtitle={subtitle} metrics={metrics} onExplore={() => setMode('overview')} onContact={() => setMode('contact')} />\n"
+            "      {mode === 'contact' ? (\n"
+            "        <ContactForm title={title} />\n"
+            "      ) : (\n"
+            "        <>\n"
+            "          <FeatureGrid sections={sections} activeIndex={activeIndex} onSelect={setActiveIndex} />\n"
+            "          <DetailPanel section={activeSection} index={activeIndex} total={sections.length} onPrev={() => setActiveIndex((activeIndex - 1 + sections.length) % sections.length)} onNext={() => setActiveIndex((activeIndex + 1) % sections.length)} />\n"
+            "        </>\n"
+            "      )}\n"
+            "    </main>\n"
+            "  );\n"
+            "}\n"
+        ),
+        "src/components/Toolbar.jsx": (
+            "export function Toolbar({ mode, onModeChange, onAdd }) {\n"
+            "  return <header className=\"toolbar\"><strong>Terrarium App</strong><nav><button type=\"button\" className={mode === 'overview' ? 'active' : ''} onClick={() => onModeChange('overview')}>Overview</button><button type=\"button\" className={mode === 'contact' ? 'active' : ''} onClick={() => onModeChange('contact')}>Contact</button><button type=\"button\" onClick={onAdd}>Add section</button></nav></header>;\n"
+            "}\n"
+        ),
+        "src/components/Hero.jsx": (
+            "export function Hero({ title, eyebrow, subtitle, metrics, onExplore, onContact }) {\n"
+            "  return <section className=\"hero\"><p>{eyebrow}</p><h1>{title}</h1><span>{subtitle}</span><div className=\"hero-actions\"><button type=\"button\" onClick={onExplore}>Explore sections</button><button type=\"button\" className=\"ghost-button\" onClick={onContact}>Open contact</button></div><div className=\"metrics\">{metrics.map((metric, index) => <strong key={index}>{metric}<small>{index === 0 ? 'sections' : index === 1 ? 'active' : 'mode'}</small></strong>)}</div></section>;\n"
+            "}\n"
+        ),
+        "src/components/FeatureGrid.jsx": (
+            "export function FeatureGrid({ sections, activeIndex, onSelect }) {\n"
+            "  return <section className=\"card-grid\" aria-label=\"Interactive sections\">{sections.map((section, index) => <button type=\"button\" className={`card ${activeIndex === index ? 'selected' : ''}`} key={`${section.title}-${index}`} onClick={() => onSelect(index)}><span>{String(index + 1).padStart(2, '0')}</span><h2>{section.title}</h2><p>{section.body}</p></button>)}</section>;\n"
+            "}\n"
+        ),
+        "src/components/DetailPanel.jsx": (
+            "export function DetailPanel({ section, index, total, onPrev, onNext }) {\n"
+            "  if (!section) return null;\n"
+            "  return <section className=\"detail-panel\"><div><p>Selected section {index + 1} of {total}</p><h2>{section.title}</h2><span>{section.body}</span></div><div className=\"panel-actions\"><button type=\"button\" className=\"ghost-button\" onClick={onPrev}>Previous</button><button type=\"button\" onClick={onNext}>Next section</button></div></section>;\n"
+            "}\n"
+        ),
+        "src/components/ContactForm.jsx": (
+            "import { useState } from 'react';\n\n"
+            "export function ContactForm({ title }) {\n"
+            "  const [name, setName] = useState('');\n"
+            "  const [message, setMessage] = useState('');\n"
+            "  const [sent, setSent] = useState(false);\n"
+            "  function submit(event) { event.preventDefault(); setSent(true); }\n"
+            "  return <section className=\"contact-panel\"><form onSubmit={submit}><p>Interactive contact flow</p><h2>Ask about {title}</h2><label>Name<input value={name} onChange={(event) => setName(event.target.value)} placeholder=\"Your name\" /></label><label>Message<textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder=\"What should this app help with?\" /></label><button type=\"submit\">Send preview message</button>{sent ? <strong className=\"success\">Thanks{name ? `, ${name}` : ''}. This preview captured your message.</strong> : null}</form></section>;\n"
+            "}\n"
+        ),
+        "src/hooks/useLocalState.js": (
+            "import { useEffect, useState } from 'react';\n\n"
+            "export function useLocalState(key, initialValue) {\n"
+            "  const [value, setValue] = useState(() => {\n"
+            "    try { return JSON.parse(localStorage.getItem(key)) ?? initialValue; }\n"
+            "    catch (error) { console.error('Could not read local state', { key, error }); return initialValue; }\n"
+            "  });\n"
+            "  useEffect(() => {\n"
+            "    try { localStorage.setItem(key, JSON.stringify(value)); }\n"
+            "    catch (error) { console.error('Could not save local state', { key, error }); }\n"
+            "  }, [key, value]);\n"
+            "  return [value, setValue];\n"
+            "}\n"
+        ),
+        "src/utils/helpers.js": "export function clampText(value, max = 120) { return String(value || '').slice(0, max); }\n",
+        "src/styles/global.css": (
+            ":root { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; color: #101827; background: #f6f8fc; }\n"
+            "* { box-sizing: border-box; }\nbody { margin: 0; }\n"
+            "body { background: radial-gradient(circle at top left, #dbeafe, transparent 32rem), radial-gradient(circle at top right, #fce7f3, transparent 28rem), #f6f8fc; }\n"
+            ".app-shell { min-height: 100vh; padding: clamp(24px, 5vw, 64px); max-width: 1180px; margin: 0 auto; }\n"
+            ".toolbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 32px; color: #475569; }\n"
+            ".toolbar strong { letter-spacing: .08em; text-transform: uppercase; font-size: 12px; }\n"
+            ".toolbar nav, .hero-actions, .panel-actions { display: flex; gap: 10px; flex-wrap: wrap; }\n"
+            "button { border: 0; border-radius: 999px; background: #2563eb; color: white; padding: 12px 18px; font-weight: 800; cursor: pointer; box-shadow: 0 12px 24px rgba(37,99,235,.24); transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }\n"
+            "button:hover { transform: translateY(-2px); box-shadow: 0 18px 32px rgba(37,99,235,.28); }\n"
+            "button.active, button.selected { background: #0f172a; }\n"
+            ".ghost-button { background: white; color: #1d4ed8; border: 1px solid #dbeafe; box-shadow: none; }\n"
+            ".hero { display: grid; gap: 16px; margin-bottom: 34px; padding: clamp(28px, 6vw, 72px); border-radius: 34px; background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(239,246,255,.9)); border: 1px solid rgba(148,163,184,.22); box-shadow: 0 24px 70px rgba(15,23,42,.10); }\n"
+            ".hero p { margin: 0; color: #2563eb; font-size: 12px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }\n"
+            ".hero h1 { max-width: 820px; margin: 0; font-size: clamp(38px, 7vw, 76px); line-height: .95; letter-spacing: -.06em; }\n"
+            ".hero span { max-width: 720px; color: #475569; font-size: clamp(16px, 2vw, 20px); line-height: 1.75; }\n"
+            ".metrics { display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 12px; margin-top: 10px; }\n"
+            ".metrics strong { padding: 16px; border-radius: 20px; background: rgba(255,255,255,.72); font-size: 24px; }\n"
+            ".metrics small { display: block; margin-top: 4px; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }\n"
+            ".card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }\n"
+            ".card { display: block; text-align: left; color: #101827; min-height: 230px; background: rgba(255,255,255,.9); border: 1px solid rgba(148,163,184,.24); border-radius: 28px; padding: 24px; box-shadow: 0 16px 40px rgba(15, 23, 42, .08); }\n"
+            ".card.selected { outline: 4px solid rgba(37,99,235,.18); background: linear-gradient(135deg, white, #eff6ff); }\n"
+            ".card span { color: #94a3b8; font-size: 12px; font-weight: 900; letter-spacing: .1em; }\n"
+            ".card h2 { margin: 22px 0 10px; font-size: 22px; line-height: 1.1; letter-spacing: -.03em; }\n"
+            ".card p { color: #475569; line-height: 1.7; margin: 0; }\n"
+            ".detail-panel, .contact-panel { margin-top: 22px; padding: clamp(24px, 4vw, 42px); border-radius: 30px; background: #0f172a; color: white; box-shadow: 0 22px 60px rgba(15,23,42,.18); }\n"
+            ".detail-panel { display: flex; justify-content: space-between; gap: 24px; align-items: end; }\n"
+            ".detail-panel p, .contact-panel p { margin: 0 0 8px; color: #93c5fd; text-transform: uppercase; font-size: 12px; font-weight: 900; letter-spacing: .1em; }\n"
+            ".detail-panel h2, .contact-panel h2 { margin: 0 0 10px; font-size: clamp(26px, 4vw, 44px); letter-spacing: -.04em; }\n"
+            ".detail-panel span { color: #cbd5e1; line-height: 1.75; max-width: 640px; display: block; }\n"
+            "form { display: grid; gap: 16px; max-width: 720px; }\n"
+            "label { display: grid; gap: 8px; color: #cbd5e1; font-weight: 800; }\n"
+            "input, textarea { width: 100%; border: 1px solid #334155; border-radius: 18px; padding: 14px 16px; background: #1e293b; color: white; font: inherit; }\n"
+            "textarea { min-height: 120px; resize: vertical; }\n"
+            ".success { display: block; color: #86efac; }\n"
+            "@media (max-width: 720px) { .toolbar, .detail-panel { align-items: flex-start; flex-direction: column; } .metrics { grid-template-columns: 1fr; } }\n"
+        ),
+        "README.md": f"# {title}\n\nGenerated as a React/Vite frontend-only project.\n",
+    }
+
+
+def _stub_react_node_files(title: str, prompt: str, plan: SessionPlan | None = None) -> FileMap:
+    files = _stub_react_files(title, prompt, plan)
+    frontend = {
+        ("frontend/" + path if path != "package.json" else "frontend/package.json"): body
+        for path, body in files.items()
+        if path != "README.md"
+    }
+    frontend["package.json"] = json.dumps(
+        {
+            "name": "terrarium-fullstack-app",
+            "private": True,
+            "version": "0.0.0",
+            "type": "module",
+            "scripts": {"dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\""},
+            "dependencies": {"concurrently": "^latest"},
+        },
+        indent=2,
+    )
+    frontend.update(
+        {
+            "backend/package.json": json.dumps(
+                {
+                    "name": "terrarium-api",
+                    "private": True,
+                    "version": "0.0.0",
+                    "type": "module",
+                    "scripts": {"dev": "node src/server.js"},
+                    "dependencies": {"express": "^latest", "cors": "^latest", "dotenv": "^latest"},
+                },
+                indent=2,
+            ),
+            "backend/src/server.js": (
+                "import express from 'express';\nimport cors from 'cors';\nimport { itemsRouter } from './routes/items.js';\nimport { errorHandler } from './middleware/errorHandler.js';\n\n"
+                "const app = express();\napp.use(cors());\napp.use(express.json());\napp.use('/api/items', itemsRouter);\napp.use(errorHandler);\n"
+                "const port = process.env.PORT || 3000;\napp.listen(port, '0.0.0.0', () => console.log(`API running on ${port}`));\n"
+            ),
+            "backend/src/routes/items.js": "import { Router } from 'express';\nimport { listItems, createItem } from '../controllers/itemsController.js';\nexport const itemsRouter = Router();\nitemsRouter.get('/', listItems);\nitemsRouter.post('/', createItem);\n",
+            "backend/src/controllers/itemsController.js": "import { addItem, getItems } from '../models/itemStore.js';\nexport function listItems(_req, res) { res.json({ items: getItems() }); }\nexport function createItem(req, res) { res.status(201).json({ item: addItem(req.body || {}) }); }\n",
+            "backend/src/models/itemStore.js": "const items = [];\nexport function getItems() { return items; }\nexport function addItem(input) { const item = { id: crypto.randomUUID(), title: String(input.title || 'Untitled') }; items.push(item); return item; }\n",
+            "backend/src/middleware/errorHandler.js": "export function errorHandler(error, _req, res, _next) { console.error('API error', error); res.status(500).json({ error: 'Internal server error' }); }\n",
+            "backend/src/config/env.js": "export const env = { port: process.env.PORT || '3000' };\n",
+            "backend/.env.example": "PORT=3000\n",
+            "frontend/vite.config.js": (
+                "import { defineConfig } from 'vite';\n"
+                "import react from '@vitejs/plugin-react';\n\n"
+                "export default defineConfig({\n"
+                "  plugins: [react()],\n"
+                "  server: { host: '0.0.0.0', proxy: { '/api': 'http://127.0.0.1:3000' } },\n"
+                "});\n"
+            ),
+            "shared/constants.js": "export const API_BASE = '/api';\n",
+            "README.md": f"# {title}\n\nGenerated as a React/Vite frontend with Node/Express backend.\n",
+        }
+    )
+    return frontend
+
+
 def _heuristic_plan(job: AgentJob, complexity: Complexity, stack: Stack) -> SessionPlan:
     summary = (job.intent.summary or job.prompt).strip()[:240]
     layout = pick_layout(job)
     theme = pick_theme(job)
+    frontend_stack = resolve_frontend_stack(job)
+    backend_stack = resolve_backend_stack(job)
+    if backend_stack != "none":
+        return SessionPlan(
+            complexity="complex",
+            stack="fullstack",
+            screens=("main", "api"),
+            data=("server state and API routes",),
+            files=(
+                "package.json",
+                "frontend/package.json",
+                "frontend/vite.config.js",
+                "frontend/index.html",
+                "frontend/src/main.jsx",
+                "frontend/src/App.jsx",
+                "frontend/src/components/AppShell.jsx",
+                "frontend/src/hooks/useApi.js",
+                "frontend/src/styles/global.css",
+                "backend/package.json",
+                "backend/src/server.js",
+                "backend/src/routes/items.js",
+                "backend/src/controllers/itemsController.js",
+                "backend/src/models/itemStore.js",
+                "backend/src/middleware/errorHandler.js",
+                "backend/src/config/env.js",
+                "backend/.env.example",
+                "shared/constants.js",
+                "README.md",
+            ),
+            notes=f"React/Vite frontend with Node/Express backend ({theme}) for: {summary}",
+            layout=layout,
+            theme=theme,
+            frontend_stack=frontend_stack,
+            backend_stack=backend_stack,
+        )
+
+    if frontend_stack == "react":
+        return SessionPlan(
+            complexity=complexity,
+            stack="react",
+            screens=("main",),
+            data=("localStorage or in-memory client state",),
+            files=(
+                "package.json",
+                "index.html",
+                "src/main.jsx",
+                "src/App.jsx",
+                "src/components/AppShell.jsx",
+                "src/components/Toolbar.jsx",
+                "src/hooks/useLocalState.js",
+                "src/utils/helpers.js",
+                "src/styles/global.css",
+                "README.md",
+            ),
+            notes=f"React/Vite frontend-only project ({theme}) for: {summary}",
+            layout=layout,
+            theme=theme,
+            frontend_stack=frontend_stack,
+            backend_stack=backend_stack,
+        )
+    
     if layout == "split":
         return SessionPlan(
             complexity=complexity,
@@ -511,60 +1011,93 @@ def _heuristic_plan(job: AgentJob, complexity: Complexity, stack: Stack) -> Sess
             notes=f"Multi-page site ({theme}) for: {summary}",
             layout=layout,
             theme=theme,
+            frontend_stack=frontend_stack,
+            backend_stack=backend_stack,
         )
+    
+    # Component-based structure for better organization (Gemini approach)
     if complexity == "basic":
+        # Suggest 6-10 files for basic apps instead of just 3
+        if layout == "form":
+            suggested_files = (
+                "index.html", "styles.css", "app.js",
+                "components/input-area.js", "components/output-area.js",
+                "utils/calculator.js", "utils/storage.js"
+            )
+        elif layout == "list":
+            suggested_files = (
+                "index.html", "styles.css", "app.js",
+                "components/list-item.js", "components/list-container.js",
+                "components/add-form.js", "utils/storage.js", "utils/helpers.js"
+            )
+        else:  # board or default
+            suggested_files = (
+                "index.html", "styles.css", "app.js",
+                "components/main-component.js", "components/controls.js",
+                "utils/helpers.js"
+            )
+        
         return SessionPlan(
             complexity="basic",
             stack="react",
             screens=("main",),
-            data=("local note text",),
-            files=("index.html", "styles.css", "app.js"),
-            notes=f"Simple {layout} layout ({theme}) for: {summary}",
+            data=("localStorage",),
+            files=suggested_files,
+            notes=f"Component-based {layout} layout ({theme}) for: {summary}",
             layout=layout,
             theme=theme,
+            frontend_stack=frontend_stack,
+            backend_stack=backend_stack,
         )
+    
+    # Complex apps get even more files
     return SessionPlan(
         complexity="complex",
         stack="fullstack",
-        screens=("main", "list"),
-        data=("localStorage item list",),
-        files=("index.html", "styles.css", "app.js"),
-        notes=f"Static {layout} layout ({theme}) with an in-browser store for: {summary}",
+        screens=("main", "list", "detail"),
+        data=("localStorage with structured data",),
+        files=(
+            "index.html", "styles.css", "app.js",
+            "components/header.js", "components/sidebar.js",
+            "components/main-content.js", "components/item.js",
+            "utils/storage.js", "utils/helpers.js", "utils/validators.js"
+        ),
+        notes=f"Component-rich {layout} layout ({theme}) with structured state for: {summary}",
         layout=layout,
         theme=theme,
+        frontend_stack=frontend_stack,
+        backend_stack=backend_stack,
     )
 
 
 def _maybe_llm_plan(job: AgentJob, fallback: SessionPlan) -> dict | None:
     from terrarium_agents.llm import complete_json
 
-    if fallback.layout == "split":
-        system = (
-            "You are Terrarium's architecture step for a static website. "
-            "Return JSON only: "
-            '{"complexity":"complex","stack":"fullstack","screens":["home","about","contact"],'
-            '"data":["static pages only"],'
-            '"files":["index.html","about.html","contact.html","styles.css","app.js","js/nav.js"],'
-            '"notes":"one paragraph"}. '
-            "No npm, no backend, no database server, no Docker. "
-            "Screens are HTML pages. Add blog.html only if the prompt asks for a blog."
-        )
-    else:
-        system = (
-            "You are Terrarium's architecture step for a static preview app. "
-            "Return JSON only: "
-            '{"complexity":"complex","stack":"fullstack","screens":["..."],'
-            '"data":["in-memory or localStorage only"],'
-            '"files":["index.html","styles.css","app.js"],'
-            '"notes":"one paragraph"}. '
-            "stack must be fullstack. No npm, no backend, no database server, no Docker. "
-            "Design screens and local data so a static HTML/CSS/JS kit can implement it."
-        )
+    system = (
+        "You are Terrarium's architecture step. Do not write application files yet. "
+        "From the requirements, decide architecture, technical approach, module structure, "
+        "and the stack selected by the user. "
+        "React means Vite React files. Backend means Node + Express files. "
+        "Do not add a backend unless backendStack is node-express. "
+        "Do not propose CDNs, Tailwind CDN, remote scripts, API keys, or unavailable packages. "
+        "Plan realistic domain-specific screens and seed data; do not preserve clarification questions as app content. "
+        "Return JSON only: "
+        '{"complexity":"basic"|"complex","stack":"react"|"fullstack",'
+        '"architecture":"2-4 sentences","approach":"2-4 sentences",'
+        '"structure":["path — role", "..."],'
+        '"screens":["..."],"data":["state/storage/API needs"],'
+        '"files":["package.json","index.html","src/main.jsx"],'
+        '"notes":"one paragraph"}. '
+        "Use the fallback files when they match the stack. "
+        f"Layout hint is {fallback.layout}; keep website pages as real HTML files if layout is split."
+    )
     return complete_json(
         system=system,
         user=(
+            f"requirements={job.prompt}\n"
             f"summary={job.intent.summary}\n"
-            f"prompt={job.prompt}\n"
+            f"frontendStack={fallback.frontend_stack}\n"
+            f"backendStack={fallback.backend_stack}\n"
             f"fallback={json.dumps(fallback.to_payload())}"
         ),
         purpose="plan",
@@ -576,116 +1109,151 @@ def _plan_from_payload(raw: dict, fallback: SessionPlan) -> SessionPlan:
     data = _string_tuple(raw.get("data")) or fallback.data
     files = _safe_file_tuple(raw.get("files")) or fallback.files
     notes = str(raw.get("notes") or fallback.notes).strip()[:800]
+    architecture = str(raw.get("architecture") or "").strip()[:800]
+    approach = str(raw.get("approach") or "").strip()[:800]
+    structure = _string_tuple(raw.get("structure"))
+    complexity: Complexity = (
+        "complex" if str(raw.get("complexity") or fallback.complexity) == "complex" else fallback.complexity
+    )
+    stack: Stack = fallback.stack
+    if raw.get("stack") in {"react", "fullstack"}:
+        stack = raw["stack"]
     return SessionPlan(
-        complexity="complex",
-        stack="fullstack",
+        complexity=complexity,
+        stack=stack,
         screens=screens[:12],
         data=data[:12],
         files=files[:16],
         notes=notes or fallback.notes,
         layout=fallback.layout,
         theme=fallback.theme,
+        architecture=architecture,
+        approach=approach,
+        structure=structure[:16],
+        frontend_stack=fallback.frontend_stack,
+        backend_stack=fallback.backend_stack,
     )
 
 
-def _overlay_rules(plan: SessionPlan) -> str:
-    looks = {
-        "modern": "contemporary consumer-app UI, airy spacing, soft card shadows, large tap targets",
-        "maroon": "warm maroon-on-cream Terrarium look",
-        "dark": "dark surfaces and light text, no harsh white panels",
-        "light": "clean light UI with a blue accent",
-    }
-    look = (
-        f"Visual look is {plan.theme}: {looks[plan.theme]}. "
-        "Honor :root variables (--bg, --ink, --accent, --muted, --surface, --line, --radius). "
-        "Do not hardcode theme colors. The preview iframe cannot load unpkg."
-    )
-    if plan.layout == "split":
-        return (
-            "Vanilla HTML/CSS/JS only. No React, JSX, Babel, npm, or CDN script tags. "
-            "This is a real multi-page website, not a tool shell and not a single-page app. "
-            "Return index.html, about.html, contact.html, styles.css, app.js, and js/nav.js. "
-            "Add blog.html only if the spec asks for a blog. "
-            "Every page uses #root.site, header.site-header, and nav.site-nav with hrefs "
-            "(index.html, about.html, contact.html) — never data-target buttons as routes. "
-            "Home has section.hero and main.split. Inner pages use main.section. "
-            "No 'Terrarium ·' eyebrow. Write real copy for the user's spec. "
-            "Contact form uses addEventListener + preventDefault (no server). "
-            + look
+def _overlay_prompt(job: AgentJob, plan: SessionPlan) -> tuple[str, str]:
+    """
+    Enhanced prompt following Gemini's approach:
+    - Component-based architecture
+    - 8-15 files with proper folder structure
+    - Organized code with utils/, components/, etc.
+    """
+    if plan.frontend_stack == "react":
+        stack_rules = (
+            "## Stack Requirements:\n"
+            "- Generate a real Vite React project.\n"
+            "- Use React components, hooks, and CSS files under src/.\n"
+            "- Include package.json with scripts: dev, build, preview.\n"
+            "- Allowed frontend packages only: react, react-dom, vite, @vitejs/plugin-react, react-router-dom, lucide-react.\n"
+            "- Do not import any other third-party package.\n"
+            "- Frontend entry must be index.html -> src/main.jsx -> src/App.jsx.\n"
         )
-    return (
-        "Vanilla HTML/CSS/JS only. No React, JSX, Babel, npm, or CDN script tags. "
-        "Replace the empty starter with the actual working tool. "
-        "A calculator needs a keypad (0-9, operators, equals, clear) and a history list — "
-        "not a single Go button. A converter needs from/to fields that convert on input. "
-        "A game needs a playable board. "
-        "app.js must handle clicks with type=button (never submit) and DOM addEventListener. "
-        "Put keypad buttons in a .keypad CSS grid (not flex-wrap). "
-        "Do not use * { margin:0; padding:0 }. Do not replaceAll(\"e\", ...) — that breaks Math.sin. "
-        + look
-    )
+        if plan.backend_stack == "node-express":
+            stack_rules += (
+                "- Include frontend/ and backend/ package.json files.\n"
+                "- Backend must be Node + Express with routes, controllers, models, middleware, config, and .env.example.\n"
+                "- Frontend API calls must target relative /api paths so the sandbox proxy can route them.\n"
+                "- Do not put API keys or secrets in frontend code.\n"
+            )
+        else:
+            stack_rules += "- Do not include a backend folder. Use localStorage for client-only persistence.\n"
+    else:
+        stack_rules = (
+            "## Stack Requirements:\n"
+            "- Generate vanilla HTML/CSS/JS that runs in a static nginx iframe.\n"
+            "- NO React JSX, NO Babel, NO npm, NO CDN links.\n"
+        )
 
-
-def _overlay_prompt(job: AgentJob, files: FileMap, plan: SessionPlan) -> tuple[str, str]:
-    rules = _overlay_rules(plan)
-    if plan.layout == "split":
-        system = (
-            "You implement a Terrarium static website. Return JSON only: "
-            '{"files": {"index.html": "...", "about.html": "...", "contact.html": "...", '
-            '"styles.css": "...", "app.js": "...", "js/nav.js": "..."}}. '
-            + rules
-        )
-        chunks = [
-            f"theme={plan.theme} layout=split",
-            f"summary={job.intent.summary}",
-            f"prompt={job.prompt}",
-        ]
-        for name in ("index.html", "about.html", "contact.html", "styles.css", "app.js", "js/nav.js"):
-            body = files.get(name)
-            if body:
-                chunks.append(f"{name}:\n{body[:3500]}")
-        return system, "\n\n".join(chunks)
-    if plan.complexity == "complex":
-        system = (
-            "You implement a Terrarium static app from an architecture plan. "
-            "Return JSON only: "
-            '{"files": {"index.html": "...", "styles.css": "...", "app.js": "..."}}. '
-            + rules
-            + " Honor the plan screens and localStorage data."
-        )
-        user = (
-            f"plan={json.dumps(plan.to_payload())}\n"
-            f"summary={job.intent.summary}\n"
-            f"prompt={job.prompt}\n\n"
-            f"index.html:\n{files.get('index.html', '')[:5000]}\n\n"
-            f"styles.css:\n{files.get('styles.css', '')[:2500]}\n\n"
-            f"app.js:\n{files.get('app.js', '')[:2500]}"
-        )
-        return system, user
     system = (
-        "You customize a Terrarium simple static starter. Return JSON only: "
-        '{"files": {"index.html": "...", "styles.css": "optional", "app.js": "optional"}}. '
-        + rules
+        "You are Terrarium's Code Generator creating production-ready applications. "
+        "Generate a well-organized, component-based app with proper file structure. "
+        "The result must look like a complete custom app for the user's exact prompt, not a scaffold.\n\n"
+        f"{stack_rules}\n"
+        
+        "## Product Quality Bar:\n"
+        "- Build the actual requested product experience with domain-specific content, labels, actions, and data.\n"
+        "- Never leak clarification questions, raw chat transcripts, or planning prose into the UI.\n"
+        "- Do not use generic copy like New item, Generated app, Edit this content, Feature 1, or Placeholder.\n"
+        "- The app must be visibly interactive: buttons, tabs, filters, forms, cards, navigation, or controls must change state in the UI.\n"
+        "- If the prompt is a website, create a polished landing/page experience with hero, navigation, sections, cards, CTA, and responsive layout. Website cards/sections must be selectable or navigable, not static blocks.\n"
+        "- If the prompt is a shop/marketplace, include realistic products, category filters, detail states, cart behavior, totals, and checkout/confirmation flow.\n"
+        "- If the prompt is a portfolio, include projects, skills, experience, about/contact sections, and strong visual hierarchy.\n"
+        "- If the prompt is a tool, include the real inputs, computed outputs, validation, history, reset/export actions where relevant.\n\n"
+        
+        "## File Organization (CRITICAL - Follow Gemini's Approach):\n"
+        "Create files with clear separation of concerns based on the plan files list:\n"
+        "- Entry/config files first\n"
+        "- Then shared utilities\n"
+        "- Then components/hooks/routes/controllers\n"
+        "- Then styles and README\n"
+        "- Each component should be 50-150 lines\n\n"
+        
+        "## Examples of Good File Structure:\n"
+        "React Notepad: package.json, index.html, src/main.jsx, src/App.jsx, "
+        "src/components/Toolbar.jsx, src/components/Editor.jsx, src/hooks/useLocalState.js, "
+        "src/styles/global.css, README.md\n\n"
+        
+        "React + Node app: package.json, frontend/package.json, frontend/src/App.jsx, "
+        "backend/package.json, backend/src/server.js, backend/src/routes/items.js, "
+        "backend/src/controllers/itemsController.js, backend/src/models/itemStore.js, shared/constants.js\n\n"
+        
+        "## Technical Requirements:\n"
+        "- No CDN links or remote script src.\n"
+        "- All code self-contained in the files object.\n"
+        "- Every interactive control must work.\n"
+        "- Use React state/hooks for UI interactions such as active tabs, selected cards, filters, modal/detail panels, cart state, form submission, theme toggles, or calculations.\n"
+        "- Avoid dead anchors. Use buttons or React Router links that render visible state changes.\n"
+        "- localStorage is acceptable only for frontend-only persistence.\n\n"
+        
+        "## Code Quality:\n"
+        "- NO placeholder text (no lorem ipsum, no TODO comments)\n"
+        "- Every control must work (no dead buttons)\n"
+        "- Real functionality, not mock UI\n"
+        "- Clean, readable code with comments\n"
+        "- Proper error handling\n\n"
+        
+        "## Response Format:\n"
+        'Return JSON only: {"files": {"path": "content", ...}}\n'
+        "Include ALL files mentioned above. Each component gets its own file.\n\n"
+        
+        "## Styling:\n"
+        "- Use CSS custom properties from the plan theme\n"
+        "- Use a modern font stack: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif\n"
+        "- Use strong spacing, visual rhythm, cards, states, shadows, hover/focus styles, and responsive grids\n"
+        "- Mobile-responsive (works on phone/tablet/desktop)\n"
+        "- Modern, clean UI with proper spacing\n"
+        "- Accessibility: proper labels, ARIA when needed\n"
     )
+    
     user = (
-        f"stack=react theme={plan.theme} layout={plan.layout}\n"
-        f"summary={job.intent.summary}\n"
-        f"prompt={job.prompt}\n\n"
-        f"Current index.html:\n{files.get('index.html', '')[:5000]}\n\n"
-        f"app.js:\n{files.get('app.js', '')[:2500]}"
+        f"Requirements: {job.prompt}\n\n"
+        f"Summary: {job.intent.summary}\n\n"
+        f"Architecture Plan:\n{json.dumps(plan.to_payload(), indent=2)}\n\n"
+        "Generate the complete application following the exact stack and file structure above."
     )
     return system, user
 
 
-def _maybe_llm_overlay(job: AgentJob, files: FileMap, plan: SessionPlan) -> FileMap:
-    from terrarium_agents.llm import complete_json
+def _maybe_llm_overlay(job: AgentJob, plan: SessionPlan) -> FileMap:
+    from terrarium_agents.llm import complete_json, nvidia_api_key
 
-    system, user = _overlay_prompt(job, files, plan)
-    payload = complete_json(system, user, purpose="codegen")
+    system, user = _overlay_prompt(job, plan)
+    payload = complete_json(system, user, purpose="codegen", nvidia_first=bool(nvidia_api_key()))
     if not payload:
+        logger.warning("Codegen overlay %s returned no parseable JSON payload", job.sessionId)
         return {}
     raw_files = payload.get("files")
+    payload_keys = sorted(str(key) for key in payload.keys())
+    logger.info("Codegen overlay %s JSON keys=%s", job.sessionId, payload_keys[:20])
     if not isinstance(raw_files, dict):
+        logger.warning(
+            "Codegen overlay %s missing files object; trying top-level file keys",
+            job.sessionId,
+        )
         raw_files = {
             name: payload[name]
             for name in (
@@ -700,16 +1268,32 @@ def _maybe_llm_overlay(job: AgentJob, files: FileMap, plan: SessionPlan) -> File
             if isinstance(payload.get(name), str)
         }
     overlay: FileMap = {}
+    skipped: list[str] = []
     for name, body in raw_files.items():
         if not isinstance(name, str) or not isinstance(body, str):
+            skipped.append(f"{name!r}: non-string path or body")
             continue
         rel = name.replace("\\", "/").lstrip("/")
         if ".." in rel or not _SAFE_PATH.match(rel):
+            skipped.append(f"{name}: unsafe path")
             continue
         suffix = Path(rel).suffix.lower() or (".html" if rel.endswith("html") else "")
-        if suffix not in _ALLOWED_SUFFIX:
+        if suffix not in _ALLOWED_SUFFIX and Path(rel).name not in _ALLOWED_NAMES:
+            skipped.append(f"{name}: unsupported suffix")
             continue
         overlay[rel] = body
+    if skipped:
+        logger.warning(
+            "Codegen overlay %s skipped files=%s",
+            job.sessionId,
+            skipped[:12],
+        )
+    if not overlay:
+        logger.warning(
+            "Codegen overlay %s has no safe file entries after sanitizing keys=%s",
+            job.sessionId,
+            payload_keys[:20],
+        )
     return overlay
 
 
@@ -727,7 +1311,7 @@ def _safe_file_tuple(value: object) -> tuple[str, ...]:
         if ".." in rel or not _SAFE_PATH.match(rel):
             continue
         suffix = Path(rel).suffix.lower()
-        if suffix not in _ALLOWED_SUFFIX and rel != "README.md":
+        if suffix not in _ALLOWED_SUFFIX and Path(rel).name not in _ALLOWED_NAMES:
             continue
         names.append(rel)
     return tuple(names)
@@ -743,16 +1327,24 @@ def _has_html_document(body: str) -> bool:
     return "<html" in body.lower()
 
 
+def _entry_html(files: FileMap) -> str:
+    return files.get("index.html") or files.get("frontend/index.html") or ""
+
+
 def _is_static_preview(files: FileMap) -> bool:
-    html = files.get("index.html", "")
+    return _static_preview_error(files) is None
+
+
+def _static_preview_error(files: FileMap) -> str | None:
+    html = _entry_html(files)
     if not _has_html_document(html):
-        return False
+        return f"missing index.html HTML document; files={sorted(files.keys())}"
     blob = "\n".join(files.values())
     if _CDN_RE.search(blob):
-        return False
+        return "uses a CDN or external package reference, which cannot run in the static sandbox"
     if re.search(r"""src\s*=\s*['"]https?://""", html, re.I):
-        return False
-    return True
+        return "index.html references an external script URL"
+    return None
 
 
 def _assert_file_sizes(files: FileMap) -> None:
