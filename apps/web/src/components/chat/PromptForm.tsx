@@ -25,30 +25,32 @@ export function PromptForm({
       onSubmit={onSubmit}
       sx={{
         px: 2.5,
-        py: 2,
+        py: 2.25,
         borderTop: 1,
         borderColor: "divider",
-        bgcolor: "background.paper",
+        bgcolor: "rgba(255,255,255,0.94)",
+        backdropFilter: "blur(14px)",
       }}
     >
       <Box sx={{ maxWidth: 720, mx: "auto" }}>
         <Paper
-          elevation={1}
+          elevation={0}
           sx={{
             display: "flex",
             alignItems: "flex-end",
             gap: 1,
-            minHeight: 48,
+            minHeight: 54,
             px: 2,
-            py: 1,
+            py: 1.15,
             border: 1,
             borderColor: canSend ? "primary.main" : "divider",
-            borderRadius: 3,
+            borderRadius: 2.5,
             bgcolor: "background.paper",
-            transition: "border-color 0.2s, box-shadow 0.2s",
+            boxShadow: "0 14px 34px rgba(17, 24, 39, 0.08)",
+            transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
             "&:focus-within": {
               borderColor: "primary.main",
-              boxShadow: "0 0 0 3px rgba(26, 115, 232, 0.1)",
+              boxShadow: "0 0 0 4px rgba(110, 20, 41, 0.08), 0 16px 38px rgba(17, 24, 39, 0.1)",
             },
           }}
         >
@@ -67,7 +69,7 @@ export function PromptForm({
                 event.currentTarget.form?.requestSubmit();
               }
             }}
-            placeholder="Describe your app... (e.g., 'build me a todo list')"
+            placeholder="Describe the app you want to build..."
             sx={{
               fontSize: "0.95rem",
               lineHeight: 1.5,
@@ -91,10 +93,10 @@ export function PromptForm({
               height: 36,
               "&:hover": {
                 bgcolor: canSend ? "primary.dark" : "action.disabledBackground",
-                transform: canSend ? "scale(1.05)" : "none",
+                transform: canSend ? "translateY(-1px)" : "none",
               },
               transition: "all 0.2s",
-              boxShadow: canSend ? "0 2px 8px rgba(26, 115, 232, 0.3)" : "none",
+              boxShadow: canSend ? "0 10px 22px rgba(110, 20, 41, 0.22)" : "none",
             }}
           >
             <SendRoundedIcon sx={{ fontSize: 20 }} />
@@ -113,7 +115,7 @@ export function PromptForm({
           <strong>Enter</strong> to send · <strong>Shift+Enter</strong> for new line
         </Typography>
         {status ? (
-          <Alert severity="error" sx={{ mt: 1.5, borderRadius: 2 }}>
+          <Alert severity="error" sx={{ mt: 1.5, borderRadius: 1.5 }}>
             {status}
           </Alert>
         ) : null}

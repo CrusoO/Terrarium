@@ -45,7 +45,9 @@ export function ChatPane({
         height: "100%",
         minHeight: 0,
         flex: 1,
-        bgcolor: "background.default",
+        bgcolor: "#f7f8fa",
+        borderRight: 1,
+        borderColor: "divider",
       }}
     >
       <Stack
@@ -54,25 +56,29 @@ export function ChatPane({
         sx={{
           alignItems: "center",
           px: 3,
-          py: 2,
+          py: 2.25,
           borderBottom: 1,
           borderColor: "divider",
-          bgcolor: "background.paper",
+          bgcolor: "rgba(255,255,255,0.92)",
+          backdropFilter: "blur(14px)",
         }}
       >
         <Avatar 
           sx={{ 
-            bgcolor: "primary.main", 
+            bgcolor: "background.paper",
+            color: "primary.main",
             width: 40, 
             height: 40,
-            boxShadow: "0 2px 8px rgba(26, 115, 232, 0.2)"
+            border: 1,
+            borderColor: "divider",
+            boxShadow: "0 10px 24px rgba(17, 24, 39, 0.08)"
           }}
         >
           <AutoAwesomeRoundedIcon sx={{ fontSize: 20 }} />
         </Avatar>
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.25 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 1.2, fontSize: "1.1rem" }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: "1.05rem", letterSpacing: "-0.02em" }}>
               Terrarium
             </Typography>
             <Chip 
@@ -84,7 +90,8 @@ export function ChatPane({
                 height: 22, 
                 fontSize: "0.7rem",
                 fontWeight: 600,
-                borderRadius: "4px"
+                borderRadius: 1.5,
+                bgcolor: "primary.light"
               }} 
             />
           </Stack>
@@ -93,15 +100,18 @@ export function ChatPane({
           </Typography>
         </Box>
       </Stack>
-      <Box ref={scrollerRef} sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2, py: 3 }}>
+      <Box ref={scrollerRef} sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2.5, py: 3 }}>
         {chat.length === 0 ? (
           <Stack direction="row" spacing={1.5} sx={{ alignItems: "flex-start", maxWidth: 720, mx: "auto" }}>
             <Avatar 
               sx={{ 
-                bgcolor: "primary.main", 
+                bgcolor: "background.paper",
+                color: "primary.main",
                 width: 32, 
                 height: 32,
-                boxShadow: "0 1px 4px rgba(26, 115, 232, 0.15)"
+                border: 1,
+                borderColor: "divider",
+                boxShadow: "0 8px 18px rgba(17, 24, 39, 0.08)"
               }}
             >
               <AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />
@@ -118,10 +128,11 @@ export function ChatPane({
                   borderColor: "divider",
                   borderRadius: 2,
                   bgcolor: "background.paper",
+                  boxShadow: "0 12px 30px rgba(17, 24, 39, 0.06)",
                 }}
               >
                 <Typography variant="body2" sx={{ lineHeight: 1.7, color: "text.primary" }}>
-                  👋 Hey there! What kind of app should we build today?
+                  What kind of app should we build today?
                 </Typography>
               </Paper>
             </Box>

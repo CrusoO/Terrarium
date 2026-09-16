@@ -4,6 +4,7 @@ import html
 import json
 import logging
 import os
+import posixpath
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +15,7 @@ from terrarium_contracts import AgentJob, AgentResult, BackendStack, FileMap, Fr
 _SAFE_PATH = re.compile(r"^(?!\.)[a-zA-Z0-9._/-]+$")
 _ALLOWED_SUFFIX = {".html", ".css", ".js", ".jsx", ".json", ".md", ".svg", ".txt"}
 _ALLOWED_NAMES = {"README.md", ".env.example"}
+_RESOLVABLE_IMPORT_SUFFIXES = (".js", ".jsx", ".ts", ".tsx", ".json", ".css", ".svg")
 _KNOWN_STACKS = frozenset({"react", "fullstack"})
 _MAX_FILE_BYTES = 256_000
 # Keyword scan, not a real architecture pass. Upgrade: always take the LLM plan when live models stay cheap.
@@ -51,6 +53,10 @@ _CDN_RE = re.compile(
     re.I,
 )
 _ROOT_BLOCK = re.compile(r":root\s*\{[^}]*\}", re.S)
+_RELATIVE_IMPORT_RE = re.compile(
+    r"""(?:import|export)\s+(?:[^'"()]+?\s+from\s*)?['"](\.{1,2}/[^'"]+)['"]|import\s*\(\s*['"](\.{1,2}/[^'"]+)['"]\s*\)""",
+    re.M,
+)
 
 Complexity = Literal["basic", "complex"]
 Layout = Literal["board", "form", "list", "split"]
@@ -66,7 +72,7 @@ _THEMES: dict[ThemeName, dict[str, str]] = {
         "muted": "#5c4a4e",
         "surface": "#ffffff",
         "line": "#eadfde",
-        "radius": "1rem",
+        "radius": "12px",
     },
     "light": {
         "bg": "#f7f7f8",
@@ -75,7 +81,7 @@ _THEMES: dict[ThemeName, dict[str, str]] = {
         "muted": "#525252",
         "surface": "#ffffff",
         "line": "#e5e5e5",
-        "radius": "1rem",
+        "radius": "12px",
     },
     "modern": {
         "bg": "#f4f6fb",
@@ -84,7 +90,7 @@ _THEMES: dict[ThemeName, dict[str, str]] = {
         "muted": "#64748b",
         "surface": "#ffffff",
         "line": "#e2e8f0",
-        "radius": "1.25rem",
+        "radius": "14px",
     },
     "dark": {
         "bg": "#161314",
@@ -93,7 +99,7 @@ _THEMES: dict[ThemeName, dict[str, str]] = {
         "muted": "#c4b4b8",
         "surface": "#221c1e",
         "line": "#3a3032",
-        "radius": "1rem",
+        "radius": "12px",
     },
 }
 
@@ -250,7 +256,7 @@ def _root_css(theme: ThemeName) -> str:
         f"  --radius: {tokens['radius']};\n"
         "  color: var(--ink);\n"
         "  background: var(--bg);\n"
-        '  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;\n'
+        '  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;\n'
         "}"
     )
 
@@ -382,7 +388,10 @@ def _looks_like_keypad(html: str) -> bool:
     return "keypad" in lower or "calc-keys" in lower
 
 
-_REACT_DEFAULT_IMPORT_RE = re.compile(r"^\s*import\s+React(?:\s|,)\s*from\s*['\"]react['\"]", re.M)
+_REACT_DEFAULT_IMPORT_RE = re.compile(
+    r"^\s*import\s+React(?:\s*,[^\n;]*)?\s+from\s*['\"]react['\"]",
+    re.M,
+)
 
 
 def _ensure_react_default_imports(files: FileMap) -> FileMap:
@@ -571,6 +580,9 @@ def generate(job: AgentJob, plan: SessionPlan | None = None) -> AgentResult:
     files = _finalize_files(files)
     if not _has_html_document(_entry_html(files)):
         raise CodeGeneratorError("Generator output is missing a valid index.html")
+    final_error = _static_preview_error(files)
+    if final_error is not None:
+        raise CodeGeneratorError(f"Generator output is not runnable: {final_error}")
     _assert_file_sizes(files)
     return AgentResult(
         files=files,
@@ -839,38 +851,38 @@ def _stub_react_files(title: str, prompt: str, plan: SessionPlan | None = None) 
         ),
         "src/utils/helpers.js": "export function clampText(value, max = 120) { return String(value || '').slice(0, max); }\n",
         "src/styles/global.css": (
-            ":root { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; color: #101827; background: #f6f8fc; }\n"
+            ":root { font-family: system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; color: #101827; background: #f7f8fa; }\n"
             "* { box-sizing: border-box; }\nbody { margin: 0; }\n"
-            "body { background: radial-gradient(circle at top left, #dbeafe, transparent 32rem), radial-gradient(circle at top right, #fce7f3, transparent 28rem), #f6f8fc; }\n"
-            ".app-shell { min-height: 100vh; padding: clamp(24px, 5vw, 64px); max-width: 1180px; margin: 0 auto; }\n"
+            "body { background: linear-gradient(135deg, #f8fafc, #eef1f5 52%, #f7f8fa); }\n"
+            ".app-shell { min-height: 100vh; padding: clamp(24px, 5vw, 60px); max-width: 1180px; margin: 0 auto; }\n"
             ".toolbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 32px; color: #475569; }\n"
             ".toolbar strong { letter-spacing: .08em; text-transform: uppercase; font-size: 12px; }\n"
             ".toolbar nav, .hero-actions, .panel-actions { display: flex; gap: 10px; flex-wrap: wrap; }\n"
-            "button { border: 0; border-radius: 999px; background: #2563eb; color: white; padding: 12px 18px; font-weight: 800; cursor: pointer; box-shadow: 0 12px 24px rgba(37,99,235,.24); transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }\n"
+            "button { border: 0; border-radius: 10px; background: #2563eb; color: white; padding: 12px 18px; font-weight: 750; cursor: pointer; box-shadow: 0 10px 22px rgba(37,99,235,.18); transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }\n"
             "button:hover { transform: translateY(-2px); box-shadow: 0 18px 32px rgba(37,99,235,.28); }\n"
             "button.active, button.selected { background: #0f172a; }\n"
             ".ghost-button { background: white; color: #1d4ed8; border: 1px solid #dbeafe; box-shadow: none; }\n"
-            ".hero { display: grid; gap: 16px; margin-bottom: 34px; padding: clamp(28px, 6vw, 72px); border-radius: 34px; background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(239,246,255,.9)); border: 1px solid rgba(148,163,184,.22); box-shadow: 0 24px 70px rgba(15,23,42,.10); }\n"
+            ".hero { display: grid; gap: 16px; margin-bottom: 32px; padding: clamp(28px, 5vw, 56px); border-radius: 18px; background: rgba(255,255,255,.88); border: 1px solid rgba(148,163,184,.22); box-shadow: 0 20px 50px rgba(15,23,42,.09); }\n"
             ".hero p { margin: 0; color: #2563eb; font-size: 12px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }\n"
-            ".hero h1 { max-width: 820px; margin: 0; font-size: clamp(38px, 7vw, 76px); line-height: .95; letter-spacing: -.06em; }\n"
-            ".hero span { max-width: 720px; color: #475569; font-size: clamp(16px, 2vw, 20px); line-height: 1.75; }\n"
+            ".hero h1 { max-width: 900px; margin: 0; font-size: clamp(32px, 5vw, 54px); line-height: 1.04; letter-spacing: -.045em; text-wrap: balance; }\n"
+            ".hero span { max-width: 760px; color: #475569; font-size: clamp(15px, 1.7vw, 18px); line-height: 1.65; }\n"
             ".metrics { display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 12px; margin-top: 10px; }\n"
-            ".metrics strong { padding: 16px; border-radius: 20px; background: rgba(255,255,255,.72); font-size: 24px; }\n"
+            ".metrics strong { padding: 14px; border-radius: 12px; background: rgba(255,255,255,.72); font-size: 22px; }\n"
             ".metrics small { display: block; margin-top: 4px; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }\n"
             ".card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }\n"
-            ".card { display: block; text-align: left; color: #101827; min-height: 230px; background: rgba(255,255,255,.9); border: 1px solid rgba(148,163,184,.24); border-radius: 28px; padding: 24px; box-shadow: 0 16px 40px rgba(15, 23, 42, .08); }\n"
-            ".card.selected { outline: 4px solid rgba(37,99,235,.18); background: linear-gradient(135deg, white, #eff6ff); }\n"
+            ".card { display: block; text-align: left; color: #101827; min-height: 220px; background: rgba(255,255,255,.9); border: 1px solid rgba(148,163,184,.24); border-radius: 16px; padding: 22px; box-shadow: 0 14px 34px rgba(15, 23, 42, .07); }\n"
+            ".card.selected { outline: 3px solid rgba(37,99,235,.16); background: linear-gradient(135deg, white, #eff6ff); }\n"
             ".card span { color: #94a3b8; font-size: 12px; font-weight: 900; letter-spacing: .1em; }\n"
             ".card h2 { margin: 22px 0 10px; font-size: 22px; line-height: 1.1; letter-spacing: -.03em; }\n"
             ".card p { color: #475569; line-height: 1.7; margin: 0; }\n"
-            ".detail-panel, .contact-panel { margin-top: 22px; padding: clamp(24px, 4vw, 42px); border-radius: 30px; background: #0f172a; color: white; box-shadow: 0 22px 60px rgba(15,23,42,.18); }\n"
+            ".detail-panel, .contact-panel { margin-top: 22px; padding: clamp(24px, 4vw, 40px); border-radius: 18px; background: #0f172a; color: white; box-shadow: 0 20px 48px rgba(15,23,42,.16); }\n"
             ".detail-panel { display: flex; justify-content: space-between; gap: 24px; align-items: end; }\n"
             ".detail-panel p, .contact-panel p { margin: 0 0 8px; color: #93c5fd; text-transform: uppercase; font-size: 12px; font-weight: 900; letter-spacing: .1em; }\n"
             ".detail-panel h2, .contact-panel h2 { margin: 0 0 10px; font-size: clamp(26px, 4vw, 44px); letter-spacing: -.04em; }\n"
             ".detail-panel span { color: #cbd5e1; line-height: 1.75; max-width: 640px; display: block; }\n"
             "form { display: grid; gap: 16px; max-width: 720px; }\n"
             "label { display: grid; gap: 8px; color: #cbd5e1; font-weight: 800; }\n"
-            "input, textarea { width: 100%; border: 1px solid #334155; border-radius: 18px; padding: 14px 16px; background: #1e293b; color: white; font: inherit; }\n"
+            "input, textarea { width: 100%; border: 1px solid #334155; border-radius: 10px; padding: 14px 16px; background: #1e293b; color: white; font: inherit; }\n"
             "textarea { min-height: 120px; resize: vertical; }\n"
             ".success { display: block; color: #86efac; }\n"
             "@media (max-width: 720px) { .toolbar, .detail-panel { align-items: flex-start; flex-direction: column; } .metrics { grid-template-columns: 1fr; } }\n"
@@ -1222,8 +1234,10 @@ def _overlay_prompt(job: AgentJob, plan: SessionPlan) -> tuple[str, str]:
         
         "## Styling:\n"
         "- Use CSS custom properties from the plan theme\n"
-        "- Use a modern font stack: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif\n"
-        "- Use strong spacing, visual rhythm, cards, states, shadows, hover/focus styles, and responsive grids\n"
+        "- Use the legal Apple-style system stack: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif. Do not import or embed SF Pro files.\n"
+        "- Keep headings balanced and responsive; avoid huge hero titles that wrap every 1-2 words.\n"
+        "- Use refined radii: 8-12px for buttons/inputs, 14-18px for cards/panels. Avoid pill corners unless the element is a tiny status chip.\n"
+        "- Use strong spacing, visual rhythm, cards, states, subtle shadows, hover/focus styles, and responsive grids\n"
         "- Mobile-responsive (works on phone/tablet/desktop)\n"
         "- Modern, clean UI with proper spacing\n"
         "- Accessibility: proper labels, ARIA when needed\n"
@@ -1269,8 +1283,9 @@ def _maybe_llm_overlay(job: AgentJob, plan: SessionPlan) -> FileMap:
         }
     overlay: FileMap = {}
     skipped: list[str] = []
-    for name, body in raw_files.items():
-        if not isinstance(name, str) or not isinstance(body, str):
+    for name, value in raw_files.items():
+        body = _coerce_file_body(value)
+        if not isinstance(name, str) or body is None:
             skipped.append(f"{name!r}: non-string path or body")
             continue
         rel = name.replace("\\", "/").lstrip("/")
@@ -1295,6 +1310,22 @@ def _maybe_llm_overlay(job: AgentJob, plan: SessionPlan) -> FileMap:
             payload_keys[:20],
         )
     return overlay
+
+
+def _coerce_file_body(value: object) -> str | None:
+    if isinstance(value, str):
+        return value
+    if not isinstance(value, dict):
+        return None
+    for key in ("content", "body", "source", "code", "text"):
+        body = value.get(key)
+        if isinstance(body, str):
+            return body
+    if len(value) == 1:
+        only = next(iter(value.values()))
+        if isinstance(only, str):
+            return only
+    return None
 
 
 def _string_tuple(value: object) -> tuple[str, ...]:
@@ -1344,6 +1375,41 @@ def _static_preview_error(files: FileMap) -> str | None:
         return "uses a CDN or external package reference, which cannot run in the static sandbox"
     if re.search(r"""src\s*=\s*['"]https?://""", html, re.I):
         return "index.html references an external script URL"
+    missing_import = _missing_relative_import(files)
+    if missing_import:
+        return missing_import
+    return None
+
+
+def _missing_relative_import(files: FileMap) -> str | None:
+    module_paths = tuple(
+        path
+        for path in files
+        if Path(path).suffix.lower() in {".js", ".jsx", ".ts", ".tsx"}
+    )
+    for path in module_paths:
+        for match in _RELATIVE_IMPORT_RE.finditer(files[path]):
+            spec = match.group(1) or match.group(2) or ""
+            if not _resolve_relative_import(path, spec, files):
+                return f"{path} imports missing module {spec}"
+    return None
+
+
+def _resolve_relative_import(source_path: str, specifier: str, files: FileMap) -> str | None:
+    source_dir = posixpath.dirname(source_path.replace("\\", "/"))
+    target = posixpath.normpath(posixpath.join(source_dir, specifier))
+    if target.startswith("../"):
+        return None
+    if target in files:
+        return target
+    target_suffix = Path(target).suffix.lower()
+    candidates = [target] if target_suffix else []
+    if not target_suffix:
+        candidates.extend(f"{target}{suffix}" for suffix in _RESOLVABLE_IMPORT_SUFFIXES)
+        candidates.extend(f"{target}/index{suffix}" for suffix in _RESOLVABLE_IMPORT_SUFFIXES)
+    for candidate in candidates:
+        if candidate in files:
+            return candidate
     return None
 
 

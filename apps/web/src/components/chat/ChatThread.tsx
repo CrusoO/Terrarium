@@ -85,8 +85,8 @@ function UserBubble({ text }: { text: string }) {
           py: 1.5,
           bgcolor: "primary.main",
           color: "primary.contrastText",
-          borderRadius: "16px 16px 4px 16px",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+          borderRadius: "16px 16px 5px 16px",
+          boxShadow: "0 12px 28px rgba(110, 20, 41, 0.18)",
         }}
       >
         {blocks ? (
@@ -137,10 +137,13 @@ function TerrariumAvatar() {
   return (
     <Avatar 
       sx={{ 
-        bgcolor: "primary.main", 
+        bgcolor: "background.paper",
+        color: "primary.main",
         width: 32, 
         height: 32,
-        boxShadow: "0 1px 4px rgba(26, 115, 232, 0.15)"
+        border: 1,
+        borderColor: "divider",
+        boxShadow: "0 8px 18px rgba(17, 24, 39, 0.08)"
       }}
     >
       <AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />
@@ -157,7 +160,7 @@ export function ChatThread({ chat, busy = false, onSendChoice, onRetryAnyway }: 
   const blocks = groupChat(chat);
 
   return (
-    <Stack component="ol" spacing={3} sx={{ m: 0, p: 0, listStyle: "none" }}>
+    <Stack component="ol" spacing={2.75} sx={{ m: 0, p: 0, listStyle: "none" }}>
       {blocks.map((block, blockIndex) => {
         if (block.kind === "events") {
           return (
@@ -178,7 +181,8 @@ export function ChatThread({ chat, busy = false, onSendChoice, onRetryAnyway }: 
                   border: 1, 
                   borderColor: "divider", 
                   borderRadius: 2,
-                  bgcolor: "background.paper"
+                  bgcolor: "rgba(255,255,255,0.92)",
+                  boxShadow: "0 12px 30px rgba(17, 24, 39, 0.06)"
                 }}
               >
                 <AgentTrace events={block.events} live={busy} />
@@ -214,6 +218,7 @@ export function ChatThread({ chat, busy = false, onSendChoice, onRetryAnyway }: 
                   bgcolor: "error.light",
                   minWidth: 0,
                   flex: 1,
+                  boxShadow: "0 12px 30px rgba(217, 48, 37, 0.08)",
                 }}
               >
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: "error.dark" }}>
@@ -260,7 +265,8 @@ export function ChatThread({ chat, busy = false, onSendChoice, onRetryAnyway }: 
                   border: 1, 
                   borderColor: "divider", 
                   borderRadius: 2,
-                  bgcolor: "background.paper"
+                  bgcolor: "rgba(255,255,255,0.92)",
+                  boxShadow: "0 12px 30px rgba(17, 24, 39, 0.06)"
                 }}
               >
                 <ThinkingIndicator label={item.label} />
@@ -294,6 +300,7 @@ export function ChatThread({ chat, busy = false, onSendChoice, onRetryAnyway }: 
                     borderColor: "divider",
                     borderRadius: 2,
                     bgcolor: "background.paper",
+                    boxShadow: "0 12px 30px rgba(17, 24, 39, 0.06)",
                   }}
                 >
                   <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
@@ -313,7 +320,8 @@ export function ChatThread({ chat, busy = false, onSendChoice, onRetryAnyway }: 
                             px: 1.5, 
                             py: 1.25,
                             borderRadius: 1.5,
-                            bgcolor: "background.default"
+                            bgcolor: "#f8fafc",
+                            borderColor: "divider"
                           }}
                         >
                           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>

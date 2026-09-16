@@ -17,18 +17,18 @@ export const terrariumTheme = createTheme({
     warning: { main: "#f9ab00", light: "#fef7e0" },
     error: { main: "#d93025", light: "#fce8e6" },
     background: {
-      default: "#faf8f7", // Original warm background
+      default: "#f7f8fa",
       paper: "#ffffff",
     },
     text: {
-      primary: "#1e1e1e", // Original darker text
-      secondary: "#6b6567", // Original muted text
+      primary: "#17181c",
+      secondary: "#667085",
     },
-    divider: "#e6dddf", // Original divider
+    divider: "#e5e7eb",
   },
-  shape: { borderRadius: 8 },
+  shape: { borderRadius: 10 },
   typography: {
-    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     fontSize: 14,
     h1: { fontWeight: 600, fontSize: "2rem", letterSpacing: "-0.02em" },
     h2: { fontWeight: 600, fontSize: "1.5rem", letterSpacing: "-0.01em" },
@@ -48,7 +48,7 @@ export const terrariumTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 10,
           paddingTop: 8,
           paddingBottom: 8,
           paddingLeft: 16,
@@ -74,7 +74,7 @@ export const terrariumTheme = createTheme({
           backgroundImage: "none",
         },
         elevation1: {
-          boxShadow: "0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15)",
+          boxShadow: "0 10px 30px rgba(17, 24, 39, 0.08)",
         },
       },
     },

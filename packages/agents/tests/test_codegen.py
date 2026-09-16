@@ -170,6 +170,73 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("missing index.html HTML document", message)
         self.assertIn("Not serving a template", message)
 
+    def test_live_model_filemap_preserves_nested_file_content(self) -> None:
+        from unittest.mock import patch
+
+        os.environ["TERRARIUM_AGENTS"] = "live"
+        job = AgentJob(
+            sessionId="abc123",
+            intent=Intent(kind="new", stack="react", summary="Calculator"),
+            prompt="Build a calculator",
+        )
+        plan = SessionPlan(
+            complexity="basic",
+            stack="react",
+            screens=("main",),
+            data=("math",),
+            files=("index.html", "src/main.jsx", "src/App.jsx", "src/hooks/useCalculator.js"),
+            notes="Calculator",
+        )
+        payload = {
+            "files": {
+                "package.json": "{\"type\":\"module\",\"dependencies\":{\"react\":\"^19.1.1\",\"react-dom\":\"^19.1.1\",\"vite\":\"^7.1.5\",\"@vitejs/plugin-react\":\"^5.0.3\"},\"scripts\":{\"dev\":\"vite\"}}",
+                "index.html": "<!doctype html><html><body><div id=\"root\"></div><script type=\"module\" src=\"/src/main.jsx\"></script></body></html>",
+                "src/main.jsx": "import App from './App.jsx';",
+                "src/App.jsx": "import useCalculator from './hooks/useCalculator'; export default function App(){ useCalculator(); return <main>Calculator</main>; }",
+                "src/hooks/useCalculator.js": {"content": "export default function useCalculator(){ return null; }"},
+                "src/styles/global.css": "body{margin:0}",
+            }
+        }
+
+        with patch("terrarium_agents.llm.complete_json", return_value=payload):
+            result = generate(job, plan)
+
+        self.assertIn("src/hooks/useCalculator.js", result.files)
+        self.assertIn("useCalculator", result.files["src/hooks/useCalculator.js"])
+
+    def test_live_model_filemap_rejects_missing_relative_import(self) -> None:
+        from unittest.mock import patch
+
+        os.environ["TERRARIUM_AGENTS"] = "live"
+        job = AgentJob(
+            sessionId="abc123",
+            intent=Intent(kind="new", stack="react", summary="Calculator"),
+            prompt="Build a calculator",
+        )
+        plan = SessionPlan(
+            complexity="basic",
+            stack="react",
+            screens=("main",),
+            data=("math",),
+            files=("index.html", "src/main.jsx", "src/App.jsx"),
+            notes="Calculator",
+        )
+        payload = {
+            "files": {
+                "package.json": "{\"type\":\"module\",\"dependencies\":{\"react\":\"^19.1.1\",\"react-dom\":\"^19.1.1\",\"vite\":\"^7.1.5\",\"@vitejs/plugin-react\":\"^5.0.3\"},\"scripts\":{\"dev\":\"vite\"}}",
+                "index.html": "<!doctype html><html><body><div id=\"root\"></div><script type=\"module\" src=\"/src/main.jsx\"></script></body></html>",
+                "src/main.jsx": "import App from './App.jsx';",
+                "src/App.jsx": "import useCalculator from './hooks/useCalculator'; export default function App(){ useCalculator(); return <main>Calculator</main>; }",
+                "src/styles/global.css": "body{margin:0}",
+            }
+        }
+
+        with patch("terrarium_agents.llm.complete_json", return_value=payload):
+            with self.assertRaises(CodeGeneratorError) as ctx:
+                generate(job, plan)
+
+        self.assertIn("src/App.jsx imports missing module ./hooks/useCalculator", str(ctx.exception))
+
     def test_modify_is_rejected(self) -> None:
         with self.assertRaises(CodeGeneratorError) as ctx:
             generate(
@@ -413,6 +480,38 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("import React from 'react';", result.files["src/App.jsx"])
         self.assertIn("import React from 'react';", result.files["src/components/AppShell.jsx"])
         self.assertIn("import React from 'react';", result.files["src/components/Toolbar.jsx"])
+
+    def test_react_import_guard_accepts_named_react_import(self) -> None:
+        from unittest.mock import patch
+
+        os.environ["TERRARIUM_AGENTS"] = "live"
+        job = AgentJob(
+            sessionId="abc123",
+            intent=Intent(kind="new", stack="react", summary="Stateful app"),
+            prompt="Build a stateful app",
+        )
+        plan = SessionPlan(
+            complexity="basic",
+            stack="react",
+            screens=("main",),
+            data=("state",),
+            files=("index.html", "src/main.jsx", "src/App.jsx"),
+            notes="Stateful app",
+        )
+        payload = {
+            "files": {
+                "package.json": "{\"type\":\"module\",\"dependencies\":{\"react\":\"^19.1.1\",\"react-dom\":\"^19.1.1\",\"vite\":\"^7.1.5\",\"@vitejs/plugin-react\":\"^5.0.3\"},\"scripts\":{\"dev\":\"vite\"}}",
+                "index.html": "<!doctype html><html><body><div id=\"root\"></div><script type=\"module\" src=\"/src/main.jsx\"></script></body></html>",
+                "src/main.jsx": "import App from './App.jsx';",
+                "src/App.jsx": "import React, { useState } from 'react'; export default function App(){ const [count] = useState(1); return <main>{count}</main>; }",
+                "src/styles/global.css": "body{margin:0}",
+            }
+        }
+
+        with patch("terrarium_agents.llm.complete_json", return_value=payload):
+            result = generate(job, plan)
+
+        self.assertEqual(result.files["src/App.jsx"].count("from 'react'"), 1)
 
     def test_react_fallback_includes_visible_interactions(self) -> None:
         from terrarium_agents.codegen import generate
