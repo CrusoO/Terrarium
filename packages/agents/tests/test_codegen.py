@@ -4,7 +4,7 @@ import os
 import unittest
 from pathlib import Path
 
-from terrarium_agents.codegen import CodeGeneratorError, generate, load_template
+from terrarium_agents.codegen import CodeGeneratorError, SessionPlan, generate, load_template
 from terrarium_contracts import AgentJob, Intent
 
 
@@ -41,6 +41,7 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("index.html", result.files)
         self.assertIn("Invoice tracker", result.files["index.html"])
         self.assertNotIn("{{TITLE}}", result.files["index.html"])
+        self.assertNotIn("Terrarium ·", result.files["index.html"])
         self.assertTrue(result.commitMessage.startswith("Generate react"))
 
     def test_fullstack_generate_uses_that_kit(self) -> None:
@@ -51,9 +52,9 @@ class CodeGeneratorTests(unittest.TestCase):
                 prompt="fullstack task list",
             )
         )
-        self.assertIn("Terrarium · List", result.files["index.html"])
-        self.assertIn("Store", result.files["index.html"])
-        self.assertIn("localStorage", result.files["app.js"])
+        self.assertIn("Task list", result.files["index.html"])
+        self.assertNotIn("Terrarium ·", result.files["index.html"])
+        self.assertNotIn('id="tool-form"', result.files["index.html"])
 
     def test_draft_files_fills_template_without_llm(self) -> None:
         from terrarium_agents.codegen import draft_files
@@ -88,9 +89,9 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertEqual(plan.stack, "react")
         result = generate(job, plan)
         self.assertEqual(plan.layout, "form")
-        self.assertIn("Terrarium · Form", result.files["index.html"])
         self.assertIn("Pomodoro timer", result.files["index.html"])
-        self.assertIn('id="tool-form"', result.files["index.html"])
+        self.assertNotIn("Terrarium · Form", result.files["index.html"])
+        self.assertNotIn('id="tool-form"', result.files["index.html"])
 
     def test_calculator_draft_uses_form_layout_not_a_product_kit(self) -> None:
         from terrarium_agents.codegen import draft_files, pick_layout
@@ -123,9 +124,51 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertTrue(plan.screens)
         self.assertEqual(plan.layout, "list")
         result = generate(job, plan)
-        self.assertIn("Terrarium · List", result.files["index.html"])
-        self.assertIn("Store", result.files["index.html"])
-        self.assertIn("localStorage", result.files["app.js"])
+        self.assertIn("Team dashboard", result.files["frontend/index.html"])
+        self.assertIn("backend/src/server.js", result.files)
+        self.assertNotIn("Terrarium · List", result.files["frontend/index.html"])
+
+    def test_live_without_model_filemap_uses_deterministic_fallback(self) -> None:
+        from unittest.mock import patch
+
+        os.environ["TERRARIUM_AGENTS"] = "live"
+        job = AgentJob(
+            sessionId="abc123",
+            intent=Intent(kind="new", stack="react", summary="JSON converter"),
+            prompt="modern text to JSON converter",
+        )
+        with patch("terrarium_agents.llm.complete_json", return_value=None):
+            result = generate(job)
+        self.assertIn("package.json", result.files)
+        self.assertIn("src/App.jsx", result.files)
+        self.assertNotIn("Terrarium ·", result.files.get("index.html", ""))
+
+    def test_live_bad_model_filemap_reports_validation_reason(self) -> None:
+        from unittest.mock import patch
+
+        os.environ["TERRARIUM_AGENTS"] = "live"
+        job = AgentJob(
+            sessionId="abc123",
+            intent=Intent(kind="new", stack="react", summary="Notepad"),
+            prompt="Build a notepad",
+        )
+        plan = SessionPlan(
+            complexity="basic",
+            stack="react",
+            screens=("main",),
+            data=("localStorage notes",),
+            files=("index.html", "styles.css", "app.js"),
+            notes="Notepad",
+        )
+        payload = {"files": {"styles.css": "body{}", "app.js": "console.log('x')"}}
+
+        with patch("terrarium_agents.llm.complete_json", return_value=payload):
+            with self.assertRaises(CodeGeneratorError) as ctx:
+                generate(job, plan)
+
+        message = str(ctx.exception)
+        self.assertIn("missing index.html HTML document", message)
+        self.assertIn("Not serving a template", message)
 
     def test_modify_is_rejected(self) -> None:
         with self.assertRaises(CodeGeneratorError) as ctx:
@@ -194,6 +237,7 @@ class CodeGeneratorTests(unittest.TestCase):
             sessionId="abc123",
             intent=Intent(kind="new", stack="react", summary="Personal portfolio"),
             prompt="Build a personal modern website with about and contact",
+            frontendStack="vanilla",
         )
         plan = build_session_plan(job)
         self.assertEqual(plan.layout, "split")
@@ -202,7 +246,7 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("about.html", result.files)
         self.assertIn("contact.html", result.files)
         self.assertIn("js/nav.js", result.files)
-        self.assertIn("site-header", result.files["index.html"])
+        self.assertNotIn("Terrarium ·", result.files["index.html"])
         calc = generate(
             AgentJob(
                 sessionId="abc123",
@@ -210,8 +254,8 @@ class CodeGeneratorTests(unittest.TestCase):
                 prompt="build a tip calculator",
             )
         )
-        self.assertIn('id="tool-form"', calc.files["index.html"])
         self.assertNotIn("about.html", calc.files)
+        self.assertNotIn("Terrarium · Form", calc.files["index.html"])
 
     def test_look_tag_stamps_modern_theme(self) -> None:
         from terrarium_agents.codegen import draft_files, pick_theme
@@ -261,6 +305,156 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertTrue((root / "layouts" / "split" / "contact.html").is_file())
         self.assertTrue((root / "layouts" / "split" / "js" / "nav.js").is_file())
         self.assertFalse((root / "skeletons").exists())
+
+    def test_component_based_structure_generates_multiple_files(self) -> None:
+        """Test that new codegen generates 6+ files with component structure."""
+        from terrarium_agents.codegen import build_session_plan, generate
+
+        # Test calculator (form layout)
+        calc_job = AgentJob(
+            sessionId="abc123",
+            intent=Intent(kind="new", stack="react", summary="Scientific calculator"),
+            prompt="Build a scientific calculator with memory",
+        )
+        calc_plan = build_session_plan(calc_job)
+        self.assertGreaterEqual(len(calc_plan.files), 6, "Should suggest 6+ files")
+        self.assertTrue(
+            any("components/" in f or "utils/" in f for f in calc_plan.files),
+            "Should have component or utils folder structure"
+        )
+
+        # Test notepad (list layout)
+        notepad_job = AgentJob(
+            sessionId="abc456",
+            intent=Intent(kind="new", stack="react", summary="Note taking app"),
+            prompt="build a notepad with markdown",
+        )
+        notepad_plan = build_session_plan(notepad_job)
+        self.assertGreaterEqual(len(notepad_plan.files), 6, "Should suggest 6+ files")
+
+    def test_theme_selection_is_intelligent(self) -> None:
+        """Test that theme selection is context-aware, not hardcoded maroon."""
+        from terrarium_agents.codegen import pick_theme
+
+        # Calculator should be light (neutral)
+        calc_job = AgentJob(
+            sessionId="abc",
+            intent=Intent(kind="new", stack="react", summary="Calculator"),
+            prompt="build a calculator",
+        )
+        self.assertEqual(pick_theme(calc_job), "light")
+
+        # Dashboard should be modern
+        dash_job = AgentJob(
+            sessionId="abc",
+            intent=Intent(kind="new", stack="react", summary="Dashboard"),
+            prompt="build a dashboard",
+        )
+        self.assertEqual(pick_theme(dash_job), "modern")
+
+        # Notepad should be light
+        note_job = AgentJob(
+            sessionId="abc",
+            intent=Intent(kind="new", stack="react", summary="Notepad"),
+            prompt="build a notepad",
+        )
+        self.assertEqual(pick_theme(note_job), "light")
+
+        # Game should be modern
+        game_job = AgentJob(
+            sessionId="abc",
+            intent=Intent(kind="new", stack="react", summary="Game"),
+            prompt="build a fun game",
+        )
+        self.assertEqual(pick_theme(game_job), "modern")
+
+        # Dark mode keyword should be dark
+        dark_job = AgentJob(
+            sessionId="abc",
+            intent=Intent(kind="new", stack="react", summary="App"),
+            prompt="build an app with dark mode",
+        )
+        self.assertEqual(pick_theme(dark_job), "dark")
+
+    def test_react_frontend_project_structure_is_default(self) -> None:
+        from terrarium_agents.codegen import build_session_plan, generate
+
+        job = AgentJob(
+            sessionId="react123",
+            intent=Intent(kind="new", stack="react", summary="Notepad"),
+            prompt="build a notepad with local save",
+            frontendStack="react",
+            backendNeed="auto",
+            backendStack="none",
+        )
+        plan = build_session_plan(job)
+        result = generate(job, plan)
+        self.assertEqual(plan.frontend_stack, "react")
+        self.assertEqual(plan.backend_stack, "none")
+        self.assertIn("package.json", result.files)
+        self.assertIn("src/main.jsx", result.files)
+        self.assertIn("src/App.jsx", result.files)
+        self.assertIn("src/components/AppShell.jsx", result.files)
+        self.assertNotIn("backend/package.json", result.files)
+
+    def test_react_fallback_jsx_modules_import_react(self) -> None:
+        from terrarium_agents.codegen import generate
+
+        result = generate(
+            AgentJob(
+                sessionId="react-imports",
+                intent=Intent(kind="new", stack="react", summary="Dragon shop"),
+                prompt="Build a dragon shop website",
+                frontendStack="react",
+                backendStack="none",
+            )
+        )
+
+        self.assertIn("import React from 'react';", result.files["src/App.jsx"])
+        self.assertIn("import React from 'react';", result.files["src/components/AppShell.jsx"])
+        self.assertIn("import React from 'react';", result.files["src/components/Toolbar.jsx"])
+
+    def test_react_fallback_includes_visible_interactions(self) -> None:
+        from terrarium_agents.codegen import generate
+
+        result = generate(
+            AgentJob(
+                sessionId="react-interactive",
+                intent=Intent(kind="new", stack="react", summary="Portfolio website"),
+                prompt="Build a modern portfolio website with projects, contact, and skills",
+                frontendStack="react",
+                backendStack="none",
+            )
+        )
+
+        self.assertIn("src/components/DetailPanel.jsx", result.files)
+        self.assertIn("src/components/ContactForm.jsx", result.files)
+        self.assertIn("useState", result.files["src/components/AppShell.jsx"])
+        self.assertIn("onSelect", result.files["src/components/FeatureGrid.jsx"])
+        self.assertIn("onSubmit", result.files["src/components/ContactForm.jsx"])
+        combined = "\n".join(result.files.values())
+        self.assertNotIn("Terrarium build", combined)
+        self.assertNotIn("New item", combined)
+
+    def test_backend_prompt_generates_react_node_structure(self) -> None:
+        from terrarium_agents.codegen import build_session_plan, generate
+
+        job = AgentJob(
+            sessionId="node123",
+            intent=Intent(kind="new", stack="fullstack", summary="Team notes"),
+            prompt="build shared team notes with login and a database",
+            frontendStack="react",
+            backendNeed="auto",
+        )
+        plan = build_session_plan(job)
+        result = generate(job, plan)
+        self.assertEqual(plan.backend_stack, "node-express")
+        self.assertIn("frontend/package.json", result.files)
+        self.assertIn("frontend/src/App.jsx", result.files)
+        self.assertIn("frontend/vite.config.js", result.files)
+        self.assertIn("backend/package.json", result.files)
+        self.assertIn("backend/src/server.js", result.files)
+        self.assertIn("shared/constants.js", result.files)
 
 
 if __name__ == "__main__":

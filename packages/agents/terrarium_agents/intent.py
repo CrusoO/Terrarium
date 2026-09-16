@@ -7,6 +7,8 @@ import logging
 import re
 
 from terrarium_contracts import (
+    BackendStack,
+    FrontendStack,
     IntentAgentInput,
     IntentAgentOutput,
     IntentKind,
@@ -31,6 +33,8 @@ INTENT_JSON_SCHEMA: dict[str, object] = {
         "stack": {"type": "string", "enum": ["react", "fullstack"]},
         "summary": {"type": "string"},
         "toolId": {"type": "string"},
+        "frontendStack": {"type": "string", "enum": ["vanilla", "react"]},
+        "backendStack": {"type": "string", "enum": ["none", "node-express"]},
         "phase": {"type": "string", "enum": ["greeting", "clarify", "ready"]},
         "reply": {"type": "string"},
         "questions": {"type": "array", "items": {"type": "string"}},
@@ -60,6 +64,7 @@ WHEN TO USE EACH
 - Never reuse the greeting sentence once they have asked to build something.
 
 CLARIFY QUESTIONS (2–4, short, specific to THIS tool)
+- Ask whether this should stay frontend-only or include a backend when the prompt does not already make that obvious.
 - Converter: input format, output shape/download, mapping rules, extra features
 - Calculator: operations, history, presets/units, extra features
 - Other tools: main job, what they type/upload, what they see back, one must-have extra
@@ -68,7 +73,9 @@ Write questions for THIS request only. Do not use a canned template (do not alwa
 
 KIND / STACK
 - modify ONLY if an existing FileMap or toolId is in context. Otherwise new.
-- fullstack only if they need a backend, database, auth, or HTTP API. Else react. Unsure → react.
+- fullstack only if they need a backend, database, auth, shared users, secrets, uploads, payments, email, or HTTP API. Else react.
+- If backend need is unclear, ask a clarification question instead of forcing the user to pick with UI controls.
+- React/Vite is the default frontend stack unless the user explicitly asks for plain HTML/CSS/JS.
 
 SUMMARY
 - One line, <= 160 chars, the tool itself. Greeting → "Chat greeting".
@@ -91,6 +98,19 @@ _FULLSTACK_RE = re.compile(
     r"end[\s-]?point|fastapi|express|django|flask|server[\s-]?side|"
     r"api"
     r")\b",
+    re.IGNORECASE,
+)
+
+_BACKEND_NEEDED_RE = re.compile(
+    r"\b(auth|logins?|sign[- ]?up|users?|shared|database|db|backend|server|"
+    r"api keys?|secrets?|payments?|email|upload|file processing|multi[- ]?user|"
+    r"roles?|permissions?|websocket|real[- ]?time)\b",
+    re.IGNORECASE,
+)
+
+_BACKEND_NOT_NEEDED_RE = re.compile(
+    r"\b(frontend[- ]?only|client[- ]?only|browser[- ]?only|no backend|without backend|"
+    r"localstorage|local storage|static|only fe|fe only)\b",
     re.IGNORECASE,
 )
 
@@ -213,6 +233,9 @@ def _user_payload(inp: IntentAgentInput) -> str:
         f"providedToolId: {tool_id}\n"
         f"existingFileCount: {len(files)}\n"
         f"existingFiles: {file_list}\n"
+        f"selectedFrontendStack: {inp.frontendStack or 'react'}\n"
+        f"selectedBackendNeed: {inp.backendNeed or 'auto'}\n"
+        f"selectedBackendStack: {inp.backendStack or 'auto'}\n"
         f"priorConversation:\n{transcript}\n"
         f"latestUserMessage:\n{inp.prompt.strip()}"
     )
@@ -290,10 +313,20 @@ def _is_detailed_spec(prompt: str) -> bool:
     if len(prompt.strip()) < 100:
         return False
     has_in = bool(
-        re.search(r"\b(input|upload|excel|csv|json|from|paste|type|enter)\b", prompt, re.I)
+        re.search(
+            r"\b(input|upload|excel|csv|json|from|paste|type|enter|"
+            r"write|editor|note|markdown|text)\b",
+            prompt,
+            re.I,
+        )
     )
     has_out = bool(
-        re.search(r"\b(output|download|export|result|into|return|show|display)\b", prompt, re.I)
+        re.search(
+            r"\b(output|download|export|result|into|return|show|display|"
+            r"preview|save|autosave)\b",
+            prompt,
+            re.I,
+        )
     )
     return has_in and has_out
 
@@ -307,6 +340,10 @@ def _last_assistant_questions(inp: IntentAgentInput) -> list[str]:
             match = re.match(r"^\s*(?:\d+[.)]|[-*])\s+(.+)$", line)
             if match:
                 found.append(match.group(1).strip())
+                continue
+            stripped = line.strip()
+            if stripped.endswith("?"):
+                found.append(stripped)
         if found:
             return found
     return []
@@ -329,6 +366,10 @@ def _question_answered(question: str, answer: str) -> bool:
         return True
     if "history" in q and re.search(r"yes|no|history|keep", a):
         return True
+    if re.search(r"frontend|backend|server|auth|database|shared", q) and (
+        _BACKEND_NEEDED_RE.search(a) or _BACKEND_NOT_NEEDED_RE.search(a)
+    ):
+        return True
     if re.search(r"main job|one sentence", q) and len(answer.strip()) >= 20:
         return True
     return False
@@ -345,7 +386,7 @@ def _spec_enough(inp: IntentAgentInput) -> bool:
         answered = sum(1 for question in asked if _question_answered(question, prompt))
         if answered >= min(2, len(asked)):
             return True
-        if len(prompt) >= 50 and answered >= 1:
+        if len(prompt) >= 50:
             return True
     if _non_greeting_user_turns(inp) >= 3 and _had_build_request(inp):
         return True
@@ -431,6 +472,32 @@ def _stub_intent(inp: IntentAgentInput) -> IntentAgentOutput:
     )
 
 
+def _selected_frontend(inp: IntentAgentInput, intent: IntentAgentOutput | None = None) -> FrontendStack:
+    selected = inp.frontendStack or (intent.frontendStack if intent else None)
+    return selected if selected in {"vanilla", "react"} else "react"
+
+
+def _selected_backend(inp: IntentAgentInput, intent: IntentAgentOutput | None = None) -> BackendStack:
+    if inp.backendStack in {"none", "node-express"}:
+        return inp.backendStack
+    if inp.backendNeed == "yes":
+        return "node-express"
+    if inp.backendNeed == "no":
+        return "none"
+    if intent and intent.backendStack in {"none", "node-express"}:
+        return intent.backendStack
+    blob = _stack_decision_text(inp)
+    if _BACKEND_NOT_NEEDED_RE.search(blob):
+        return "none"
+    return "node-express" if _BACKEND_NEEDED_RE.search(blob) else "none"
+
+
+def _stack_decision_text(inp: IntentAgentInput) -> str:
+    parts = [inp.prompt]
+    parts.extend(turn.text for turn in (inp.conversation or []) if turn.role == "user")
+    return "\n".join(parts)
+
+
 def _thread_idea(inp: IntentAgentInput) -> str:
     for turn in inp.conversation or []:
         if turn.role == "user" and _BUILD_RE.search(turn.text):
@@ -450,50 +517,49 @@ def _clarify_lead_in(idea: str) -> str:
 
 
 def _fallback_questions(prompt: str) -> list[str]:
-    """Stub/CI only. Live Gemini questions must not be replaced by this bank."""
-    if agents_mode() != "stub":
-        return []
+    """Deterministic safety net when live intent omits required questions."""
     return _stub_questions(prompt)
 
 
 def _stub_questions(prompt: str) -> list[str]:
     lower = prompt.lower()
+    stack_question = "Should this be frontend-only, or should I include a backend for auth, database, shared users, uploads, or server APIs?"
     if "convert" in lower or "json" in lower or "csv" in lower or "excel" in lower:
         questions = [
             "What is the input format (Excel, CSV, JSON, text)?",
             "What should the output look like, and should they download a file?",
-            "Any mapping rules or sample rows I should follow?",
+            stack_question,
         ]
     elif "calc" in lower:
         questions = [
             "Which operations do you need (basic, scientific, percentage)?",
             "Should it keep a history of calculations?",
-            "Any units or tax/tip presets?",
+            stack_question,
         ]
     elif "dashboard" in lower:
         questions = [
             "What numbers or lists should the dashboard show?",
             "Is the data typed in, pasted, or fetched from an API?",
-            "Any filters, date range, or export?",
+            stack_question,
         ]
     elif "form" in lower:
         questions = [
             "Which fields should the form collect?",
             "What happens on submit (show a summary, download, or just validate)?",
-            "Any required vs optional fields?",
+            stack_question,
         ]
     elif "website" in lower or "web site" in lower or "landing" in lower or "portfolio" in lower:
         questions = [
             "What kind of website is this (landing page, portfolio, restaurant, blog)?",
             "Which pages do you need (home, about, contact)?",
-            "Any name, colors, or reference I should follow?",
+            stack_question,
         ]
     else:
         questions = [
             "What is the main job this tool should do in one sentence?",
             "What does the user type or upload?",
             "What should they get back on screen?",
-            "Any must-have extra (dark mode, save, export)?",
+            stack_question,
         ]
     return questions[:_MAX_QUESTIONS]
 
@@ -522,6 +588,9 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
     kind: IntentKind = intent.kind
     if kind == "modify" and not _has_existing_app(inp):
         kind = "new"
+    frontend_stack = _selected_frontend(inp, intent)
+    backend_stack = _selected_backend(inp, intent)
+    stack: Stack = "fullstack" if backend_stack != "none" else "react"
 
     questions = [item.strip() for item in (intent.questions or []) if item.strip()]
     questions = questions[:_MAX_QUESTIONS]
@@ -597,11 +666,21 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
     elif phase == "greeting" and not (intent.reply or "").strip():
         reply = _greeting_reply()
 
+    if phase == "ready" and kind == "new":
+        if backend_stack == "node-express":
+            reply = f"{reply} Stack: React/Vite frontend with a Node/Express backend."
+        elif frontend_stack == "react":
+            reply = f"{reply} Stack: React/Vite frontend only."
+        else:
+            reply = f"{reply} Stack: vanilla frontend only."
+
     return IntentAgentOutput(
         kind=kind,
-        stack=intent.stack,
+        stack=stack,
         summary=summary,
         toolId=_existing_tool_id(inp) if kind == "modify" else None,
+        frontendStack=frontend_stack,
+        backendStack=backend_stack,
         phase=phase,
         reply=reply,
         questions=questions or None,

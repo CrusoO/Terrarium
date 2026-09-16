@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 DEV_USER = "dev-user"
 
 Stack = Literal["react", "fullstack"]
+FrontendStack = Literal["vanilla", "react"]
+BackendNeed = Literal["auto", "yes", "no"]
+BackendStack = Literal["none", "node-express"]
 IntentKind = Literal["new", "modify"]
 ToolRole = Literal["owner", "editor", "viewer"]
 RuntimeStatus = Literal["booting", "running", "unhealthy", "sleeping", "stopped"]
@@ -24,6 +27,9 @@ SessionEventName = Literal[
     "sandbox.unhealthy",
     "heal.attempt",
     "heal.exhausted",
+    "preview.stream.started",
+    "preview.stream.file",
+    "preview.stream.completed",
     "preview.ready",
 ]
 
@@ -45,6 +51,8 @@ class Intent(BaseModel):
     stack: Stack
     summary: str
     toolId: str | None = None
+    frontendStack: FrontendStack | None = None
+    backendStack: BackendStack | None = None
 
 
 class IntentAgentInput(BaseModel):
@@ -57,6 +65,9 @@ class IntentAgentInput(BaseModel):
     files: FileMap | None = None
     toolId: str | None = None
     conversation: list[ConversationTurn] | None = None
+    frontendStack: FrontendStack | None = None
+    backendNeed: BackendNeed | None = None
+    backendStack: BackendStack | None = None
 
 
 class IntentAgentOutput(BaseModel):
@@ -68,6 +79,8 @@ class IntentAgentOutput(BaseModel):
     stack: Stack
     summary: str
     toolId: str | None = None
+    frontendStack: FrontendStack | None = None
+    backendStack: BackendStack | None = None
     phase: IntentPhase = "ready"
     reply: str | None = None
     questions: list[str] | None = None
@@ -78,6 +91,8 @@ class IntentAgentOutput(BaseModel):
             stack=self.stack,
             summary=self.summary,
             toolId=self.toolId,
+            frontendStack=self.frontendStack,
+            backendStack=self.backendStack,
         )
 
 
@@ -86,6 +101,7 @@ class ErrorContext(BaseModel):
 
     logs: str
     health: RuntimeStatus
+    healAttempt: int | None = Field(default=None, ge=0, le=3)
 
 
 class AgentJob(BaseModel):
@@ -96,6 +112,9 @@ class AgentJob(BaseModel):
     prompt: str
     files: FileMap | None = None
     errorContext: ErrorContext | None = None
+    frontendStack: FrontendStack | None = None
+    backendNeed: BackendNeed | None = None
+    backendStack: BackendStack | None = None
 
 
 class AgentResult(BaseModel):
@@ -119,6 +138,9 @@ class CreateSessionRequest(BaseModel):
 
     prompt: str
     sessionId: str | None = None
+    frontendStack: FrontendStack | None = None
+    backendNeed: BackendNeed | None = None
+    backendStack: BackendStack | None = None
 
 
 class CreateSessionResponse(BaseModel):
@@ -144,6 +166,27 @@ class PreviewReadyPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     previewUrl: str
+
+
+class PreviewStreamFilePayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    path: str
+    content: str
+    files: FileMap | None = None
+    complete: bool | None = None
+
+
+class RuntimeErrorRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    message: str
+    source: Literal["frontend", "backend"] = "frontend"
+    stack: str | None = None
+    filename: str | None = None
+    lineno: int | None = None
+    colno: int | None = None
+    recentChange: str | None = None
 
 
 class SandboxHandle(BaseModel):

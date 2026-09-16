@@ -1,4 +1,5 @@
-import { Avatar, Box, Chip, Paper, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import type { SessionEvent } from "@terrarium/contracts";
 import type { ChatItem } from "../../types/chat";
 import { AgentTrace } from "./AgentTrace";
@@ -30,6 +31,7 @@ type ChatThreadProps = {
   chat: ChatItem[];
   busy?: boolean;
   onSendChoice?: (text: string) => void;
+  onRetryAnyway?: () => void;
 };
 
 function latestUnansweredAssistantId(chat: ChatItem[]): string | null {
@@ -47,10 +49,26 @@ function latestUnansweredAssistantId(chat: ChatItem[]): string | null {
 
 function PhaseMark({ phase }: { phase?: string }) {
   if (phase === "ready") {
-    return <Chip label="Ready to build" size="small" color="success" variant="outlined" sx={{ height: 22 }} />;
+    return (
+      <Chip 
+        label="Ready to build" 
+        size="small" 
+        color="success" 
+        variant="outlined" 
+        sx={{ height: 24, fontSize: "0.75rem", fontWeight: 500 }} 
+      />
+    );
   }
   if (phase === "clarify") {
-    return <Chip label="A few details" size="small" color="primary" variant="outlined" sx={{ height: 22 }} />;
+    return (
+      <Chip 
+        label="Gathering details" 
+        size="small" 
+        color="primary" 
+        variant="outlined" 
+        sx={{ height: 24, fontSize: "0.75rem", fontWeight: 500 }} 
+      />
+    );
   }
   return null;
 }
@@ -63,26 +81,29 @@ function UserBubble({ text }: { text: string }) {
         elevation={0}
         sx={{
           maxWidth: "85%",
-          px: 1.75,
-          py: 1,
+          px: 2,
+          py: 1.5,
           bgcolor: "primary.main",
           color: "primary.contrastText",
-          borderRadius: "18px 18px 6px 18px",
+          borderRadius: "16px 16px 4px 16px",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
         }}
       >
         {blocks ? (
-          <Stack spacing={1}>
+          <Stack spacing={1.5}>
             {blocks.map((block, index) => (
               <Box key={`${block.question}-${index}`}>
-                <Typography variant="caption" sx={{ opacity: 0.75 }}>
+                <Typography variant="caption" sx={{ opacity: 0.85, display: "block", mb: 0.5, fontWeight: 500 }}>
                   {block.question}
                 </Typography>
-                <Typography variant="body2">{block.answer}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 400 }}>
+                  {block.answer}
+                </Typography>
               </Box>
             ))}
           </Stack>
         ) : (
-          <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+          <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
             {text}
           </Typography>
         )}
@@ -114,11 +135,20 @@ function parseAnswerBlocks(text: string): { question: string; answer: string }[]
 
 function TerrariumAvatar() {
   return (
-    <Avatar sx={{ bgcolor: "primary.main", width: 28, height: 28, fontSize: 12, fontWeight: 700 }}>T</Avatar>
+    <Avatar 
+      sx={{ 
+        bgcolor: "primary.main", 
+        width: 32, 
+        height: 32,
+        boxShadow: "0 1px 4px rgba(26, 115, 232, 0.15)"
+      }}
+    >
+      <AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />
+    </Avatar>
   );
 }
 
-export function ChatThread({ chat, busy = false, onSendChoice }: ChatThreadProps) {
+export function ChatThread({ chat, busy = false, onSendChoice, onRetryAnyway }: ChatThreadProps) {
   if (chat.length === 0) {
     return null;
   }
@@ -127,7 +157,7 @@ export function ChatThread({ chat, busy = false, onSendChoice }: ChatThreadProps
   const blocks = groupChat(chat);
 
   return (
-    <Stack component="ol" spacing={2} sx={{ m: 0, p: 0, listStyle: "none" }}>
+    <Stack component="ol" spacing={3} sx={{ m: 0, p: 0, listStyle: "none" }}>
       {blocks.map((block, blockIndex) => {
         if (block.kind === "events") {
           return (
@@ -135,11 +165,22 @@ export function ChatThread({ chat, busy = false, onSendChoice }: ChatThreadProps
               component="li"
               key={`events-${block.events[0]?.at ?? blockIndex}`}
               direction="row"
-              spacing={1.25}
+              spacing={1.5}
               sx={{ alignItems: "flex-start" }}
             >
               <TerrariumAvatar />
-              <Paper elevation={0} sx={{ flex: 1, px: 1.5, py: 1.25, border: 1, borderColor: "divider", borderRadius: 3 }}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  flex: 1, 
+                  px: 2, 
+                  py: 1.5, 
+                  border: 1, 
+                  borderColor: "divider", 
+                  borderRadius: 2,
+                  bgcolor: "background.paper"
+                }}
+              >
                 <AgentTrace events={block.events} live={busy} />
               </Paper>
             </Stack>
@@ -153,17 +194,75 @@ export function ChatThread({ chat, busy = false, onSendChoice }: ChatThreadProps
             </Box>
           );
         }
+        if (item.kind === "heal-exhausted") {
+          return (
+            <Stack
+              component="li"
+              key={item.id}
+              direction="row"
+              spacing={1.5}
+              sx={{ alignItems: "flex-start" }}
+            >
+              <TerrariumAvatar />
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  border: 1,
+                  borderColor: "error.main",
+                  borderRadius: 2,
+                  bgcolor: "error.light",
+                  minWidth: 0,
+                  flex: 1,
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: "error.dark" }}>
+                  ⚠️ Build failed after 3 attempts
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ whiteSpace: "pre-wrap", maxHeight: 160, overflow: "auto", mb: 1.5 }}
+                >
+                  {item.logs || "The sandbox stayed unhealthy."}
+                </Typography>
+                {onRetryAnyway ? (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    disabled={busy}
+                    onClick={onRetryAnyway}
+                    sx={{ fontWeight: 500 }}
+                  >
+                    Retry anyway
+                  </Button>
+                ) : null}
+              </Paper>
+            </Stack>
+          );
+        }
         if (item.kind === "thinking") {
           return (
             <Stack
               component="li"
               key={item.id}
               direction="row"
-              spacing={1.25}
+              spacing={1.5}
               sx={{ alignItems: "flex-start" }}
             >
               <TerrariumAvatar />
-              <Paper elevation={0} sx={{ px: 1.5, py: 1, border: 1, borderColor: "divider", borderRadius: 3 }}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  px: 2, 
+                  py: 1.5, 
+                  border: 1, 
+                  borderColor: "divider", 
+                  borderRadius: 2,
+                  bgcolor: "background.paper"
+                }}
+              >
                 <ThinkingIndicator label={item.label} />
               </Paper>
             </Stack>
@@ -176,28 +275,28 @@ export function ChatThread({ chat, busy = false, onSendChoice }: ChatThreadProps
               component="li"
               key={item.id}
               direction="row"
-              spacing={1.25}
+              spacing={1.5}
               sx={{ alignItems: "flex-start" }}
             >
               <TerrariumAvatar />
               <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.5 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                    Terrarium
+                <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.75 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary" }}>
+                    Terrarium Assistant
                   </Typography>
                   <PhaseMark phase={item.phase} />
                 </Stack>
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 1.5,
+                    p: 2,
                     border: 1,
                     borderColor: "divider",
-                    borderRadius: 3,
+                    borderRadius: 2,
                     bgcolor: "background.paper",
                   }}
                 >
-                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
                     {item.text}
                   </Typography>
                 </Paper>
@@ -207,8 +306,17 @@ export function ChatThread({ chat, busy = false, onSendChoice }: ChatThreadProps
                   ) : (
                     <Stack spacing={1} sx={{ mt: 1.5, opacity: 0.7 }}>
                       {item.questions.map((question, index) => (
-                        <Paper key={`${item.id}-${index}`} variant="outlined" sx={{ px: 1.5, py: 1 }}>
-                          <Typography variant="caption" color="text.secondary">
+                        <Paper 
+                          key={`${item.id}-${index}`} 
+                          variant="outlined" 
+                          sx={{ 
+                            px: 1.5, 
+                            py: 1.25,
+                            borderRadius: 1.5,
+                            bgcolor: "background.default"
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                             {index + 1}. {question}
                           </Typography>
                         </Paper>

@@ -104,6 +104,7 @@ class IntentAgentTests(unittest.TestCase):
         self.assertGreaterEqual(len(intent.questions or []), 2)
         self.assertLessEqual(len(intent.questions or []), 4)
         self.assertNotIn("1.", intent.reply or "")
+        self.assertTrue(any("frontend-only" in question for question in intent.questions or []))
 
     def test_build_website_asks_questions(self) -> None:
         intent = classify_intent(IntentAgentInput(prompt="can you build a website"))
@@ -230,7 +231,62 @@ class IntentAgentTests(unittest.TestCase):
         self.assertTrue({"kind", "stack", "summary", "phase", "reply"} <= set(dumped))
         frozen = output.as_intent()
         self.assertIsInstance(frozen, Intent)
-        self.assertEqual(set(frozen.model_dump(exclude_none=True)), {"kind", "stack", "summary"})
+        self.assertEqual(
+            set(frozen.model_dump(exclude_none=True)),
+            {"kind", "stack", "summary", "frontendStack", "backendStack"},
+        )
+
+    def test_backend_need_selection_overrides_auto_heuristic(self) -> None:
+        auto = classify_intent(
+            IntentAgentInput(
+                prompt="Build shared team notes with login",
+                frontendStack="react",
+                backendNeed="auto",
+            )
+        )
+        self.assertEqual(auto.stack, "fullstack")
+        self.assertEqual(auto.backendStack, "node-express")
+
+        no_backend = classify_intent(
+            IntentAgentInput(
+                prompt="Build shared team notes with login",
+                frontendStack="react",
+                backendNeed="no",
+            )
+        )
+        self.assertEqual(no_backend.stack, "react")
+        self.assertEqual(no_backend.backendStack, "none")
+
+    def test_backend_need_is_inferred_from_clarification_answer(self) -> None:
+        with_backend = classify_intent(
+            IntentAgentInput(
+                prompt="It needs login and shared database",
+                conversation=[
+                    ConversationTurn(role="user", text="build a team notes app"),
+                    ConversationTurn(
+                        role="assistant",
+                        text="Should this be frontend-only, or should I include a backend?",
+                    ),
+                ],
+            )
+        )
+        self.assertEqual(with_backend.phase, "ready")
+        self.assertEqual(with_backend.backendStack, "node-express")
+
+        frontend_only = classify_intent(
+            IntentAgentInput(
+                prompt="frontend-only with localStorage",
+                conversation=[
+                    ConversationTurn(role="user", text="build a team notes app"),
+                    ConversationTurn(
+                        role="assistant",
+                        text="Should this be frontend-only, or should I include a backend?",
+                    ),
+                ],
+            )
+        )
+        self.assertEqual(frontend_only.phase, "ready")
+        self.assertEqual(frontend_only.backendStack, "none")
 
     def test_frozen_intent_rejects_chat_fields(self) -> None:
         from pydantic import ValidationError
@@ -275,6 +331,50 @@ class IntentAgentTests(unittest.TestCase):
             )
         finally:
             os.environ["TERRARIUM_AGENTS"] = "stub"
+
+    def test_live_clarify_without_questions_gets_safety_questions(self) -> None:
+        os.environ["TERRARIUM_AGENTS"] = "live"
+        try:
+            fake = IntentAgentOutput(
+                kind="new",
+                stack="react",
+                summary="Markdown notepad",
+                phase="clarify",
+                reply="I can build that. A few details so the first preview matches.",
+                questions=[],
+            )
+            intent = _enforce_rules(
+                fake,
+                IntentAgentInput(prompt="Build a simple markdown notepad"),
+            )
+            self.assertEqual(intent.phase, "clarify")
+            self.assertGreaterEqual(len(intent.questions or []), 2)
+        finally:
+            os.environ["TERRARIUM_AGENTS"] = "stub"
+
+    def test_long_answer_to_questions_becomes_ready(self) -> None:
+        intent = classify_intent(
+            IntentAgentInput(
+                prompt=(
+                    "Use a split markdown editor with localStorage autosave, "
+                    "live preview, and export markdown. Keep it modern."
+                ),
+                conversation=[
+                    ConversationTurn(role="user", text="build a notepad"),
+                    ConversationTurn(
+                        role="assistant",
+                        text=(
+                            "I can build that.\n"
+                            "1. What is the main job this tool should do in one sentence?\n"
+                            "2. What does the user type or upload?\n"
+                            "3. What should they get back on screen?"
+                        ),
+                    ),
+                ],
+            )
+        )
+        self.assertEqual(intent.phase, "ready")
+        self.assertFalse(intent.questions)
 
     def test_does_not_import_docker_or_sandbox(self) -> None:
         path = Path(__file__).resolve().parents[1] / "terrarium_agents" / "intent.py"

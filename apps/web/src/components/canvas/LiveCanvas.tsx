@@ -1,4 +1,4 @@
-import type { FileMap, SessionEvent } from "@terrarium/contracts";
+import type { FileMap, RuntimeErrorRequest, SessionEvent } from "@terrarium/contracts";
 import { PreviewPanel, type PreviewStatus } from "./PreviewPanel";
 
 export function LiveCanvas({
@@ -6,16 +6,22 @@ export function LiveCanvas({
   previewUrl,
   previewStatus,
   files = null,
+  streamFiles = null,
+  sessionId = null,
   tab = "preview",
   onTabChange,
+  onRuntimeError,
   refreshKey = 0,
 }: {
   events: SessionEvent[];
   previewUrl: string | null;
   previewStatus: PreviewStatus;
   files?: FileMap | null;
+  streamFiles?: FileMap | null;
+  sessionId?: string | null;
   tab?: "preview" | "code";
   onTabChange?: (tab: "preview" | "code") => void;
+  onRuntimeError?: (error: RuntimeErrorRequest) => void;
   refreshKey?: number;
 }) {
   return (
@@ -25,8 +31,11 @@ export function LiveCanvas({
         previewUrl={previewUrl}
         status={previewStatus}
         files={files}
+        streamFiles={streamFiles}
+        sessionId={sessionId}
         tab={tab}
         onTabChange={onTabChange}
+        onRuntimeError={onRuntimeError}
         refreshKey={refreshKey}
       />
     </section>

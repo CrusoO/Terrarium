@@ -4,7 +4,7 @@ Phase 1 has **no LLM**. The stub worker always boots the fixture app. LLMs start
 
 Wire models through env vars (for example `TERRARIUM_MODEL_INTENT`) so we can swap providers without changing architecture.
 
-Defaults below are as of **August 2026**. Re-check pricing and SWE-bench before locking a vendor contract. Prefer **structured JSON** (schema) for Intent and Smart Match; prefer **file-map JSON** for Code Generator and Editor.
+Defaults below are as of **September 2026**. Re-check pricing, available model IDs, and SWE-bench before locking a vendor contract. Prefer **structured JSON** (schema) for Intent and Smart Match; prefer **file-map JSON** for Code Generator and Editor.
 
 ## Where each LLM sits
 
@@ -60,6 +60,26 @@ Pick **one cloud family** if the company already has a contract (Anthropic, Open
 - No image/video models for these agents (text in, JSON/`FileMap` out).
 - No local 8B model as the **only** Code Generator in production — fine as a **dev mock** when `TERRARIUM_AGENTS=stub`.
 - Do not send secrets, `.env`, or production customer data in agent prompts.
+
+## Current local routing
+
+The worker logs the selected provider/model at startup and each LLM-backed event includes `llmProvider`, `llmModel`, and `llmReason` so the chat trace can show what is happening.
+
+| Agent | Current provider/model | Reason |
+| --- | --- | --- |
+| Intent | `gemini/gemini-3.5-flash-lite` | Fast, cheap classification and clarification questions. |
+| Plan | `bedrock/anthropic.claude-sonnet-4-6` when AWS is configured; otherwise `nvidia/nvidia/llama-3.1-nemotron-ultra-253b-v1` | Architecture planning benefits from a stronger reasoning model. |
+| Code Generator | `nvidia/mistralai/codestral-22b-instruct-v0.1` when `NVIDIA_API_KEY` is configured | Codestral is a coding-specialized model available in the NVIDIA catalog and avoids the expired previous default. |
+| Code Generator fallback | Bedrock, then Gemini, then deterministic component fallback if no provider returns parseable JSON | Keeps generation moving without entering a slow repeated heal loop. |
+
+Relevant env vars:
+
+```env
+TERRARIUM_NVIDIA_PLAN_MODEL=nvidia/llama-3.1-nemotron-ultra-253b-v1
+TERRARIUM_NVIDIA_CODEGEN_MODEL=mistralai/codestral-22b-instruct-v0.1
+TERRARIUM_MODEL_PLAN=nvidia/llama-3.1-nemotron-ultra-253b-v1
+TERRARIUM_MODEL_CODEGEN=mistralai/codestral-22b-instruct-v0.1
+```
 
 ## How this maps to a non-technical explanation
 
