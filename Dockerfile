@@ -1,3 +1,16 @@
+FROM node:22-bookworm-slim AS web
+
+RUN npm install -g pnpm@9.15.4
+
+WORKDIR /src
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web ./apps/web
+COPY packages/contracts ./packages/contracts
+
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @terrarium/web build
+
 FROM python:3.12-slim-bookworm
 
 RUN apt-get update \
@@ -17,9 +30,12 @@ COPY packages/templates ./packages/templates
 
 RUN uv sync --frozen --no-dev
 
+COPY --from=web /src/apps/web/dist /app/web
+
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 ENV TERRARIUM_TEMPLATES_DIR=/app/packages/templates
+ENV TERRARIUM_WEB_DIST=/app/web
 
 EXPOSE 10000
 
