@@ -4,11 +4,14 @@ import {
   runtimeErrorRequestSchema,
   sessionEventSchema,
   sessionFilesResponseSchema,
+  toolSummarySchema,
+  workspaceToolsResponseSchema,
   type CreateSessionRequest,
   type CreateSessionResponse,
   type FileMap,
   type RuntimeErrorRequest,
   type SessionEvent,
+  type ToolSummary,
 } from "@terrarium/contracts";
 
 export async function createSession(
@@ -70,4 +73,26 @@ export function subscribeSessionEvents(
     }
   };
   return source;
+}
+
+export async function fetchWorkspaceTools(): Promise<ToolSummary[]> {
+  const response = await fetch("/workspace/tools");
+  const json: unknown = await response.json().catch(() => null);
+  const parsed = workspaceToolsResponseSchema.safeParse(json);
+  if (!response.ok || !parsed.success) {
+    throw new Error(`GET /workspace/tools failed (${response.status}).`);
+  }
+  return parsed.data.tools;
+}
+
+export async function sleepWorkspaceTool(toolId: string): Promise<ToolSummary> {
+  const response = await fetch(`/workspace/tools/${encodeURIComponent(toolId)}/sleep`, {
+    method: "POST",
+  });
+  const json: unknown = await response.json().catch(() => null);
+  const parsed = toolSummarySchema.safeParse(json);
+  if (!response.ok || !parsed.success) {
+    throw new Error(`POST /workspace/tools/${toolId}/sleep failed (${response.status}).`);
+  }
+  return parsed.data;
 }

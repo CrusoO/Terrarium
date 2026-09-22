@@ -202,3 +202,78 @@ class HealthReport(BaseModel):
 
     status: RuntimeStatus
     logs: str
+
+
+class Tool(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    ownerId: str
+    name: str
+    summary: str
+    status: RuntimeStatus
+    createdAt: str
+    updatedAt: str
+    latestVersionId: str | None = None
+    latestSessionId: str | None = None
+
+
+class ToolVersion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    toolId: str
+    versionNumber: int
+    prompt: str
+    summary: str
+    fileCount: int
+    createdAt: str
+
+
+class ToolSummary(Tool):
+    model_config = ConfigDict(extra="forbid")
+
+    fileCount: int
+
+
+class PublishToolRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str | None = None
+    summary: str | None = None
+
+
+class PublishToolResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    tool: ToolSummary
+    version: ToolVersion
+
+
+class WorkspaceToolsResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    tools: list[ToolSummary]
+
+
+class OpenToolResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    sessionId: str
+    previewUrl: str
+    tool: ToolSummary
+
+
+class SmartMatchResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    hit: bool
+    toolId: str | None = None
+    score: float | None = Field(default=None, ge=0, le=1)
+    matchedTool: Tool | None = None
+
+
+class AcceptMatchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    toolId: str

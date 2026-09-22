@@ -198,3 +198,69 @@ export const healthReportSchema = z.object({
   logs: z.string(),
 });
 export type HealthReport = z.infer<typeof healthReportSchema>;
+
+export const toolSchema = z.object({
+  id: z.string(),
+  ownerId: z.string(),
+  name: z.string(),
+  summary: z.string(),
+  status: runtimeStatusSchema,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  latestVersionId: z.string().nullish(),
+  latestSessionId: z.string().nullish(),
+});
+export type Tool = z.infer<typeof toolSchema>;
+
+export const toolVersionSchema = z.object({
+  id: z.string(),
+  toolId: z.string(),
+  versionNumber: z.number(),
+  prompt: z.string(),
+  summary: z.string(),
+  fileCount: z.number(),
+  createdAt: z.string(),
+});
+export type ToolVersion = z.infer<typeof toolVersionSchema>;
+
+export const toolSummarySchema = toolSchema.extend({
+  fileCount: z.number(),
+});
+export type ToolSummary = z.infer<typeof toolSummarySchema>;
+
+export const publishToolRequestSchema = z.object({
+  name: z.string().nullish(),
+  summary: z.string().nullish(),
+});
+export type PublishToolRequest = z.infer<typeof publishToolRequestSchema>;
+
+export const publishToolResponseSchema = z.object({
+  tool: toolSummarySchema,
+  version: toolVersionSchema,
+});
+export type PublishToolResponse = z.infer<typeof publishToolResponseSchema>;
+
+export const workspaceToolsResponseSchema = z.object({
+  tools: z.array(toolSummarySchema),
+});
+export type WorkspaceToolsResponse = z.infer<typeof workspaceToolsResponseSchema>;
+
+export const openToolResponseSchema = z.object({
+  sessionId: z.string(),
+  previewUrl: z.string(),
+  tool: toolSummarySchema,
+});
+export type OpenToolResponse = z.infer<typeof openToolResponseSchema>;
+
+export const smartMatchResultSchema = z.object({
+  hit: z.boolean(),
+  toolId: z.string().nullish(),
+  score: z.number().min(0).max(1).nullish(),
+  matchedTool: toolSchema.nullish(),
+});
+export type SmartMatchResult = z.infer<typeof smartMatchResultSchema>;
+
+export const acceptMatchRequestSchema = z.object({
+  toolId: z.string(),
+});
+export type AcceptMatchRequest = z.infer<typeof acceptMatchRequestSchema>;
