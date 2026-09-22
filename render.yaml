@@ -1,0 +1,64 @@
+# Render Blueprint for Terrarium
+# Deploy: Connect your GitHub repo to Render and it will auto-detect this file
+
+services:
+  # Main API + Worker (FastAPI + ARQ)
+  - type: web
+    name: terrarium-api
+    runtime: docker
+    repo: https://github.com/YOUR_USERNAME/terrarium
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: free
+    envVars:
+      - key: TERRARIUM_MODE
+        value: live
+      - key: PREVIEW_BASE_URL
+        sync: false
+      - key: SESSION_TIMEOUT_SECONDS
+        value: 3600
+      - key: IDLE_TIMEOUT_SECONDS
+        value: 3600
+      - key: DATABASE_URL
+        fromDatabase:
+          name: terrarium-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: terrarium-redis
+          type: redis
+          property: connectionString
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        value: eu-central-1
+      - key: BEDROCK_MODEL
+        value: anthropic.claude-sonnet-4-6
+      - key: TERRARIUM_MODEL_INTENT
+        value: gemini-3.5-flash-lite
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Redis for job queue
+  - type: redis
+    name: terrarium-redis
+    region: oregon
+    plan: free
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+# PostgreSQL database
+databases:
+  - name: terrarium-db
+    region: oregon
+    plan: free
+    databaseName: terrarium
+    user: terrarium
