@@ -4,7 +4,7 @@ RUN npm install -g pnpm@9.15.4
 
 WORKDIR /src
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/web ./apps/web
 COPY packages/contracts ./packages/contracts
 
