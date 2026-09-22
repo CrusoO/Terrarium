@@ -275,27 +275,3 @@ Current status: Phase 1, Phase 2, and Phase 3 are complete. Phase 4, Phase 5, an
 cd C:\Users\thakur\Desktop\Terrarium
 node scripts\generate-stories.mjs
 ```
-
-## Push stories to Microsoft Loop (Planner)
-
-Loop boards with a Bucket dropdown are Planner plans. There is no Loop import button. Do **not** use `Install-Module Microsoft.Graph` (PowerShellGet is broken on some Windows 5.1 installs).
-
-Requires Node 20+ and a **work/school** Microsoft 365 account that can already open the board.
-
-```powershell
-cd C:\Users\thakur\Desktop\Terrarium
-node scripts\m365-login.mjs
-node scripts\push-stories-to-loop.mjs --planName "Project Terrarium Playground" --bucketName "To do"
-```
-
-Re-run without `--update` skips cards whose title already starts with `[P1-S1]` … `[P6-S4]`. To patch those existing cards in place (no delete):
-
-```powershell
-node scripts\push-stories-to-loop.mjs --planName "Project Terrarium Playground" --bucketName "To do" --update
-```
-
-A device-code / browser prompt will appear on login. Use the **work/school** account that can already open the board. Do not use `npx @pnp/cli-microsoft365` (that package’s binary is `m365`, so npx cannot start it). Do not use `Install-Module`.
-
-If login asks for **App ID** / **tenant**: cancel it (Ctrl+C). Those are Microsoft Entra values, not Loop fields. Run `node scripts\m365-login.mjs` again — it starts `m365 setup`, which **creates** the Entra app. Choose **create a new app** and **full permissions**. To look up an existing app instead: Azure Portal → Microsoft Entra ID → App registrations → Overview → Application (client) ID and Directory (tenant) ID. For tenant you can also use `common`.
-
-Cards are created **unassigned** in To do. Assign people on the board. Re-run without `--update` skips existing `[P1-S1]` titles. `--update` overwrites title and description on those cards and creates any that are missing. If the plan is not found, also pass `--ownerGroupName "Your M365 Group"`.
