@@ -1,9 +1,14 @@
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import FolderOpenRoundedIcon from "@mui/icons-material/FolderOpenRounded";
 import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
+import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import { Avatar, IconButton, Stack, Tooltip } from "@mui/material";
 
-export function IconRail() {
+type IconRailProps = {
+  onViewChange?: (view: "chat" | "workspace") => void;
+};
+
+export function IconRail({ onViewChange }: IconRailProps) {
   return (
     <Stack
       component="nav"
@@ -21,8 +26,13 @@ export function IconRail() {
     >
       <Avatar sx={{ bgcolor: "primary.main", width: 36, height: 36, fontWeight: 800, fontSize: 15, mb: 1 }}>T</Avatar>
       <Tooltip title="Chat" placement="right">
-        <IconButton color="primary" aria-label="Chat">
+        <IconButton color="primary" aria-label="Chat" onClick={() => onViewChange?.("chat")}>
           <ChatBubbleOutlineRoundedIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Workspace" placement="right">
+        <IconButton aria-label="Workspace" sx={{ color: "text.secondary" }} onClick={() => onViewChange?.("workspace")}>
+          <DashboardRoundedIcon fontSize="small" />
         </IconButton>
       </Tooltip>
       <Tooltip title="Files" placement="right">

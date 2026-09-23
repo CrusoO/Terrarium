@@ -218,7 +218,7 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 
 ## Phase checklist
 
-Current status: Phase 1, Phase 2, and Phase 3 are complete. Phase 4, Phase 5, and Phase 6 remain.
+Current status: Phases 1 through 5 are complete. Phase 6 remains.
 
 ### Phase 1 — Foundation and Sandbox
 
@@ -243,17 +243,17 @@ Current status: Phase 1, Phase 2, and Phase 3 are complete. Phase 4, Phase 5, an
 
 ### Phase 4 — Save, sleep, dashboard
 
-- [ ] [P4-S1](docs/stories/P4-S1-tool-schema.md) Tool / version / session schema
-- [ ] [P4-S2](docs/stories/P4-S2-publish-workspace.md) Publish to workspace
-- [ ] [P4-S3](docs/stories/P4-S3-idle-sleep-wake.md) Idle sleep / wake
-- [ ] [P4-S4](docs/stories/P4-S4-workspace-dashboard.md) Workspace dashboard
+- [x] [P4-S1](docs/stories/P4-S1-tool-schema.md) Tool / version / session schema
+- [x] [P4-S2](docs/stories/P4-S2-publish-workspace.md) Publish to workspace
+- [x] [P4-S3](docs/stories/P4-S3-idle-sleep-wake.md) Idle sleep / wake
+- [x] [P4-S4](docs/stories/P4-S4-workspace-dashboard.md) Workspace dashboard
 
 ### Phase 5 — Smart Match
 
-- [ ] [P5-S1](docs/stories/P5-S1-library-index.md) Library index
-- [ ] [P5-S2](docs/stories/P5-S2-smart-match-precheck.md) Pre-check before generate
-- [ ] [P5-S3](docs/stories/P5-S3-match-offer-ui.md) Use existing vs build new
-- [ ] [P5-S4](docs/stories/P5-S4-match-into-editor-path.md) Accepted match skips Code Generator
+- [x] [P5-S1](docs/stories/P5-S1-library-index.md) Library index
+- [x] [P5-S2](docs/stories/P5-S2-smart-match-precheck.md) Pre-check before generate
+- [x] [P5-S3](docs/stories/P5-S3-match-offer-UI.md) Use existing vs build new
+- [x] [P5-S4](docs/stories/P5-S4-match-into-editor-path.md) Accepted match skips Code Generator
 
 ### Phase 6 — Access and auth
 

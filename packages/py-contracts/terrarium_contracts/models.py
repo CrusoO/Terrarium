@@ -264,6 +264,17 @@ class OpenToolResponse(BaseModel):
     tool: ToolSummary
 
 
+class ToolIndexRecord(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    toolId: str
+    stack: Stack
+    summary: str
+    promptFingerprint: str
+    createdAt: str
+    updatedAt: str
+
+
 class SmartMatchResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -276,4 +287,5 @@ class SmartMatchResult(BaseModel):
 class AcceptMatchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    sessionId: str
     toolId: str

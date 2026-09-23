@@ -7,7 +7,7 @@ import {
   type RuntimeErrorRequest,
   type SessionEvent,
 } from "@terrarium/contracts";
-import { createSession, fetchSessionFiles, reportRuntimeError, subscribeSessionEvents } from "../api/sessions";
+import { acceptSmartMatch, createSession, fetchSessionFiles, reportRuntimeError, subscribeSessionEvents } from "../api/sessions";
 import type { PreviewStatus } from "../components/canvas/PreviewPanel";
 import type { ChatItem } from "../types/chat";
 
@@ -371,6 +371,45 @@ export function useCreateSession() {
     void sendPrompt(text);
   }
 
+  /**
+   * Phase 5 — Smart Match handlers
+   */
+  async function acceptMatch(toolId: string) {
+    const currentSessionId = sessionIdRef.current;
+    if (!currentSessionId) {
+      return;
+    }
+    busyRef.current = true;
+    setBusy(true);
+    setStatus(null);
+    setChat((current) => withThinking(current, "Loading matched app"));
+
+    try {
+      const result = await acceptSmartMatch(currentSessionId, toolId);
+      setPreviewUrl(result.previewUrl);
+      setPreviewKey((k) => k + 1);
+      busyRef.current = false;
+      setBusy(false);
+      setChat((current) => withoutThinking(current));
+      setStatus(null);
+      // Load the files for the Code tab
+      void fetchSessionFiles(currentSessionId)
+        .then(setFiles)
+        .catch(() => undefined);
+    } catch (error) {
+      busyRef.current = false;
+      setBusy(false);
+      setChat((current) => withoutThinking(current));
+      setStatus(error instanceof Error ? error.message : "Could not accept Smart Match.");
+    }
+  }
+
+  async function rejectMatch() {
+    // Rejection means just continue with Code Generator
+    // The backend automatically proceeds if the user doesn't accept
+    setStatus(null);
+  }
+
   return {
     prompt,
     setPrompt,
@@ -390,5 +429,7 @@ export function useCreateSession() {
     sendPrompt,
     onPreviewRuntimeError,
     retryAnyway,
+    acceptMatch,
+    rejectMatch,
   };
 }

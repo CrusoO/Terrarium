@@ -16,7 +16,12 @@ from terrarium_contracts import (
     Stack,
 )
 
-from terrarium_agents.llm import agents_mode, gemini_client, intent_model
+from terrarium_agents.llm import (
+    DEFAULT_GEMINI_JSON_TIMEOUT_MS,
+    agents_mode,
+    gemini_client,
+    intent_model,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +206,7 @@ class IntentAgent:
                         automatic_function_calling=types.AutomaticFunctionCallingConfig(
                             disable=True
                         ),
-                        http_options=types.HttpOptions(timeout=25_000),
+                        http_options=types.HttpOptions(timeout=DEFAULT_GEMINI_JSON_TIMEOUT_MS),
                     ),
                 )
                 text = (response.text or "").strip()

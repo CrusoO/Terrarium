@@ -4,6 +4,7 @@ import type { SessionEvent } from "@terrarium/contracts";
 import type { ChatItem } from "../../types/chat";
 import { AgentTrace } from "./AgentTrace";
 import { ClarifyAnswers } from "./ClarifyAnswers";
+import { SmartMatchOffer } from "./SmartMatchOffer";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 
 type ThreadBlock =
@@ -32,6 +33,8 @@ type ChatThreadProps = {
   busy?: boolean;
   onSendChoice?: (text: string) => void;
   onRetryAnyway?: () => void;
+  onAcceptMatch?: (toolId: string) => void;
+  onRejectMatch?: () => void;
 };
 
 function latestUnansweredAssistantId(chat: ChatItem[]): string | null {
@@ -151,7 +154,14 @@ function TerrariumAvatar() {
   );
 }
 
-export function ChatThread({ chat, busy = false, onSendChoice, onRetryAnyway }: ChatThreadProps) {
+export function ChatThread({
+  chat,
+  busy = false,
+  onSendChoice,
+  onRetryAnyway,
+  onAcceptMatch,
+  onRejectMatch,
+}: ChatThreadProps) {
   if (chat.length === 0) {
     return null;
   }
@@ -186,6 +196,23 @@ export function ChatThread({ chat, busy = false, onSendChoice, onRetryAnyway }: 
                 }}
               >
                 <AgentTrace events={block.events} live={busy} />
+                {block.events
+                  .filter((event) => event.name === "smartmatch.hit")
+                  .map((event) => {
+                    const payload = event.payload as { toolId?: string; matchedTool?: { id?: string } } | undefined;
+                    const toolId = payload?.toolId || payload?.matchedTool?.id;
+                    return (
+                      <SmartMatchOffer
+                        key={`${event.at}-${event.name}`}
+                        event={event}
+                        disabled={busy}
+                        onAccept={() => {
+                          if (toolId) onAcceptMatch?.(toolId);
+                        }}
+                        onReject={() => onRejectMatch?.()}
+                      />
+                    );
+                  })}
               </Paper>
             </Stack>
           );

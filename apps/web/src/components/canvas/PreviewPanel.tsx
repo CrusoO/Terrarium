@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import KeyboardTabRoundedIcon from "@mui/icons-material/KeyboardTabRounded";
 import CodeRoundedIcon from "@mui/icons-material/CodeRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
@@ -8,6 +8,7 @@ import type { FileMap, RuntimeErrorRequest, SessionEvent } from "@terrarium/cont
 import { useSplitControls } from "../layout/SplitControls";
 import { CodePanel } from "./CodePanel";
 import { EventLogButton } from "./EventLogButton";
+import { publishSession } from "../../api/sessions";
 import { applyPreviewDocument } from "../../utils/domMorpher";
 import { fileMapToPreviewDocument } from "../../utils/previewDocument";
 
@@ -137,6 +138,8 @@ export function PreviewPanel({
   refreshKey?: number;
 }) {
   const split = useSplitControls();
+  const [publishing, setPublishing] = useState(false);
+  const [publishNote, setPublishNote] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const src = previewUrl ? iframeSrc(previewUrl) : null;
   const streamDocument = useMemo(() => fileMapToPreviewDocument(streamFiles), [streamFiles]);
@@ -274,6 +277,31 @@ export function PreviewPanel({
           >
             Code
           </Button>
+          {sessionId && showFrame ? (
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={publishing}
+              onClick={() => {
+                setPublishing(true);
+                setPublishNote(null);
+                void publishSession(sessionId, {})
+                  .then((result) => setPublishNote(`Saved “${result.tool.name}”`))
+                  .catch((error: unknown) =>
+                    setPublishNote(error instanceof Error ? error.message : "Publish failed.")
+                  )
+                  .finally(() => setPublishing(false));
+              }}
+              sx={{ fontWeight: 500, textTransform: "none" }}
+            >
+              {publishing ? "Publishing" : "Publish"}
+            </Button>
+          ) : null}
+          {publishNote ? (
+            <Typography variant="caption" color="text.secondary">
+              {publishNote}
+            </Typography>
+          ) : null}
           {showFrame && (
             <Tooltip title="Refresh preview">
               <IconButton

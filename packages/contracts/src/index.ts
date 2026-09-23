@@ -252,6 +252,16 @@ export const openToolResponseSchema = z.object({
 });
 export type OpenToolResponse = z.infer<typeof openToolResponseSchema>;
 
+export const toolIndexRecordSchema = z.object({
+  toolId: z.string(),
+  stack: stackSchema,
+  summary: z.string(),
+  promptFingerprint: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type ToolIndexRecord = z.infer<typeof toolIndexRecordSchema>;
+
 export const smartMatchResultSchema = z.object({
   hit: z.boolean(),
   toolId: z.string().nullish(),
@@ -261,6 +271,7 @@ export const smartMatchResultSchema = z.object({
 export type SmartMatchResult = z.infer<typeof smartMatchResultSchema>;
 
 export const acceptMatchRequestSchema = z.object({
+  sessionId: z.string(),
   toolId: z.string(),
 });
 export type AcceptMatchRequest = z.infer<typeof acceptMatchRequestSchema>;

@@ -1,10 +1,37 @@
+import { useState } from "react";
 import { AppShell } from "./components/layout/AppShell";
 import { ChatPane } from "./components/chat/ChatPane";
 import { LiveCanvas } from "./components/canvas/LiveCanvas";
+import { WorkspaceDashboard } from "./components/workspace/WorkspaceDashboard";
 import { useCreateSession } from "./hooks/useCreateSession";
+import { openWorkspaceTool } from "./api/sessions";
 
 export default function App() {
   const session = useCreateSession();
+  const [view, setView] = useState<"chat" | "workspace">("chat");
+
+  async function handleOpenTool(toolId: string) {
+    try {
+      await openWorkspaceTool(toolId);
+      setView("chat");
+      // TODO: Load the opened tool's session
+      window.location.reload(); // Temporary: full reload to start fresh session
+    } catch (error) {
+      console.error("Failed to open tool:", error);
+    }
+  }
+
+  if (view === "workspace") {
+    return (
+      <div className="flex h-screen">
+        <AppShell 
+          chat={<div />} 
+          canvas={<WorkspaceDashboard onOpenTool={handleOpenTool} />}
+          onViewChange={setView}
+        />
+      </div>
+    );
+  }
 
   return (
     <AppShell
@@ -18,6 +45,8 @@ export default function App() {
           onSubmit={session.onSubmit}
           onSendChoice={session.sendPrompt}
           onRetryAnyway={session.retryAnyway}
+          onAcceptMatch={session.acceptMatch}
+          onRejectMatch={session.rejectMatch}
         />
       }
       canvas={
@@ -34,6 +63,7 @@ export default function App() {
           refreshKey={session.previewKey}
         />
       }
+      onViewChange={setView}
     />
   );
 }

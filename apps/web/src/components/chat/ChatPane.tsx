@@ -14,6 +14,8 @@ type ChatPaneProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onSendChoice: (text: string) => void;
   onRetryAnyway?: () => void;
+  onAcceptMatch?: (toolId: string) => void;
+  onRejectMatch?: () => void;
 };
 
 export function ChatPane({
@@ -25,6 +27,8 @@ export function ChatPane({
   onSubmit,
   onSendChoice,
   onRetryAnyway,
+  onAcceptMatch,
+  onRejectMatch,
 }: ChatPaneProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
 
@@ -144,6 +148,8 @@ export function ChatPane({
               busy={busy}
               onSendChoice={onSendChoice}
               onRetryAnyway={onRetryAnyway}
+              onAcceptMatch={onAcceptMatch}
+              onRejectMatch={onRejectMatch}
             />
           </Box>
         )}

@@ -58,6 +58,11 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: terrarium
+      POSTGRES_PASSWORD: terrarium
+      POSTGRES_DB: terrarium
       TERRARIUM_TEMPLATES_DIR: /app/packages/templates
       TERRARIUM_EXTRA_CA_FILE: /etc/terrarium/certs/zscaler-root.pem
     volumes:
@@ -65,6 +70,8 @@ services:
     ports:
       - "3001:3001"
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
@@ -93,6 +100,11 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: terrarium
+      POSTGRES_PASSWORD: terrarium
+      POSTGRES_DB: terrarium
       TERRARIUM_TEMPLATES_DIR: /app/packages/templates
       TERRARIUM_SANDBOX_NETWORK: terrarium-sandbox
       TERRARIUM_EXTRA_CA_FILE: /etc/terrarium/certs/zscaler-root.pem
