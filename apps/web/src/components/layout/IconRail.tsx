@@ -1,50 +1,100 @@
-import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
+import type { ReactNode } from "react";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import FolderOpenRoundedIcon from "@mui/icons-material/FolderOpenRounded";
-import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
-import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
-import { Avatar, IconButton, Stack, Tooltip } from "@mui/material";
+import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
+import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import ViewQuiltRoundedIcon from "@mui/icons-material/ViewQuiltRounded";
+import { Avatar, Box, IconButton, Stack, Tooltip } from "@mui/material";
 
 type IconRailProps = {
+  view?: "chat" | "workspace";
   onViewChange?: (view: "chat" | "workspace") => void;
 };
 
-export function IconRail({ onViewChange }: IconRailProps) {
+function RailButton({
+  label,
+  selected = false,
+  onClick,
+  children,
+}: {
+  label: string;
+  selected?: boolean;
+  onClick?: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip title={label} placement="right">
+      <IconButton
+        aria-label={label}
+        aria-current={selected ? "page" : undefined}
+        onClick={onClick}
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: 1.25,
+          color: selected ? "primary.main" : "text.secondary",
+          bgcolor: selected ? "#f6e8ec" : "transparent",
+          "&:hover": { bgcolor: selected ? "#f3dde3" : "#f6f5f3" },
+        }}
+      >
+        {children}
+      </IconButton>
+    </Tooltip>
+  );
+}
+
+export function IconRail({ view = "chat", onViewChange }: IconRailProps) {
   return (
     <Stack
       component="nav"
-      spacing={1}
       sx={{
         display: { xs: "none", md: "flex" },
         alignItems: "center",
         width: 64,
-        py: 2,
+        height: "100%",
+        py: 1.75,
         borderRight: 1,
         borderColor: "divider",
         bgcolor: "background.paper",
         flexShrink: 0,
       }}
     >
-      <Avatar sx={{ bgcolor: "primary.main", width: 36, height: 36, fontWeight: 800, fontSize: 15, mb: 1 }}>T</Avatar>
-      <Tooltip title="Chat" placement="right">
-        <IconButton color="primary" aria-label="Chat" onClick={() => onViewChange?.("chat")}>
-          <ChatBubbleOutlineRoundedIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Workspace" placement="right">
-        <IconButton aria-label="Workspace" sx={{ color: "text.secondary" }} onClick={() => onViewChange?.("workspace")}>
-          <DashboardRoundedIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Files" placement="right">
-        <IconButton aria-label="Files" sx={{ color: "text.secondary" }}>
-          <FolderOpenRoundedIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Assets" placement="right">
-        <IconButton aria-label="Assets" sx={{ color: "text.secondary" }}>
-          <PermMediaOutlinedIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+      <Avatar
+        sx={{
+          bgcolor: "primary.main",
+          width: 32,
+          height: 32,
+          fontWeight: 700,
+          fontSize: 14,
+          mb: 2,
+        }}
+      >
+        T
+      </Avatar>
+      <Stack spacing={0.5} sx={{ alignItems: "center" }}>
+        <RailButton label="Chat" selected={view === "chat"} onClick={() => onViewChange?.("chat")}>
+          <AutoAwesomeRoundedIcon sx={{ fontSize: 18 }} />
+        </RailButton>
+        <RailButton label="Workspace" selected={view === "workspace"} onClick={() => onViewChange?.("workspace")}>
+          <GridViewRoundedIcon sx={{ fontSize: 18 }} />
+        </RailButton>
+        <RailButton label="Files">
+          <FolderOpenRoundedIcon sx={{ fontSize: 18 }} />
+        </RailButton>
+        <RailButton label="Assets">
+          <ViewQuiltRoundedIcon sx={{ fontSize: 18 }} />
+        </RailButton>
+      </Stack>
+      <Box sx={{ flex: 1 }} />
+      <Stack spacing={0.5} sx={{ alignItems: "center" }}>
+        <RailButton label="Help">
+          <HelpOutlineRoundedIcon sx={{ fontSize: 18 }} />
+        </RailButton>
+        <RailButton label="Sign out">
+          <LogoutRoundedIcon sx={{ fontSize: 18 }} />
+        </RailButton>
+      </Stack>
     </Stack>
   );
 }

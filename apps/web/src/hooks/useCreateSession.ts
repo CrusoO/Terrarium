@@ -4,6 +4,7 @@ import {
   previewReadyPayloadSchema,
   previewStreamFilePayloadSchema,
   type FileMap,
+  type OpenToolResponse,
   type RuntimeErrorRequest,
   type SessionEvent,
 } from "@terrarium/contracts";
@@ -404,6 +405,38 @@ export function useCreateSession() {
     }
   }
 
+  function openPublished(opened: OpenToolResponse) {
+    sourceRef.current?.close();
+    sourceRef.current = null;
+    sourceSessionRef.current = null;
+    lastEventIdRef.current = "0-0";
+    seenEventsRef.current.clear();
+    reconnectAttemptsRef.current = 0;
+    clearTimeoutSafe();
+    busyRef.current = false;
+    setBusy(false);
+    setStatus(null);
+    setPrompt("");
+    setStreamFiles(null);
+    setEvents([]);
+    setIntentPhase("ready");
+    setCanvasTab("preview");
+    sessionIdRef.current = opened.sessionId;
+    setSessionId(opened.sessionId);
+    setPreviewUrl(opened.previewUrl);
+    setPreviewKey((key) => key + 1);
+    setChat([
+      {
+        kind: "assistant",
+        id: crypto.randomUUID(),
+        text: `Opened “${opened.tool.name}” from your dashboard.`,
+        phase: "ready",
+      },
+    ]);
+    connectEvents(opened.sessionId, true);
+    void fetchSessionFiles(opened.sessionId).then(setFiles).catch(() => undefined);
+  }
+
   async function rejectMatch() {
     // Rejection means just continue with Code Generator
     // The backend automatically proceeds if the user doesn't accept
@@ -431,5 +464,6 @@ export function useCreateSession() {
     retryAnyway,
     acceptMatch,
     rejectMatch,
+    openPublished,
   };
 }

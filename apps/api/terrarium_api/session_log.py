@@ -11,6 +11,7 @@ STREAM_SUFFIX = ":events"
 FILES_SUFFIX = ":files"
 CONV_SUFFIX = ":conversation"
 TOOL_SUFFIX = ":toolId"
+INTENT_SUFFIX = ":intent"
 
 
 def stream_key(session_id: str) -> str:
@@ -27,6 +28,10 @@ def conversation_key(session_id: str) -> str:
 
 def tool_id_key(session_id: str) -> str:
     return f"{STREAM_PREFIX}{session_id}{TOOL_SUFFIX}"
+
+
+def intent_key(session_id: str) -> str:
+    return f"{STREAM_PREFIX}{session_id}{INTENT_SUFFIX}"
 
 
 def _as_str(value: object) -> str:
@@ -79,6 +84,28 @@ class SessionEventLog:
 
     async def save_tool_id(self, session_id: str, tool_id: str) -> None:
         await self.redis.set(tool_id_key(session_id), tool_id, ex=60 * 60 * 24)
+
+    async def save_intent(self, session_id: str, intent: dict[str, object]) -> None:
+        await self.redis.set(intent_key(session_id), json.dumps(intent), ex=60 * 60 * 24)
+
+    async def load_intent(self, session_id: str) -> dict[str, object] | None:
+        raw = await self.redis.get(intent_key(session_id))
+        if raw:
+            parsed = json.loads(_as_str(raw))
+            if isinstance(parsed, dict):
+                return parsed
+        messages = await self.redis.xrevrange(stream_key(session_id), count=200)
+        for _message_id, fields in messages:
+            raw_event = fields.get("json", fields.get(b"json"))
+            if not raw_event:
+                continue
+            try:
+                event = SessionEvent.model_validate_json(_as_str(raw_event))
+            except Exception:
+                continue
+            if event.name == "intent.classified" and isinstance(event.payload, dict):
+                return event.payload
+        return None
 
     async def load_conversation(self, session_id: str) -> list[dict[str, str]]:
         raw = await self.redis.get(conversation_key(session_id))

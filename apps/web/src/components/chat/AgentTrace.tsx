@@ -11,6 +11,7 @@ const LABELS: Record<string, string> = {
   "intent.classified": "✓ Understood your request",
   "codegen.started": "⚡ Generating code...",
   "codegen.completed": "✓ Code generated",
+  "codegen.failed": "⚠️ Code generation failed",
   "editor.started": "✏️ Editing files...",
   "editor.completed": "✓ Files updated",
   "sandbox.booting": "🚀 Starting preview...",
@@ -24,11 +25,11 @@ const LABELS: Record<string, string> = {
   "preview.ready": "✅ Live preview ready",
 };
 
-function eventLabel(event: SessionEvent): string {
+export function eventLabel(event: SessionEvent): string {
   return LABELS[event.name] ?? event.name;
 }
 
-function eventDetail(event: SessionEvent): string | null {
+export function eventDetail(event: SessionEvent): string | null {
   const payload = event.payload;
   if (!payload) return null;
   const model =
@@ -38,7 +39,36 @@ function eventDetail(event: SessionEvent): string | null {
   const reason = typeof payload.llmReason === "string" && payload.llmReason.trim()
     ? `Reason: ${payload.llmReason.trim()}`
     : "";
-  const modelDetail = [model, reason].filter(Boolean).join("\n");
+  const failure =
+    typeof payload.llmFailureSummary === "string" && payload.llmFailureSummary.trim()
+      ? `Failure: ${payload.llmFailureSummary.trim()}`
+      : "";
+  const attempts = Array.isArray(payload.llmAttempts)
+    ? payload.llmAttempts
+        .map((attempt, index) => {
+          if (!attempt || typeof attempt !== "object") return "";
+          const data = attempt as Record<string, unknown>;
+          const provider = typeof data.provider === "string" ? data.provider : "unknown";
+          const attemptModel = typeof data.model === "string" ? data.model : "unknown";
+          const file = typeof data.file === "string" && data.file ? ` [${data.file}]` : "";
+          const returnedJson = data.returnedJson === true ? "returned JSON" : "no parseable JSON";
+          const duration = typeof data.durationMs === "number" ? ` in ${data.durationMs}ms` : "";
+          const error = typeof data.error === "string" && data.error.trim()
+            ? `\n  error: ${data.error.trim()}`
+            : "";
+          const excerpt = typeof data.rawExcerpt === "string" && data.rawExcerpt.trim()
+            ? `\n  raw excerpt: ${data.rawExcerpt.trim()}`
+            : "";
+          return `${index + 1}. ${provider}/${attemptModel}${file}: ${returnedJson}${duration}${error}${excerpt}`;
+        })
+        .filter(Boolean)
+        .join("\n")
+    : "";
+  const attemptsDetail = attempts ? `Provider attempts:\n${attempts}` : "";
+  const modelDetail = [model, reason, failure, attemptsDetail].filter(Boolean).join("\n");
+  if (typeof payload.error === "string" && payload.error.trim()) {
+    return [payload.error.trim(), modelDetail].filter(Boolean).join("\n\n");
+  }
   if (typeof payload.logs === "string" && payload.logs.trim()) {
     return [payload.logs.trim(), modelDetail].filter(Boolean).join("\n\n");
   }
@@ -142,9 +172,8 @@ export function AgentTrace({ events, live }: { events: SessionEvent[]; live: boo
       </Box>
       <Collapse in={open}>
         <Stack component="ol" spacing={1} sx={{ m: 0, mt: 1.5, pl: 0, listStyle: "none" }}>
-          {events.map((event, index) => {
-            const active = live && !settled && index === events.length - 1;
-            const detail = eventDetail(event);
+          {events.filter((event) => event.name !== "preview.stream.file").map((event, index, visible) => {
+            const active = live && !settled && index === visible.length - 1;
             return (
               <Stack
                 component="li"
@@ -187,29 +216,6 @@ export function AgentTrace({ events, live }: { events: SessionEvent[]; live: boo
                   >
                     {eventLabel(event)}
                   </Typography>
-                  {detail ? (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ 
-                        display: "block", 
-                        mt: 0.5, 
-                        whiteSpace: "pre-wrap", 
-                        wordBreak: "break-word",
-                        fontSize: "0.75rem",
-                        lineHeight: 1.5,
-                        fontFamily: "var(--font-mono)",
-                        bgcolor: "#f8fafc",
-                        px: 1.25,
-                        py: 0.75,
-                        borderRadius: 1.5,
-                        border: 1,
-                        borderColor: "divider"
-                      }}
-                    >
-                      {detail}
-                    </Typography>
-                  ) : null}
                 </Box>
               </Stack>
             );

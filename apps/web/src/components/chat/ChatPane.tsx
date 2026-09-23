@@ -1,5 +1,5 @@
 import { useEffect, useRef, type FormEvent } from "react";
-import { Avatar, Box, Chip, Paper, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Stack, Typography } from "@mui/material";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import type { ChatItem } from "../../types/chat";
 import { ChatThread } from "./ChatThread";
@@ -49,96 +49,46 @@ export function ChatPane({
         height: "100%",
         minHeight: 0,
         flex: 1,
-        bgcolor: "#f7f8fa",
+        bgcolor: "background.default",
         borderRight: 1,
         borderColor: "divider",
       }}
     >
-      <Stack
-        direction="row"
-        spacing={2}
+      <Box
         sx={{
+          height: 56,
+          px: 2.5,
+          display: "flex",
           alignItems: "center",
-          px: 3,
-          py: 2.25,
-          borderBottom: 1,
-          borderColor: "divider",
-          bgcolor: "rgba(255,255,255,0.92)",
-          backdropFilter: "blur(14px)",
+          justifyContent: "space-between",
+          flexShrink: 0,
         }}
       >
-        <Avatar 
-          sx={{ 
-            bgcolor: "background.paper",
-            color: "primary.main",
-            width: 40, 
-            height: 40,
-            border: 1,
-            borderColor: "divider",
-            boxShadow: "0 10px 24px rgba(17, 24, 39, 0.08)"
-          }}
-        >
-          <AutoAwesomeRoundedIcon sx={{ fontSize: 20 }} />
-        </Avatar>
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.25 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: "1.05rem", letterSpacing: "-0.02em" }}>
-              Terrarium
-            </Typography>
-            <Chip 
-              label="AI Builder" 
-              size="small" 
-              color="primary" 
-              variant="outlined" 
-              sx={{ 
-                height: 22, 
-                fontSize: "0.7rem",
-                fontWeight: 600,
-                borderRadius: 1.5,
-                bgcolor: "primary.light"
-              }} 
-            />
-          </Stack>
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.8rem" }}>
-            Describe an app. I'll build it step by step with a live preview.
-          </Typography>
-        </Box>
-      </Stack>
+        <Typography sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: "1.05rem", letterSpacing: "-0.02em" }}>
+          Terrarium
+        </Typography>
+        <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#1f8a4c" }} />
+      </Box>
       <Box ref={scrollerRef} sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2.5, py: 3 }}>
         {chat.length === 0 ? (
           <Stack direction="row" spacing={1.5} sx={{ alignItems: "flex-start", maxWidth: 720, mx: "auto" }}>
-            <Avatar 
-              sx={{ 
-                bgcolor: "background.paper",
-                color: "primary.main",
-                width: 32, 
-                height: 32,
-                border: 1,
-                borderColor: "divider",
-                boxShadow: "0 8px 18px rgba(17, 24, 39, 0.08)"
+            <Avatar
+              sx={{
+                bgcolor: "#efecea",
+                color: "text.primary",
+                width: 28,
+                height: 28,
               }}
             >
-              <AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />
+              <AutoAwesomeRoundedIcon sx={{ fontSize: 15 }} />
             </Avatar>
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography variant="caption" sx={{ fontWeight: 600, display: "block", mb: 0.75, color: "text.secondary" }}>
-                Terrarium Assistant
+            <Box sx={{ minWidth: 0, flex: 1, pt: 0.35 }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, display: "block", mb: 0.5, color: "text.primary" }}>
+                Terra
               </Typography>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  border: 1,
-                  borderColor: "divider",
-                  borderRadius: 2,
-                  bgcolor: "background.paper",
-                  boxShadow: "0 12px 30px rgba(17, 24, 39, 0.06)",
-                }}
-              >
-                <Typography variant="body2" sx={{ lineHeight: 1.7, color: "text.primary" }}>
-                  What kind of app should we build today?
-                </Typography>
-              </Paper>
+              <Typography variant="body2" sx={{ lineHeight: 1.7, color: "text.primary" }}>
+                What kind of app should we build today?
+              </Typography>
             </Box>
           </Stack>
         ) : (

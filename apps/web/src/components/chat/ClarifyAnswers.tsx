@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { Box, Button, LinearProgress, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 
 const SKIPPED = "Skip — use a sensible default";
 
@@ -17,9 +17,6 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
 
   const last = step >= questions.length - 1;
   const current = questions[step] ?? "";
-  const filled = Boolean(answers[step]?.trim() || skipped[step]);
-  const progress = ((step + 1) / questions.length) * 100;
-
   useEffect(() => {
     inputRef.current?.focus();
   }, [step]);
@@ -88,40 +85,24 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
   }
 
   return (
-    <Paper variant="outlined" sx={{ mt: 1.5, overflow: "hidden", borderRadius: 2 }}>
-      <LinearProgress variant="determinate" value={progress} />
-      <Stack
-        direction="row"
-        sx={{ alignItems: "center", justifyContent: "space-between", px: 1.5, pt: 1.25 }}
-      >
-        <Typography variant="caption" color="text.secondary">
+    <Paper
+      variant="outlined"
+      sx={{
+        mt: 1.75,
+        overflow: "hidden",
+        borderRadius: "12px",
+        borderColor: "divider",
+        borderTop: "2px solid",
+        borderTopColor: "primary.main",
+        bgcolor: "background.paper",
+        boxShadow: "none",
+      }}
+    >
+      <Box key={step} sx={{ px: 2, pt: 1.75, pb: 1.5 }}>
+        <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 650, display: "block", mb: 0.75 }}>
           Question {step + 1} of {questions.length}
         </Typography>
-        <Stack direction="row" spacing={0.5}>
-          {questions.map((_, index) => (
-            <Box
-              key={index}
-              component="button"
-              type="button"
-              aria-label={`Question ${index + 1}`}
-              onClick={() => setStep(index)}
-              sx={{
-                border: 0,
-                p: 0,
-                cursor: "pointer",
-                bgcolor: index <= step ? "primary.main" : "divider",
-                opacity: index === step ? 1 : 0.45,
-                height: 6,
-                width: index === step ? 20 : 8,
-                borderRadius: 1,
-              }}
-            />
-          ))}
-        </Stack>
-      </Stack>
-
-      <Box key={step} sx={{ px: 1.5, py: 1.5 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.4 }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.45 }}>
           {current}
         </Typography>
         <TextField
@@ -133,8 +114,15 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
           disabled={disabled}
           onChange={(event) => write(step, event.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="Type your answer…"
-          sx={{ mt: 1.5 }}
+          placeholder="Type your answer..."
+          slotProps={{ inputLabel: { shrink: true } }}
+          sx={{
+            mt: 2,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "10px",
+              bgcolor: "background.paper",
+            },
+          }}
         />
       </Box>
 
@@ -144,32 +132,50 @@ export function ClarifyAnswers({ questions, disabled = false, onSend }: ClarifyA
           alignItems: "center",
           justifyContent: "space-between",
           gap: 1,
-          px: 1.5,
+          px: 1.25,
           py: 1,
-          bgcolor: "action.hover",
+          bgcolor: "background.paper",
         }}
       >
-        <Stack direction="row" spacing={0.5}>
-          <Button size="small" disabled={disabled || step === 0} onClick={() => setStep((s) => Math.max(0, s - 1))}>
+        <Stack direction="row" spacing={0.25}>
+          <Button
+            size="small"
+            disabled={disabled || step === 0}
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            sx={{ color: "primary.main", fontWeight: 600 }}
+          >
             Back
           </Button>
-          <Button size="small" disabled={disabled} onClick={skipThis}>
+          <Button size="small" disabled={disabled} onClick={skipThis} sx={{ color: "primary.main", fontWeight: 600 }}>
             Skip
-          </Button>
-        </Stack>
-        <Stack direction="row" spacing={1}>
-          <Button size="small" disabled={disabled} onClick={() => submit({ skipAll: true })}>
-            Skip all
           </Button>
           <Button
             size="small"
-            variant="contained"
-            disabled={disabled || (!filled && !last)}
-            onClick={() => goNext()}
+            disabled={disabled}
+            onClick={() => submit({ skipAll: true })}
+            sx={{ color: "primary.main", fontWeight: 600 }}
           >
-            {last ? "Send" : "Continue"}
+            Skip all
           </Button>
         </Stack>
+        <Button
+          size="small"
+          variant="contained"
+          disableElevation
+          disabled={disabled}
+          onClick={() => goNext()}
+          sx={{
+            bgcolor: "#17181c",
+            color: "#fff",
+            borderRadius: "999px",
+            px: 2.25,
+            minWidth: 96,
+            "&:hover": { bgcolor: "#2a2b30" },
+            "&.Mui-disabled": { bgcolor: "#e7e5e1", color: "#98a2b3" },
+          }}
+        >
+          {last ? "Send" : "Continue"}
+        </Button>
       </Stack>
     </Paper>
   );

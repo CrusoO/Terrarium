@@ -6,13 +6,15 @@ import { useSplitPanes } from "../../hooks/useSplitPanes";
 import { IconRail } from "./IconRail";
 import { SplitControlsContext } from "./SplitControls";
 
-export function AppShell({ 
-  chat, 
-  canvas, 
-  onViewChange 
-}: { 
-  chat: ReactNode; 
+export function AppShell({
+  chat,
+  canvas,
+  view = "chat",
+  onViewChange,
+}: {
+  chat: ReactNode;
   canvas: ReactNode;
+  view?: "chat" | "workspace";
   onViewChange?: (view: "chat" | "workspace") => void;
 }) {
   const split = useSplitPanes();
@@ -29,7 +31,7 @@ export function AppShell({
       }}
     >
       <div ref={split.shellRef} className="flex h-full min-h-0 flex-col bg-white text-ink md:flex-row">
-        <IconRail onViewChange={onViewChange} />
+        <IconRail view={view} onViewChange={onViewChange} />
         {split.collapsed ? (
           <CollapsedChatStrip desktop={split.desktop} onRestore={split.restoreChat} />
         ) : (
