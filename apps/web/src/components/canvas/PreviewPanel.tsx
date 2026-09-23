@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import DesktopWindowsOutlinedIcon from "@mui/icons-material/DesktopWindowsOutlined";
 import KeyboardTabRoundedIcon from "@mui/icons-material/KeyboardTabRounded";
 import CodeRoundedIcon from "@mui/icons-material/CodeRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
-import { Box, Button, CircularProgress, IconButton, LinearProgress, Stack, Tooltip, Typography } from "@mui/material";
+import RocketLaunchRoundedIcon from "@mui/icons-material/RocketLaunchRounded";
+import { Box, IconButton, LinearProgress, Paper, Stack, Tooltip, Typography } from "@mui/material";
 import type { FileMap, RuntimeErrorRequest, SessionEvent } from "@terrarium/contracts";
 import { useSplitControls } from "../layout/SplitControls";
 import { CodePanel } from "./CodePanel";
@@ -15,7 +17,7 @@ import { fileMapToPreviewDocument } from "../../utils/previewDocument";
 export type PreviewStatus = "idle" | "intent" | "clarify" | "ready" | "live" | "draft" | "updating";
 
 const STATUS_CONFIG: Record<PreviewStatus, { label: string; color: string }> = {
-  idle: { label: "No preview", color: "text.secondary" },
+  idle: { label: "No preview", color: "#1f8a4c" },
   intent: { label: "Processing...", color: "primary.main" },
   clarify: { label: "Waiting for input", color: "warning.main" },
   ready: { label: "Ready to build", color: "success.main" },
@@ -26,8 +28,8 @@ const STATUS_CONFIG: Record<PreviewStatus, { label: string; color: string }> = {
 
 const COPY: Record<Exclude<PreviewStatus, "live" | "draft" | "updating">, { title: string; detail: string; icon: string }> = {
   idle: {
-    title: "No preview yet",
-    detail: "Start by describing what app you'd like to build in the chat. I'll guide you through a few questions, then generate a live preview.",
+    title: "Nothing built yet",
+    detail: "Tell the assistant what you'd like to make. It'll ask a few questions, then a live preview appears right here.",
     icon: "👋",
   },
   intent: {
@@ -49,21 +51,26 @@ const COPY: Record<Exclude<PreviewStatus, "live" | "draft" | "updating">, { titl
 
 function SkeletonBars() {
   return (
-    <Stack spacing={1.5} sx={{ width: "100%", maxWidth: 320, mt: 3 }}>
-      <Box className="preview-skel-bar" sx={{ height: 12, width: "75%", borderRadius: 1.5 }} />
-      <Box className="preview-skel-bar" sx={{ height: 12, width: "100%", borderRadius: 1.5 }} />
-      <Box className="preview-skel-bar" sx={{ height: 12, width: "90%", borderRadius: 1.5 }} />
-      <Box className="preview-skel-bar" sx={{ height: 80, width: "100%", mt: 1, borderRadius: 2 }} />
+    <Stack spacing={1.25} sx={{ width: "100%", mt: 3, alignItems: "stretch" }}>
+      <Box className="preview-skel-bar" sx={{ height: 10, width: "72%", mx: "auto" }} />
+      <Box className="preview-skel-bar" sx={{ height: 10, width: "100%" }} />
+      <Box className="preview-skel-bar" sx={{ height: 10, width: "88%", mx: "auto" }} />
+      <Box className="preview-skel-bar" sx={{ height: 72, width: "100%", mt: 0.5, borderRadius: "12px" }} />
     </Stack>
   );
 }
 
-function PreviewPlaceholder({ status }: { status: Exclude<PreviewStatus, "live" | "draft" | "updating"> }) {
+function PreviewPlaceholder({
+  status,
+}: {
+  status: Exclude<PreviewStatus, "live" | "draft" | "updating">;
+}) {
   const copy = COPY[status];
-  const active = status === "intent" || status === "clarify";
+  const idle = status === "idle";
 
   return (
     <Box
+      className="preview-stage"
       sx={{
         display: "flex",
         flex: 1,
@@ -71,25 +78,47 @@ function PreviewPlaceholder({ status }: { status: Exclude<PreviewStatus, "live" 
         alignItems: "center",
         justifyContent: "center",
         px: 4,
-        bgcolor: "background.default",
       }}
     >
-      <Stack sx={{ alignItems: "center", maxWidth: 480, textAlign: "center" }}>
-        {active ? (
-          <Box sx={{ mb: 2 }}>
-            <CircularProgress size={40} thickness={3.5} />
+      <Paper
+        elevation={0}
+        sx={{
+          width: 420,
+          maxWidth: "100%",
+          px: 4,
+          py: 4.25,
+          borderRadius: "18px",
+          border: "1px solid #efeae4",
+          boxShadow: "0 12px 32px rgba(70, 54, 40, 0.05)",
+          textAlign: "center",
+        }}
+      >
+        {idle ? (
+          <Box
+            sx={{
+              width: 42,
+              height: 42,
+              mx: "auto",
+              mb: 1.75,
+              borderRadius: "12px",
+              bgcolor: "#f6e8ec",
+              color: "primary.main",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <DesktopWindowsOutlinedIcon sx={{ fontSize: 20 }} />
           </Box>
-        ) : (
-          <Typography sx={{ fontSize: "3rem", mb: 2 }}>{copy.icon}</Typography>
-        )}
-        <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+        ) : null}
+        <Typography sx={{ fontWeight: 700, fontSize: "1.02rem", mb: 1 }}>
           {copy.title}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.8, maxWidth: 400 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.65, maxWidth: 340, mx: "auto" }}>
           {copy.detail}
         </Typography>
-        {active ? <SkeletonBars /> : null}
-      </Stack>
+        {idle ? null : <SkeletonBars />}
+      </Paper>
     </Box>
   );
 }
@@ -144,6 +173,7 @@ export function PreviewPanel({
   const src = previewUrl ? iframeSrc(previewUrl) : null;
   const streamDocument = useMemo(() => fileMapToPreviewDocument(streamFiles), [streamFiles]);
   const showFrame = Boolean(src || streamDocument) && (status === "live" || status === "draft" || status === "updating");
+  const canPublish = Boolean(sessionId) && status === "live" && !publishing;
   const statusConfig = STATUS_CONFIG[status];
 
   useEffect(() => {
@@ -212,8 +242,9 @@ export function PreviewPanel({
       <Stack
         direction="row"
         sx={{
-          px: 2.5,
-          py: 1.5,
+          height: 56,
+          px: 2.25,
+          py: 0,
           borderBottom: 1,
           borderColor: "divider",
           alignItems: "center",
@@ -222,83 +253,95 @@ export function PreviewPanel({
           bgcolor: "background.paper",
         }}
       >
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: "center", minWidth: 0 }}>
           <Typography
             variant="overline"
-            sx={{ fontWeight: 600, color: "text.secondary", fontSize: "0.75rem" }}
+            sx={{ fontWeight: 650, color: "text.secondary", fontSize: "0.68rem", letterSpacing: "0.08em" }}
           >
             Generated App
           </Typography>
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.5,
-              px: 1,
-              py: 0.25,
-              borderRadius: 1,
-              bgcolor: statusConfig.color === "success.main" ? "success.light" : "background.default",
-              border: 1,
-              borderColor: "divider",
-            }}
-          >
+          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.75 }}>
             <Box
               sx={{
-                width: 6,
-                height: 6,
+                width: 7,
+                height: 7,
                 borderRadius: "50%",
                 bgcolor: statusConfig.color,
               }}
             />
-            <Typography variant="caption" sx={{ fontWeight: 600, fontSize: "0.7rem", color: statusConfig.color }}>
+            <Typography variant="caption" sx={{ fontWeight: 600, fontSize: "0.75rem", color: "text.secondary" }}>
               {statusConfig.label}
             </Typography>
           </Box>
         </Stack>
 
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-          <Button
-            size="small"
-            variant={tab === "preview" ? "contained" : "outlined"}
-            color={tab === "preview" ? "primary" : "inherit"}
-            startIcon={<VisibilityRoundedIcon sx={{ fontSize: 16 }} />}
-            onClick={() => onTabChange?.("preview")}
-            sx={{ minWidth: 100, fontWeight: 500, textTransform: "none" }}
-          >
-            Preview
-          </Button>
-          <Button
-            size="small"
-            variant={tab === "code" ? "contained" : "outlined"}
-            color={tab === "code" ? "primary" : "inherit"}
-            startIcon={<CodeRoundedIcon sx={{ fontSize: 16 }} />}
-            onClick={() => onTabChange?.("code")}
-            sx={{ minWidth: 100, fontWeight: 500, textTransform: "none" }}
-          >
-            Code
-          </Button>
-          {sessionId && showFrame ? (
-            <Button
-              size="small"
-              variant="outlined"
-              disabled={publishing}
-              onClick={() => {
-                setPublishing(true);
-                setPublishNote(null);
-                void publishSession(sessionId, {})
-                  .then((result) => setPublishNote(`Saved “${result.tool.name}”`))
-                  .catch((error: unknown) =>
-                    setPublishNote(error instanceof Error ? error.message : "Publish failed.")
-                  )
-                  .finally(() => setPublishing(false));
+        <Stack direction="row" spacing={0.25} sx={{ alignItems: "center" }}>
+          <Tooltip title="Preview">
+            <IconButton
+              aria-label="Preview"
+              onClick={() => onTabChange?.("preview")}
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: "8px",
+                color: tab === "preview" ? "text.primary" : "text.secondary",
+                bgcolor: tab === "preview" ? "#f6f3ee" : "transparent",
+                "&:hover": { bgcolor: "#f6f3ee" },
               }}
-              sx={{ fontWeight: 500, textTransform: "none" }}
             >
-              {publishing ? "Publishing" : "Publish"}
-            </Button>
-          ) : null}
+              <VisibilityRoundedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Code">
+            <IconButton
+              aria-label="Code"
+              onClick={() => onTabChange?.("code")}
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: "8px",
+                color: tab === "code" ? "text.primary" : "text.secondary",
+                bgcolor: tab === "code" ? "#f6f3ee" : "transparent",
+                "&:hover": { bgcolor: "#f6f3ee" },
+              }}
+            >
+              <CodeRoundedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Publish">
+            <span>
+              <IconButton
+                aria-label="Publish"
+                disabled={!canPublish}
+                onClick={() => {
+                  if (!sessionId) {
+                    return;
+                  }
+                  setPublishing(true);
+                  setPublishNote(null);
+                  void publishSession(sessionId, {})
+                    .then((result) => setPublishNote(`Saved “${result.tool.name}” to your dashboard`))
+                    .catch((error: unknown) =>
+                      setPublishNote(error instanceof Error ? error.message : "Publish failed.")
+                    )
+                    .finally(() => setPublishing(false));
+                }}
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "9px",
+                  bgcolor: "primary.main",
+                  color: "#fff",
+                  "&:hover": { bgcolor: "primary.dark" },
+                  "&.Mui-disabled": { bgcolor: "primary.main", color: "#fff", opacity: 1 },
+                }}
+              >
+                <RocketLaunchRoundedIcon sx={{ fontSize: 17 }} />
+              </IconButton>
+            </span>
+          </Tooltip>
           {publishNote ? (
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 140 }} title={publishNote}>
               {publishNote}
             </Typography>
           ) : null}
@@ -316,7 +359,7 @@ export function PreviewPanel({
           <EventLogButton events={events} />
           {split ? (
             <Tooltip title="Hide chat">
-              <IconButton size="small" aria-label="Hide chat" onClick={split.collapseChat}>
+              <IconButton aria-label="Hide chat" onClick={split.collapseChat} sx={{ width: 32, height: 32, color: "text.secondary" }}>
                 <KeyboardTabRoundedIcon sx={{ fontSize: 18, transform: "scaleX(-1)" }} />
               </IconButton>
             </Tooltip>

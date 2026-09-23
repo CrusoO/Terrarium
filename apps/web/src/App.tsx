@@ -11,14 +11,9 @@ export default function App() {
   const [view, setView] = useState<"chat" | "workspace">("chat");
 
   async function handleOpenTool(toolId: string) {
-    try {
-      await openWorkspaceTool(toolId);
-      setView("chat");
-      // TODO: Load the opened tool's session
-      window.location.reload(); // Temporary: full reload to start fresh session
-    } catch (error) {
-      console.error("Failed to open tool:", error);
-    }
+    const opened = await openWorkspaceTool(toolId);
+    session.openPublished(opened);
+    setView("chat");
   }
 
   if (view === "workspace") {
@@ -27,6 +22,7 @@ export default function App() {
         <AppShell 
           chat={<div />} 
           canvas={<WorkspaceDashboard onOpenTool={handleOpenTool} />}
+          view={view}
           onViewChange={setView}
         />
       </div>
@@ -63,6 +59,7 @@ export default function App() {
           refreshKey={session.previewKey}
         />
       }
+      view={view}
       onViewChange={setView}
     />
   );

@@ -53,23 +53,23 @@ function latestUnansweredAssistantId(chat: ChatItem[]): string | null {
 function PhaseMark({ phase }: { phase?: string }) {
   if (phase === "ready") {
     return (
-      <Chip 
-        label="Ready to build" 
-        size="small" 
-        color="success" 
-        variant="outlined" 
-        sx={{ height: 24, fontSize: "0.75rem", fontWeight: 500 }} 
+      <Chip
+        label="Ready to build"
+        size="small"
+        color="success"
+        variant="outlined"
+        sx={{ height: 22, fontSize: "0.7rem", fontWeight: 600, borderRadius: "999px" }}
       />
     );
   }
   if (phase === "clarify") {
     return (
-      <Chip 
-        label="Gathering details" 
-        size="small" 
-        color="primary" 
-        variant="outlined" 
-        sx={{ height: 24, fontSize: "0.75rem", fontWeight: 500 }} 
+      <Chip
+        label="Gathering details"
+        size="small"
+        color="primary"
+        variant="outlined"
+        sx={{ height: 22, fontSize: "0.7rem", fontWeight: 600, borderRadius: "999px" }}
       />
     );
   }
@@ -84,19 +84,20 @@ function UserBubble({ text }: { text: string }) {
         elevation={0}
         sx={{
           maxWidth: "85%",
-          px: 2,
-          py: 1.5,
-          bgcolor: "primary.main",
-          color: "primary.contrastText",
-          borderRadius: "16px 16px 5px 16px",
-          boxShadow: "0 12px 28px rgba(110, 20, 41, 0.18)",
+          px: 1.75,
+          py: 1.25,
+          bgcolor: "background.paper",
+          color: "text.primary",
+          border: 1,
+          borderColor: "divider",
+          borderRadius: "14px",
         }}
       >
         {blocks ? (
           <Stack spacing={1.5}>
             {blocks.map((block, index) => (
               <Box key={`${block.question}-${index}`}>
-                <Typography variant="caption" sx={{ opacity: 0.85, display: "block", mb: 0.5, fontWeight: 500 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5, fontWeight: 500 }}>
                   {block.question}
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 400 }}>
@@ -138,18 +139,15 @@ function parseAnswerBlocks(text: string): { question: string; answer: string }[]
 
 function TerrariumAvatar() {
   return (
-    <Avatar 
-      sx={{ 
-        bgcolor: "background.paper",
-        color: "primary.main",
-        width: 32, 
-        height: 32,
-        border: 1,
-        borderColor: "divider",
-        boxShadow: "0 8px 18px rgba(17, 24, 39, 0.08)"
+    <Avatar
+      sx={{
+        bgcolor: "#efecea",
+        color: "text.primary",
+        width: 28,
+        height: 28,
       }}
     >
-      <AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />
+      <AutoAwesomeRoundedIcon sx={{ fontSize: 15 }} />
     </Avatar>
   );
 }
@@ -192,7 +190,7 @@ export function ChatThread({
                   borderColor: "divider", 
                   borderRadius: 2,
                   bgcolor: "rgba(255,255,255,0.92)",
-                  boxShadow: "0 12px 30px rgba(17, 24, 39, 0.06)"
+                  boxShadow: "none"
                 }}
               >
                 <AgentTrace events={block.events} live={busy} />
@@ -293,7 +291,7 @@ export function ChatThread({
                   borderColor: "divider", 
                   borderRadius: 2,
                   bgcolor: "rgba(255,255,255,0.92)",
-                  boxShadow: "0 12px 30px rgba(17, 24, 39, 0.06)"
+                  boxShadow: "none"
                 }}
               >
                 <ThinkingIndicator label={item.label} />
@@ -313,21 +311,22 @@ export function ChatThread({
             >
               <TerrariumAvatar />
               <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.75 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary" }}>
-                    Terrarium Assistant
+                <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.6 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: "text.primary" }}>
+                    Terra
                   </Typography>
                   <PhaseMark phase={item.phase} />
                 </Stack>
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 2,
+                    px: 1.75,
+                    py: 1.35,
                     border: 1,
                     borderColor: "divider",
-                    borderRadius: 2,
+                    borderRadius: "12px",
                     bgcolor: "background.paper",
-                    boxShadow: "0 12px 30px rgba(17, 24, 39, 0.06)",
+                    boxShadow: "none",
                   }}
                 >
                   <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>

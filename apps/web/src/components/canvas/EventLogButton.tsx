@@ -1,17 +1,17 @@
 import { useState } from "react";
 import TimelineRoundedIcon from "@mui/icons-material/TimelineRounded";
 import {
-  Badge,
   Box,
-  Button,
   Dialog,
   DialogContent,
   DialogTitle,
   IconButton,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import type { SessionEvent } from "@terrarium/contracts";
+import { eventDetail, eventLabel } from "../chat/AgentTrace";
 import { IntentResult } from "../chat/IntentResult";
 
 export function EventLogButton({ events }: { events: SessionEvent[] }) {
@@ -19,31 +19,43 @@ export function EventLogButton({ events }: { events: SessionEvent[] }) {
 
   return (
     <>
-      <Badge
-        badgeContent={events.length || undefined}
-        color="primary"
-        max={99}
-        overlap="rectangular"
-      >
-        <Button
-          size="small"
-          variant="outlined"
-          startIcon={<TimelineRoundedIcon sx={{ fontSize: 16 }} />}
+      <Tooltip title="What is happening">
+        <IconButton
+          aria-label="What is happening"
           onClick={() => setOpen(true)}
           sx={{
-            textTransform: "none",
-            fontSize: 12,
-            fontWeight: 600,
-            px: 1.25,
-            py: 0.25,
-            minHeight: 28,
-            borderColor: "divider",
+            position: "relative",
+            width: 32,
+            height: 32,
+            borderRadius: "8px",
             color: "text.secondary",
+            "&:hover": { bgcolor: "#f6f3ee" },
           }}
         >
-          What is happening
-        </Button>
-      </Badge>
+          <TimelineRoundedIcon sx={{ fontSize: 18 }} />
+          {events.length > 0 ? (
+            <Box
+              component="span"
+              sx={{
+                position: "absolute",
+                top: 2,
+                right: 2,
+                minWidth: 14,
+                height: 14,
+                px: 0.25,
+                borderRadius: "999px",
+                bgcolor: "#eceae6",
+                color: "text.secondary",
+                fontSize: "0.6rem",
+                fontWeight: 700,
+                lineHeight: "14px",
+              }}
+            >
+              {events.length > 99 ? "99" : events.length}
+            </Box>
+          ) : null}
+        </IconButton>
+      </Tooltip>
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -78,7 +90,9 @@ function EventList({ events }: { events: SessionEvent[] }) {
           No SessionEvents yet. Submit a prompt to start the SSE stream.
         </Typography>
       ) : (
-        events.map((item, index) => (
+        events.map((item, index) => {
+          const detail = eventDetail(item);
+          return (
           <Box
             component="li"
             key={`${item.sessionId}-${item.at}-${item.name}-${index}`}
@@ -88,24 +102,37 @@ function EventList({ events }: { events: SessionEvent[] }) {
               px: 1.5,
               py: 1.25,
               bgcolor: "#f4e8ec",
-              fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: 12,
             }}
           >
-            <Typography component="span" sx={{ fontWeight: 700, color: "primary.main", fontSize: 12 }}>
-              {item.name}
+            <Typography component="span" sx={{ fontWeight: 700, color: "primary.main", fontSize: 13 }}>
+              {eventLabel(item)}
             </Typography>
-            <Typography color="text.secondary" sx={{ mt: 0.5, fontSize: 11 }}>
+            <Typography color="text.secondary" sx={{ mt: 0.35, fontSize: 11 }}>
               {item.at}
             </Typography>
             {item.name === "intent.classified" ? <IntentResult event={item} /> : null}
+            {detail ? (
+              <Typography
+                sx={{
+                  mt: 1,
+                  fontSize: 12,
+                  lineHeight: 1.55,
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  color: "text.primary",
+                }}
+              >
+                {detail}
+              </Typography>
+            ) : null}
             {item.name === "preview.ready" && typeof item.payload?.previewUrl === "string" ? (
               <Typography sx={{ mt: 1, fontSize: 11, wordBreak: "break-all" }} color="text.secondary">
                 {item.payload.previewUrl}
               </Typography>
             ) : null}
           </Box>
-        ))
+          );
+        })
       )}
     </Box>
   );

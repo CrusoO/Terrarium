@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
-import { Alert, Box, IconButton, InputBase, Paper, Typography } from "@mui/material";
+import { Alert, Box, CircularProgress, IconButton, InputBase, Paper, Typography } from "@mui/material";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 
 type PromptFormProps = {
@@ -25,11 +26,9 @@ export function PromptForm({
       onSubmit={onSubmit}
       sx={{
         px: 2.5,
-        py: 2.25,
-        borderTop: 1,
-        borderColor: "divider",
-        bgcolor: "rgba(255,255,255,0.94)",
-        backdropFilter: "blur(14px)",
+        pt: 0.5,
+        pb: 1.75,
+        bgcolor: "background.default",
       }}
     >
       <Box sx={{ maxWidth: 720, mx: "auto" }}>
@@ -37,20 +36,18 @@ export function PromptForm({
           elevation={0}
           sx={{
             display: "flex",
-            alignItems: "flex-end",
-            gap: 1,
-            minHeight: 54,
-            px: 2,
-            py: 1.15,
+            alignItems: "center",
+            gap: 0.75,
+            minHeight: 48,
+            px: 1.5,
+            py: 0.6,
             border: 1,
-            borderColor: canSend ? "primary.main" : "divider",
-            borderRadius: 2.5,
+            borderColor: "divider",
+            borderRadius: "14px",
             bgcolor: "background.paper",
-            boxShadow: "0 14px 34px rgba(17, 24, 39, 0.08)",
-            transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
+            boxShadow: "none",
             "&:focus-within": {
-              borderColor: "primary.main",
-              boxShadow: "0 0 0 4px rgba(110, 20, 41, 0.08), 0 16px 38px rgba(17, 24, 39, 0.1)",
+              borderColor: "#d0cdc8",
             },
           }}
         >
@@ -81,25 +78,27 @@ export function PromptForm({
               },
             }}
           />
+          <ImageOutlinedIcon sx={{ fontSize: 18, color: "#b0aaa4", flexShrink: 0 }} />
           <IconButton
             type="submit"
             disabled={!canSend}
-            aria-label="Send message"
+            aria-label={busy ? "Building" : "Send message"}
             size="medium"
             sx={{
-              bgcolor: canSend ? "primary.main" : "action.disabledBackground",
-              color: canSend ? "primary.contrastText" : "text.disabled",
-              width: 36,
-              height: 36,
-              "&:hover": {
-                bgcolor: canSend ? "primary.dark" : "action.disabledBackground",
-                transform: canSend ? "translateY(-1px)" : "none",
-              },
-              transition: "all 0.2s",
-              boxShadow: canSend ? "0 10px 22px rgba(110, 20, 41, 0.22)" : "none",
+              bgcolor: "primary.main",
+              color: "#fff",
+              width: 30,
+              height: 30,
+              flexShrink: 0,
+              "&:hover": { bgcolor: "primary.dark" },
+              "&.Mui-disabled": { bgcolor: "primary.main", color: "#fff" },
             }}
           >
-            <SendRoundedIcon sx={{ fontSize: 20 }} />
+            {busy ? (
+              <CircularProgress size={14} thickness={5} sx={{ color: "#fff" }} />
+            ) : (
+              <SendRoundedIcon sx={{ fontSize: 16 }} />
+            )}
           </IconButton>
         </Paper>
         <Typography
@@ -112,7 +111,7 @@ export function PromptForm({
             fontSize: "0.75rem",
           }}
         >
-          <strong>Enter</strong> to send · <strong>Shift+Enter</strong> for new line
+          Enter to send · Shift+Enter for new line
         </Typography>
         {status ? (
           <Alert severity="error" sx={{ mt: 1.5, borderRadius: 1.5 }}>

@@ -23,6 +23,7 @@ export default defineConfig({
       },
       "/health": "http://127.0.0.1:3001",
       "/preview": "http://127.0.0.1:3001",
+      "/workspace": "http://127.0.0.1:3001",
     },
   },
 });

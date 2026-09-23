@@ -79,11 +79,13 @@ def _version_dto(version: ToolVersionRecord) -> ToolVersion:
     )
 
 
-def _last_user_prompt(turns: list[dict[str, str]]) -> str:
-    for turn in reversed(turns):
-        if turn.get("role") == "user" and turn.get("text"):
-            return turn["text"]
-    return ""
+def _user_prompts(turns: list[dict[str, str]]) -> list[str]:
+    return [turn["text"] for turn in turns if turn.get("role") == "user" and turn.get("text")]
+
+
+def _original_prompt(turns: list[dict[str, str]]) -> str:
+    prompts = _user_prompts(turns)
+    return prompts[0] if prompts else ""
 
 
 def _default_name(prompt: str) -> str:
@@ -182,7 +184,7 @@ async def publish_session(
     if not files:
         raise HTTPException(status_code=409, detail="No FileMap is available to publish.")
     turns = await log.load_conversation(session_id)
-    prompt = _last_user_prompt(turns)
+    prompt = _original_prompt(turns)
     tool_id = await log.load_tool_id(session_id)
     tool = db.get(ToolRecord, tool_id) if tool_id else None
     if tool is None:
