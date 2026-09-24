@@ -29,9 +29,9 @@ def sandbox_host() -> str:
 
 
 def preview_mode() -> str:
-    """path = same-origin /preview/{slug}/ (survives Zscaler). host = Traefik subdomain."""
-    value = os.environ.get("TERRARIUM_PREVIEW_MODE", "path").strip().lower()
-    return value if value in {"path", "host"} else "path"
+    """port = isolated localhost:{hostPort}. path = same-origin /preview/{slug}/. host = nip.io."""
+    value = os.environ.get("TERRARIUM_PREVIEW_MODE", "port").strip().lower()
+    return value if value in {"path", "host", "port"} else "port"
 
 
 def nano_cpus() -> int:

@@ -829,10 +829,18 @@ async def _boot_preview(
     )
     try:
         runner = SandboxRunner()
+        logger.info("Session %s starting Docker sandbox (%s files)", session_id, len(filemap))
         handle = await asyncio.to_thread(
             lambda: runner.start(session_id, files=filemap)
         )
+        logger.info(
+            "Session %s container started id=%s url=%s; waiting for health",
+            session_id,
+            handle.containerId,
+            handle.previewUrl,
+        )
         report = await asyncio.to_thread(runner.wait_until_healthy, session_id)
+        logger.info("Session %s sandbox health=%s", session_id, report.status)
     except Exception as error:
         logger.exception("Sandbox start failed for %s", session_id)
         if draft:

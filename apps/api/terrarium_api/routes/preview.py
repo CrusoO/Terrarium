@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 
 import httpx
@@ -36,6 +37,17 @@ def _upstream(slug: str, port: int, path: str, query: str) -> str:
     return target
 
 
+def _traefik_upstream(slug: str, path: str, query: str) -> str:
+    """Host API cannot resolve Docker DNS; Traefik on :80 can."""
+    child = path.lstrip("/")
+    target_path = f"preview/{slug}/{child}" if child else f"preview/{slug}/"
+    base = os.environ.get("TERRARIUM_PREVIEW_UPSTREAM", "http://127.0.0.1").rstrip("/")
+    target = f"{base}/{target_path}"
+    if query:
+        return f"{target}?{query}"
+    return target
+
+
 @router.api_route("/preview/{slug}", methods=["GET", "HEAD"])
 @router.api_route("/preview/{slug}/{path:path}", methods=["GET", "HEAD"])
 async def preview_proxy(slug: str, request: Request, path: str = "") -> Response:
@@ -63,6 +75,14 @@ async def preview_proxy(slug: str, request: Request, path: str = "") -> Response
                 except httpx.RequestError as error:
                     errors.append(error)
                     continue
+            if upstream is None:
+                try:
+                    upstream = await client.request(
+                        request.method,
+                        _traefik_upstream(clean, path, request.url.query),
+                    )
+                except httpx.RequestError as error:
+                    errors.append(error)
     except httpx.RequestError as error:
         errors.append(error)
     if upstream is None:
