@@ -183,11 +183,30 @@ def session_slug(session_id: str) -> str:
     return slug
 
 
-def preview_url(session_id: str, host: str = config.SANDBOX_HOST) -> str:
+def preview_url(
+    session_id: str,
+    host: str = config.SANDBOX_HOST,
+    host_port: int | None = None,
+) -> str:
     slug = session_slug(session_id)
-    if config.preview_mode() == "host":
+    mode = config.preview_mode()
+    if mode == "port":
+        if host_port:
+            return f"http://127.0.0.1:{int(host_port)}/"
+        return f"/preview/{slug}/"
+    if mode == "host":
         return f"http://{slug}.{host}"
     return f"/preview/{slug}/"
+
+
+def _published_host_port(container, app_port: str) -> int | None:
+    container.reload()
+    ports = (container.attrs.get("NetworkSettings") or {}).get("Ports") or {}
+    bindings = ports.get(f"{app_port}/tcp") or []
+    if not bindings:
+        return None
+    raw = bindings[0].get("HostPort")
+    return int(raw) if raw else None
 
 
 def container_name(session_id: str) -> str:
@@ -203,6 +222,26 @@ def project_runtime(files: FileMap | None) -> str:
     if "package.json" in names and ("src/main.jsx" in names or "src/App.jsx" in names):
         return "react"
     return "static"
+
+
+def _traefik_labels(slug: str, runtime: str, app_port: str) -> dict[str, str]:
+    """Path routes must keep /preview/{slug} for Vite --base; nginx static apps strip it."""
+    router = f"sandbox-{slug}"
+    labels = {
+        "traefik.enable": "true",
+        "traefik.docker.network": config.SANDBOX_NETWORK,
+        f"traefik.http.routers.{router}.rule": f"Host(`{slug}.{config.SANDBOX_HOST}`)",
+        f"traefik.http.routers.{router}.entrypoints": "web",
+        f"traefik.http.services.{router}.loadbalancer.server.port": app_port,
+        f"traefik.http.routers.{router}-path.rule": f"PathPrefix(`/preview/{slug}`)",
+        f"traefik.http.routers.{router}-path.entrypoints": "web",
+    }
+    if runtime == "static":
+        labels[f"traefik.http.routers.{router}-path.middlewares"] = f"{router}-strip"
+        labels[f"traefik.http.middlewares.{router}-strip.stripprefix.prefixes"] = (
+            f"/preview/{slug}"
+        )
+    return labels
 
 
 def _node_command(runtime: str, base_path: str) -> str:
@@ -242,12 +281,11 @@ class SandboxRunner:
         else:
             self._ensure_node_image()
             image = config.NODE_IMAGE
-            base_path = f"/preview/{slug}/" if config.PREVIEW_MODE == "path" else "/"
+            base_path = f"/preview/{slug}/" if config.preview_mode() == "path" else "/"
             command = _node_command(runtime, base_path)
             app_port = "5173"
             target_root = _APP_ROOT
 
-        router = f"sandbox-{slug}"
         run_kwargs: dict = {
             "name": name,
             "detach": True,
@@ -261,15 +299,7 @@ class SandboxRunner:
                 "terrarium.session": session_id,
                 "terrarium.runtime": runtime,
                 "terrarium.port": app_port,
-                "traefik.enable": "true",
-                "traefik.docker.network": config.SANDBOX_NETWORK,
-                f"traefik.http.routers.{router}.rule": f"Host(`{slug}.{config.SANDBOX_HOST}`)",
-                f"traefik.http.routers.{router}.entrypoints": "web",
-                f"traefik.http.services.{router}.loadbalancer.server.port": app_port,
-                f"traefik.http.routers.{router}-path.rule": f"PathPrefix(`/preview/{slug}`)",
-                f"traefik.http.routers.{router}-path.entrypoints": "web",
-                f"traefik.http.routers.{router}-path.middlewares": f"{router}-strip",
-                f"traefik.http.middlewares.{router}-strip.stripprefix.prefixes": f"/preview/{slug}",
+                **_traefik_labels(slug, runtime, app_port),
             },
             "security_opt": ["no-new-privileges:true"],
             "read_only": files is None,
@@ -283,15 +313,22 @@ class SandboxRunner:
         if command:
             run_kwargs["command"] = command
             run_kwargs["working_dir"] = _APP_ROOT
+        if config.preview_mode() == "port":
+            run_kwargs["ports"] = {f"{app_port}/tcp": ("127.0.0.1", None)}
         container = self.client.containers.run(image, **run_kwargs)
         self._wait_until_running(container)
         if files:
             if runtime != "static":
                 files = {**files, ".terrarium-ready": "1\n"}
             _write_filemap(container, files, target_root=target_root)
+        host_port = (
+            _published_host_port(container, app_port)
+            if config.preview_mode() == "port"
+            else None
+        )
         return SandboxHandle(
             sessionId=session_id,
-            previewUrl=preview_url(session_id),
+            previewUrl=preview_url(session_id, host_port=host_port),
             containerId=container.id,
         )
 

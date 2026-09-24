@@ -125,6 +125,8 @@ function PreviewPlaceholder({
 
 /**
  * Normalise a sandbox previewUrl for the iframe src.
+ * Keep http://127.0.0.1:{port}/ as-is so the child is a different origin
+ * from the parent on :5173 (separate localStorage / cookies).
  */
 export function iframeSrc(previewUrl: string): string {
   if (previewUrl.startsWith("/")) {
@@ -133,6 +135,9 @@ export function iframeSrc(previewUrl: string): string {
   try {
     const parsed = new URL(previewUrl);
     const host = parsed.hostname;
+    if (host === "127.0.0.1" || host === "localhost") {
+      return previewUrl.endsWith("/") ? previewUrl : `${previewUrl}/`;
+    }
     if (host.includes("nip.io") || host.endsWith(".sandbox.local") || host.endsWith(".localhost")) {
       const slug = host.split(".")[0];
       if (slug) return `/preview/${slug}/`;
@@ -207,24 +212,28 @@ export function PreviewPanel({
     if (!frameWindow || streamDocument) {
       return;
     }
-    frameWindow.addEventListener("error", (event) => {
-      onRuntimeError?.({
-        source: "frontend",
-        message: event.message || "Preview runtime error",
-        stack: event.error?.stack,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
+    try {
+      frameWindow.addEventListener("error", (event) => {
+        onRuntimeError?.({
+          source: "frontend",
+          message: event.message || "Preview runtime error",
+          stack: event.error?.stack,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+        });
       });
-    });
-    frameWindow.addEventListener("unhandledrejection", (event) => {
-      const reason = event.reason as Error | string | undefined;
-      onRuntimeError?.({
-        source: "frontend",
-        message: reason instanceof Error ? reason.message : String(reason || "Unhandled promise rejection"),
-        stack: reason instanceof Error ? reason.stack : undefined,
+      frameWindow.addEventListener("unhandledrejection", (event) => {
+        const reason = event.reason as Error | string | undefined;
+        onRuntimeError?.({
+          source: "frontend",
+          message: reason instanceof Error ? reason.message : String(reason || "Unhandled promise rejection"),
+          stack: reason instanceof Error ? reason.stack : undefined,
+        });
       });
-    });
+    } catch {
+      // Cross-origin port previews cannot attach listeners on the child window.
+    }
   }
 
   return (

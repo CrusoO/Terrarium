@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import unittest
 
-from terrarium_sandbox.runner import preview_url, session_slug
+from terrarium_sandbox.runner import _traefik_labels, preview_url, session_slug
 
 
 class PreviewUrlTests(unittest.TestCase):
@@ -22,8 +22,30 @@ class PreviewUrlTests(unittest.TestCase):
         url = preview_url("abc123", host="127.0.0.1.nip.io")
         self.assertEqual(url, "http://abc123.127.0.0.1.nip.io")
 
+    def test_port_mode_uses_published_localhost(self) -> None:
+        os.environ["TERRARIUM_PREVIEW_MODE"] = "port"
+        self.assertEqual(
+            preview_url("abc123", host_port=5174),
+            "http://127.0.0.1:5174/",
+        )
+
     def test_slug_strips_unsafe_chars(self) -> None:
         self.assertEqual(session_slug("Hello World!"), "hello-world")
+
+    def test_node_path_route_keeps_vite_base(self) -> None:
+        labels = _traefik_labels("abc123", "react", "5173")
+        self.assertEqual(
+            labels["traefik.http.routers.sandbox-abc123-path.rule"],
+            "PathPrefix(`/preview/abc123`)",
+        )
+        self.assertNotIn("traefik.http.routers.sandbox-abc123-path.middlewares", labels)
+
+    def test_static_path_route_strips_preview_prefix(self) -> None:
+        labels = _traefik_labels("abc123", "static", "80")
+        self.assertEqual(
+            labels["traefik.http.routers.sandbox-abc123-path.middlewares"],
+            "sandbox-abc123-strip",
+        )
 
 
 if __name__ == "__main__":
