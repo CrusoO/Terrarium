@@ -3,7 +3,7 @@ from __future__ import annotations
 from uuid import uuid4
 
 from arq.connections import ArqRedis
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from terrarium_contracts import (
     CreateSessionRequest,
@@ -13,6 +13,7 @@ from terrarium_contracts import (
     SessionFilesResponse,
 )
 
+from terrarium_api.auth.deps import get_current_user
 from terrarium_api.events import make_event
 from terrarium_api.session_log import SessionEventLog
 from terrarium_api.session_lock import acquire_session_lock, release_session_lock
@@ -29,11 +30,14 @@ def _redis(request: Request) -> ArqRedis:
 
 @router.post("/sessions", response_model=CreateSessionResponse)
 async def create_session(
-    body: CreateSessionRequest, request: Request
+    body: CreateSessionRequest,
+    request: Request,
+    user: dict[str, str] = Depends(get_current_user),
 ) -> CreateSessionResponse:
     if not body.prompt.strip():
         raise HTTPException(status_code=422, detail="prompt must not be empty")
 
+    actor_id = user["id"]
     redis = _redis(request)
     log = SessionEventLog(redis)
     if body.sessionId:
@@ -43,7 +47,7 @@ async def create_session(
     else:
         session_id = uuid4().hex
         await log.append(
-            make_event("session.created", session_id, {"actorId": DEV_USER})
+            make_event("session.created", session_id, {"actorId": actor_id})
         )
     lock_token = await acquire_session_lock(redis, session_id)
     if lock_token is None:

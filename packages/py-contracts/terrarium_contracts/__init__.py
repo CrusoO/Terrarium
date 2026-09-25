@@ -1,6 +1,8 @@
 from terrarium_contracts.models import (
     DEV_USER,
     AcceptMatchRequest,
+    AuthResponse,
+    User,
     AgentJob,
     AgentResult,
     BackendNeed,
@@ -42,6 +44,8 @@ from terrarium_contracts.models import (
 __all__ = [
     "DEV_USER",
     "AcceptMatchRequest",
+    "AuthResponse",
+    "User",
     "AgentJob",
     "AgentResult",
     "BackendNeed",

@@ -21,6 +21,7 @@ import {
   type SessionEvent,
   type ToolSummary,
 } from "@terrarium/contracts";
+import { getAuthHeaders } from "./auth";
 
 export async function createSession(
   request: CreateSessionRequest
@@ -28,7 +29,7 @@ export async function createSession(
   const body = createSessionRequestSchema.parse(request);
   const response = await fetch("/sessions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   const json: unknown = await response.json().catch(() => null);
@@ -40,7 +41,7 @@ export async function createSession(
 }
 
 export async function fetchSessionFiles(sessionId: string): Promise<FileMap> {
-  const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/files`);
+  const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/files`, { headers: getAuthHeaders() });
   const json: unknown = await response.json().catch(() => null);
   const parsed = sessionFilesResponseSchema.safeParse(json);
   if (!response.ok || !parsed.success) {
@@ -56,7 +57,7 @@ export async function reportRuntimeError(
   const body = runtimeErrorRequestSchema.parse(request);
   const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/runtime-errors`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   const json: unknown = await response.json().catch(() => null);
@@ -68,7 +69,10 @@ export function subscribeSessionEvents(
   onEvent: (event: SessionEvent, eventId?: string) => void,
   lastEventId = "0-0"
 ): EventSource {
-  const params = lastEventId && lastEventId !== "0-0" ? `?lastEventId=${encodeURIComponent(lastEventId)}` : "";
+  // Append token as query param since EventSource doesn't support custom headers.
+  const { Authorization } = getAuthHeaders();
+  const tokenParam = Authorization ? `&token=${encodeURIComponent(Authorization.replace("Bearer ", ""))}` : "";
+  const params = lastEventId && lastEventId !== "0-0" ? `?lastEventId=${encodeURIComponent(lastEventId)}${tokenParam}` : tokenParam ? `?${tokenParam.slice(1)}` : "";
   const source = new EventSource(`/sessions/${encodeURIComponent(sessionId)}/events${params}`);
   source.onmessage = (message: MessageEvent<string>) => {
     try {
@@ -84,7 +88,7 @@ export function subscribeSessionEvents(
 }
 
 export async function fetchWorkspaceTools(): Promise<ToolSummary[]> {
-  const response = await fetch("/workspace/tools");
+  const response = await fetch("/workspace/tools", { headers: getAuthHeaders() });
   const json: unknown = await response.json().catch(() => null);
   const parsed = workspaceToolsResponseSchema.safeParse(json);
   if (!response.ok || !parsed.success) {
@@ -100,7 +104,7 @@ export async function publishSession(
   const body = publishToolRequestSchema.parse(request);
   const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/publish`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   const json: unknown = await response.json().catch(() => null);
@@ -114,6 +118,7 @@ export async function publishSession(
 export async function openWorkspaceTool(toolId: string): Promise<OpenToolResponse> {
   const response = await fetch(`/workspace/tools/${encodeURIComponent(toolId)}/open`, {
     method: "POST",
+    headers: getAuthHeaders(),
   });
   const json: unknown = await response.json().catch(() => null);
   const parsed = openToolResponseSchema.safeParse(json);
@@ -126,6 +131,7 @@ export async function openWorkspaceTool(toolId: string): Promise<OpenToolRespons
 export async function sleepWorkspaceTool(toolId: string): Promise<ToolSummary> {
   const response = await fetch(`/workspace/tools/${encodeURIComponent(toolId)}/sleep`, {
     method: "POST",
+    headers: getAuthHeaders(),
   });
   const json: unknown = await response.json().catch(() => null);
   const parsed = toolSummarySchema.safeParse(json);
@@ -143,7 +149,7 @@ export async function acceptSmartMatch(
   const bodyParsed = acceptMatchRequestSchema.parse(body);
   const response = await fetch(`/sessions/${encodeURIComponent(sessionId)}/accept-match`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify(bodyParsed),
   });
   const json: unknown = await response.json().catch(() => null);

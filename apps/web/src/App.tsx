@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { Box, CircularProgress } from "@mui/material";
+import { LoginPage } from "./components/auth/LoginPage";
 import { AppShell } from "./components/layout/AppShell";
 import { ChatPane } from "./components/chat/ChatPane";
 import { LiveCanvas } from "./components/canvas/LiveCanvas";
 import { WorkspaceDashboard } from "./components/workspace/WorkspaceDashboard";
+import { useAuth } from "./hooks/useAuth";
 import { useCreateSession } from "./hooks/useCreateSession";
 import { openWorkspaceTool } from "./api/sessions";
 
-export default function App() {
+function MainApp({ onLogout }: { onLogout: () => Promise<void> }) {
   const session = useCreateSession();
   const [view, setView] = useState<"chat" | "workspace">("chat");
 
@@ -19,11 +22,12 @@ export default function App() {
   if (view === "workspace") {
     return (
       <div className="flex h-screen">
-        <AppShell 
-          chat={<div />} 
+        <AppShell
+          chat={<div />}
           canvas={<WorkspaceDashboard onOpenTool={handleOpenTool} />}
           view={view}
           onViewChange={setView}
+          onLogout={onLogout}
         />
       </div>
     );
@@ -61,6 +65,25 @@ export default function App() {
       }
       view={view}
       onViewChange={setView}
+      onLogout={onLogout}
     />
   );
+}
+
+export default function App() {
+  const auth = useAuth();
+
+  if (auth.state.status === "loading") {
+    return (
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (auth.state.status === "unauthenticated") {
+    return <LoginPage onLogin={auth.login} onSignup={auth.signup} />;
+  }
+
+  return <MainApp onLogout={auth.logout} />;
 }

@@ -11,11 +11,13 @@ export function AppShell({
   canvas,
   view = "chat",
   onViewChange,
+  onLogout,
 }: {
   chat: ReactNode;
   canvas: ReactNode;
   view?: "chat" | "workspace";
   onViewChange?: (view: "chat" | "workspace") => void;
+  onLogout?: () => Promise<void>;
 }) {
   const split = useSplitPanes();
   const chatSize = split.desktop ? split.chatWidth : split.chatHeight;
@@ -31,7 +33,7 @@ export function AppShell({
       }}
     >
       <div ref={split.shellRef} className="flex h-full min-h-0 flex-col bg-white text-ink md:flex-row">
-        <IconRail view={view} onViewChange={onViewChange} />
+        <IconRail view={view} onViewChange={onViewChange} onLogout={onLogout} />
         {split.collapsed ? (
           <CollapsedChatStrip desktop={split.desktop} onRestore={split.restoreChat} />
         ) : (
