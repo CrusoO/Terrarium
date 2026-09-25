@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import secrets
 from urllib.parse import urlparse
 
 from arq.connections import RedisSettings
@@ -32,6 +33,14 @@ def _database_url() -> str:
 
 
 DATABASE_URL = _database_url()
+
+# P6-S1 auth
+JWT_SECRET = os.environ.get("JWT_SECRET", secrets.token_hex(32))
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRE_DAYS = int(os.environ.get("JWT_EXPIRE_DAYS", "7"))
+AUTH_COOKIE = "terrarium_token"
+FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "terrariumauth")
+
 IDLE_TIMEOUT_SECONDS = int(
     os.environ.get(
         "TERRARIUM_IDLE_TIMEOUT_SECONDS",

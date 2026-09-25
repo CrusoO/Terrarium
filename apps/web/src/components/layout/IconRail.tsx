@@ -2,14 +2,21 @@ import type { ReactNode } from "react";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import FolderOpenRoundedIcon from "@mui/icons-material/FolderOpenRounded";
 import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
+import GroupsIcon from "@mui/icons-material/Groups";
 import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import ViewQuiltRoundedIcon from "@mui/icons-material/ViewQuiltRounded";
-import { Avatar, Box, IconButton, Stack, Tooltip } from "@mui/material";
+import { Avatar, Badge, Box, IconButton, Stack, Tooltip } from "@mui/material";
+
+export type ViewType = "chat" | "workspace" | "groups" | "approvals";
 
 type IconRailProps = {
-  view?: "chat" | "workspace";
-  onViewChange?: (view: "chat" | "workspace") => void;
+  view?: ViewType;
+  onViewChange?: (view: ViewType) => void;
+  onLogout?: () => Promise<void>;
+  pendingApprovals?: number;
+  userName?: string;
 };
 
 function RailButton({
@@ -44,7 +51,8 @@ function RailButton({
   );
 }
 
-export function IconRail({ view = "chat", onViewChange }: IconRailProps) {
+export function IconRail({ view = "chat", onViewChange, onLogout, pendingApprovals = 0, userName }: IconRailProps) {
+  const initial = (userName?.trim().charAt(0) || "T").toUpperCase();
   return (
     <Stack
       component="nav"
@@ -60,24 +68,38 @@ export function IconRail({ view = "chat", onViewChange }: IconRailProps) {
         flexShrink: 0,
       }}
     >
-      <Avatar
-        sx={{
-          bgcolor: "primary.main",
-          width: 32,
-          height: 32,
-          fontWeight: 700,
-          fontSize: 14,
-          mb: 2,
-        }}
-      >
-        T
-      </Avatar>
+      <Tooltip title={userName ? `Signed in as ${userName}` : "Terrarium"} placement="right">
+        <Avatar
+          sx={{
+            bgcolor: "primary.main",
+            width: 32,
+            height: 32,
+            fontWeight: 700,
+            fontSize: 14,
+            mb: 2,
+          }}
+        >
+          {initial}
+        </Avatar>
+      </Tooltip>
       <Stack spacing={0.5} sx={{ alignItems: "center" }}>
         <RailButton label="Chat" selected={view === "chat"} onClick={() => onViewChange?.("chat")}>
           <AutoAwesomeRoundedIcon sx={{ fontSize: 18 }} />
         </RailButton>
         <RailButton label="Workspace" selected={view === "workspace"} onClick={() => onViewChange?.("workspace")}>
           <GridViewRoundedIcon sx={{ fontSize: 18 }} />
+        </RailButton>
+        <RailButton label="Groups" selected={view === "groups"} onClick={() => onViewChange?.("groups")}>
+          <GroupsIcon sx={{ fontSize: 18 }} />
+        </RailButton>
+        <RailButton
+          label={pendingApprovals > 0 ? `Approvals (${pendingApprovals} pending)` : "Approvals"}
+          selected={view === "approvals"}
+          onClick={() => onViewChange?.("approvals")}
+        >
+          <Badge badgeContent={pendingApprovals} color="error" max={9}>
+            <NotificationsIcon sx={{ fontSize: 18 }} />
+          </Badge>
         </RailButton>
         <RailButton label="Files">
           <FolderOpenRoundedIcon sx={{ fontSize: 18 }} />
@@ -91,7 +113,7 @@ export function IconRail({ view = "chat", onViewChange }: IconRailProps) {
         <RailButton label="Help">
           <HelpOutlineRoundedIcon sx={{ fontSize: 18 }} />
         </RailButton>
-        <RailButton label="Sign out">
+        <RailButton label="Sign out" onClick={() => void onLogout?.()}>
           <LogoutRoundedIcon sx={{ fontSize: 18 }} />
         </RailButton>
       </Stack>

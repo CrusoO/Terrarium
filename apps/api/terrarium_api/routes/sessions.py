@@ -3,8 +3,9 @@ from __future__ import annotations
 from uuid import uuid4
 
 from arq.connections import ArqRedis
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
 from terrarium_contracts import (
     CreateSessionRequest,
     CreateSessionResponse,
@@ -13,9 +14,13 @@ from terrarium_contracts import (
     SessionFilesResponse,
 )
 
+from terrarium_api.auth.deps import get_current_user
+from terrarium_api.db import get_db
 from terrarium_api.events import make_event
+from terrarium_api.models import ToolRecord
 from terrarium_api.session_log import SessionEventLog
 from terrarium_api.session_lock import acquire_session_lock, release_session_lock
+from terrarium_api.tool_access import can_edit_tool
 
 router = APIRouter()
 
@@ -29,21 +34,33 @@ def _redis(request: Request) -> ArqRedis:
 
 @router.post("/sessions", response_model=CreateSessionResponse)
 async def create_session(
-    body: CreateSessionRequest, request: Request
+    body: CreateSessionRequest,
+    request: Request,
+    user: dict[str, str] = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> CreateSessionResponse:
     if not body.prompt.strip():
         raise HTTPException(status_code=422, detail="prompt must not be empty")
 
+    actor_id = user["id"]
     redis = _redis(request)
     log = SessionEventLog(redis)
     if body.sessionId:
         if not await log.exists(body.sessionId):
             raise HTTPException(status_code=404, detail="Unknown sessionId")
         session_id = body.sessionId
+        tool_id = await log.load_tool_id(session_id)
+        if tool_id:
+            tool = db.get(ToolRecord, tool_id)
+            if tool is not None and not can_edit_tool(tool, user, db):
+                raise HTTPException(
+                    status_code=403,
+                    detail="You can use this app. Request edit access from the owner to change it.",
+                )
     else:
         session_id = uuid4().hex
         await log.append(
-            make_event("session.created", session_id, {"actorId": DEV_USER})
+            make_event("session.created", session_id, {"actorId": actor_id})
         )
     lock_token = await acquire_session_lock(redis, session_id)
     if lock_token is None:
