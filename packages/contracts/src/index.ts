@@ -21,6 +21,9 @@ export type IntentKind = z.infer<typeof intentKindSchema>;
 export const toolRoleSchema = z.enum(["owner", "editor", "viewer"]);
 export type ToolRole = z.infer<typeof toolRoleSchema>;
 
+export const toolVisibilitySchema = z.enum(["all", "group", "private"]);
+export type ToolVisibility = z.infer<typeof toolVisibilitySchema>;
+
 export const runtimeStatusSchema = z.enum([
   "booting",
   "running",
@@ -202,15 +205,38 @@ export type HealthReport = z.infer<typeof healthReportSchema>;
 export const toolSchema = z.object({
   id: z.string(),
   ownerId: z.string(),
+  ownerEmail: z.string().email().nullish(),
   name: z.string(),
   summary: z.string(),
   status: runtimeStatusSchema,
+  visibility: toolVisibilitySchema.default("private"),
+  groupId: z.string().nullish(),
+  groupName: z.string().nullish(),
+  myRole: toolRoleSchema.nullish(),
   createdAt: z.string(),
   updatedAt: z.string(),
   latestVersionId: z.string().nullish(),
   latestSessionId: z.string().nullish(),
 });
 export type Tool = z.infer<typeof toolSchema>;
+
+export const toolMemberSchema = z.object({
+  toolId: z.string(),
+  userId: z.string(),
+  role: toolRoleSchema,
+});
+export type ToolMember = z.infer<typeof toolMemberSchema>;
+
+export const toolMembersResponseSchema = z.object({
+  members: z.array(toolMemberSchema),
+});
+export type ToolMembersResponse = z.infer<typeof toolMembersResponseSchema>;
+
+export const shareToolRequestSchema = z.object({
+  emailOrUserId: z.string().min(1),
+  role: z.enum(["editor", "viewer"]),
+});
+export type ShareToolRequest = z.infer<typeof shareToolRequestSchema>;
 
 export const toolVersionSchema = z.object({
   id: z.string(),
@@ -228,10 +254,23 @@ export const toolSummarySchema = toolSchema.extend({
 });
 export type ToolSummary = z.infer<typeof toolSummarySchema>;
 
-export const publishToolRequestSchema = z.object({
-  name: z.string().nullish(),
-  summary: z.string().nullish(),
-});
+export const publishToolRequestSchema = z
+  .object({
+    name: z.string().nullish(),
+    summary: z.string().nullish(),
+    visibility: z.enum(["all", "group"]).default("all"),
+    groupId: z.string().nullish(),
+    groupName: z.string().nullish(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.visibility === "group" && !value.groupId?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "groupId is required when visibility is group",
+        path: ["groupId"],
+      });
+    }
+  });
 export type PublishToolRequest = z.infer<typeof publishToolRequestSchema>;
 
 export const publishToolResponseSchema = z.object({
@@ -249,6 +288,7 @@ export const openToolResponseSchema = z.object({
   sessionId: z.string(),
   previewUrl: z.string(),
   tool: toolSummarySchema,
+  role: toolRoleSchema,
 });
 export type OpenToolResponse = z.infer<typeof openToolResponseSchema>;
 

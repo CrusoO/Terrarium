@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from terrarium_api.auth.routes import router as auth_router
+from terrarium_api.routes.groups import router as groups_router
 from terrarium_api.routes.health import router as health_router
 from terrarium_api.routes.preview import router as preview_router
 from terrarium_api.routes.sessions import router as sessions_router
@@ -41,6 +43,7 @@ def create_app() -> FastAPI:
             "http://localhost:5173",
             "http://127.0.0.1:5173",
         ],
+        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -48,6 +51,8 @@ def create_app() -> FastAPI:
     app.include_router(preview_router)
     app.include_router(sessions_router)
     app.include_router(workspace_router)
+    app.include_router(groups_router)
+    app.include_router(auth_router)
     _attach_web_ui(app)
     return app
 

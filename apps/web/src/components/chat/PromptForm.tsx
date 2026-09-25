@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { Alert, Box, CircularProgress, IconButton, InputBase, Paper, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, IconButton, InputBase, Paper, Typography } from "@mui/material";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 
@@ -7,6 +7,11 @@ type PromptFormProps = {
   prompt: string;
   busy: boolean;
   status: string | null;
+  disabled?: boolean;
+  disabledHint?: string;
+  actionLabel?: string;
+  actionBusy?: boolean;
+  onAction?: () => void;
   onPromptChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
@@ -15,10 +20,15 @@ export function PromptForm({
   prompt,
   busy,
   status,
+  disabled = false,
+  disabledHint,
+  actionLabel,
+  actionBusy = false,
+  onAction,
   onPromptChange,
   onSubmit,
 }: PromptFormProps) {
-  const canSend = prompt.trim().length > 0 && !busy;
+  const canSend = prompt.trim().length > 0 && !busy && !disabled;
 
   return (
     <Box
@@ -57,7 +67,7 @@ export function PromptForm({
             minRows={1}
             maxRows={5}
             fullWidth
-            disabled={busy}
+            disabled={busy || disabled}
             value={prompt}
             onChange={(event) => onPromptChange(event.target.value)}
             onKeyDown={(event) => {
@@ -101,20 +111,33 @@ export function PromptForm({
             )}
           </IconButton>
         </Paper>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            display: "block",
-            mt: 1,
-            textAlign: "center",
-            fontSize: "0.75rem",
-          }}
-        >
-          Enter to send · Shift+Enter for new line
-        </Typography>
+        {disabled && disabledHint ? (
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, mt: 1, flexWrap: "wrap" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ textAlign: "center", fontSize: "0.75rem" }}>
+              {disabledHint}
+            </Typography>
+            {onAction && actionLabel ? (
+              <Button size="small" variant="outlined" disabled={actionBusy} onClick={onAction}>
+                {actionBusy ? "Sending…" : actionLabel}
+              </Button>
+            ) : null}
+          </Box>
+        ) : (
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              display: "block",
+              mt: 1,
+              textAlign: "center",
+              fontSize: "0.75rem",
+            }}
+          >
+            Enter to send · Shift+Enter for new line
+          </Typography>
+        )}
         {status ? (
-          <Alert severity="error" sx={{ mt: 1.5, borderRadius: 1.5 }}>
+          <Alert severity={status.startsWith("Edit request") ? "success" : "error"} sx={{ mt: 1.5, borderRadius: 1.5 }}>
             {status}
           </Alert>
         ) : null}

@@ -3,7 +3,7 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { Box, Tooltip } from "@mui/material";
 import { useSplitPanes } from "../../hooks/useSplitPanes";
-import { IconRail } from "./IconRail";
+import { IconRail, type ViewType } from "./IconRail";
 import { SplitControlsContext } from "./SplitControls";
 
 export function AppShell({
@@ -11,15 +11,20 @@ export function AppShell({
   canvas,
   view = "chat",
   onViewChange,
+  onLogout,
+  pendingApprovals = 0,
+  userName,
 }: {
   chat: ReactNode;
   canvas: ReactNode;
-  view?: "chat" | "workspace";
-  onViewChange?: (view: "chat" | "workspace") => void;
+  view?: ViewType;
+  onViewChange?: (view: ViewType) => void;
+  onLogout?: () => Promise<void>;
+  pendingApprovals?: number;
+  userName?: string;
 }) {
   const split = useSplitPanes();
   const chatSize = split.desktop ? split.chatWidth : split.chatHeight;
-  const showChat = view !== "workspace";
 
   return (
     <SplitControlsContext.Provider
@@ -32,10 +37,10 @@ export function AppShell({
       }}
     >
       <div ref={split.shellRef} className="flex h-full min-h-0 flex-col bg-white text-ink md:flex-row">
-        <IconRail view={view} onViewChange={onViewChange} />
-        {showChat && split.collapsed ? (
+        <IconRail view={view} onViewChange={onViewChange} onLogout={onLogout} pendingApprovals={pendingApprovals} userName={userName} />
+        {split.collapsed ? (
           <CollapsedChatStrip desktop={split.desktop} onRestore={split.restoreChat} />
-        ) : showChat ? (
+        ) : (
           <Box
             sx={{
               width: { xs: "100%", md: chatSize },
@@ -49,8 +54,8 @@ export function AppShell({
           >
             {chat}
           </Box>
-        ) : null}
-        {showChat && !split.collapsed ? (
+        )}
+        {split.collapsed ? null : (
           <Box
             role="separator"
             aria-orientation={split.desktop ? "vertical" : "horizontal"}
@@ -90,7 +95,7 @@ export function AppShell({
               }}
             />
           </Box>
-        ) : null}
+        )}
         <Box
           sx={{
             flex: 1,

@@ -32,6 +32,20 @@ def _database_url() -> str:
 
 
 DATABASE_URL = _database_url()
+
+# P6-S1 auth — Firebase ID tokens. Cookie is only for EventSource (no custom headers).
+AUTH_COOKIE = "terrarium_token"
+FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "terrariumauth")
+
+
+def ssl_verify() -> bool | str:
+    """Trust the default CAs, or an extra bundle when a corporate proxy intercepts TLS."""
+    for key in ("TERRARIUM_SSL_CA_FILE", "SSL_CERT_FILE", "REQUESTS_CA_BUNDLE"):
+        path = (os.environ.get(key) or "").strip()
+        if path:
+            return path
+    return True
+
 IDLE_TIMEOUT_SECONDS = int(
     os.environ.get(
         "TERRARIUM_IDLE_TIMEOUT_SECONDS",
