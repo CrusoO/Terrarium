@@ -257,7 +257,7 @@ Current status: Phases 1 through 5 are complete. Phase 6 remains.
 
 ### Phase 6 — Access and auth
 
-- [ ] [P6-S1](docs/stories/P6-S1-accounts-login.md) Accounts and login
+- [x] [P6-S1](docs/stories/P6-S1-accounts-login.md) Accounts and login
 - [ ] [P6-S2](docs/stories/P6-S2-ownership-roles.md) Ownership and roles
 - [ ] [P6-S3](docs/stories/P6-S3-share-teammates.md) Share with teammates
 - [ ] [P6-S4](docs/stories/P6-S4-enforce-access.md) Enforce API and preview access

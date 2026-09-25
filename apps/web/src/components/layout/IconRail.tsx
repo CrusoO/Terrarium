@@ -10,6 +10,7 @@ import { Avatar, Box, IconButton, Stack, Tooltip } from "@mui/material";
 type IconRailProps = {
   view?: "chat" | "workspace";
   onViewChange?: (view: "chat" | "workspace") => void;
+  onLogout?: () => Promise<void>;
 };
 
 function RailButton({
@@ -44,7 +45,7 @@ function RailButton({
   );
 }
 
-export function IconRail({ view = "chat", onViewChange }: IconRailProps) {
+export function IconRail({ view = "chat", onViewChange, onLogout }: IconRailProps) {
   return (
     <Stack
       component="nav"
@@ -91,7 +92,7 @@ export function IconRail({ view = "chat", onViewChange }: IconRailProps) {
         <RailButton label="Help">
           <HelpOutlineRoundedIcon sx={{ fontSize: 18 }} />
         </RailButton>
-        <RailButton label="Sign out">
+        <RailButton label="Sign out" onClick={() => void onLogout?.()}>
           <LogoutRoundedIcon sx={{ fontSize: 18 }} />
         </RailButton>
       </Stack>

@@ -2,9 +2,22 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-DEV_USER = "dev-user"
+DEV_USER = "dev-user"  # Test-only fallback after P6-S1
+
+
+# ── P6-S1 Auth ──────────────────────────────────────────────────────────────
+
+class User(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str
+    email: str  # Firebase UID email
+
+
+class AuthResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    user: User
 
 Stack = Literal["react", "fullstack"]
 FrontendStack = Literal["vanilla", "react"]

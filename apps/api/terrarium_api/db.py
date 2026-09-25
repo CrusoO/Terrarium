@@ -26,7 +26,8 @@ def init_db() -> None:
     if migration_dir.exists():
         config = Config()
         config.set_main_option("script_location", str(migration_dir))
-        config.set_main_option("sqlalchemy.url", DATABASE_URL)
+        # configparser treats % as interpolation; escape it.
+        config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
         table_names = set(inspect(engine).get_table_names())
         if {"tools", "tool_versions", "sessions"}.issubset(table_names) and "alembic_version" not in table_names:
             command.stamp(config, "head")
