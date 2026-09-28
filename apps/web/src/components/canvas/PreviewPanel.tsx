@@ -5,7 +5,7 @@ import CodeRoundedIcon from "@mui/icons-material/CodeRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import RocketLaunchRoundedIcon from "@mui/icons-material/RocketLaunchRounded";
-import { Box, IconButton, LinearProgress, Paper, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, CircularProgress, IconButton, LinearProgress, Paper, Stack, Tooltip, Typography } from "@mui/material";
 import type { FileMap, RuntimeErrorRequest, SessionEvent } from "@terrarium/contracts";
 import { useSplitControls } from "../layout/SplitControls";
 import { CodePanel } from "./CodePanel";
@@ -123,6 +123,72 @@ function PreviewPlaceholder({
   );
 }
 
+const PREVIEW_WAIT_MS = 25_000;
+
+/**
+ * The sandbox URL is returned before its HTTP server is listening.
+ * A failed iframe navigation stays on the error page until the frame is
+ * recreated, which is why switching tabs made the preview appear.
+ * Same-origin previews can be checked for HTTP 200. Cross-origin port
+ * previews have no CORS headers, so a no-cors fetch only tells us the
+ * port accepted a connection.
+ */
+function usePreviewGate(src: string | null): "hidden" | "loading" | "ready" {
+  const [gate, setGate] = useState<"hidden" | "loading" | "ready">(src ? "loading" : "hidden");
+  const [trackedSrc, setTrackedSrc] = useState(src);
+  if (src !== trackedSrc) {
+    setTrackedSrc(src);
+    setGate(src ? "loading" : "hidden");
+  }
+
+  useEffect(() => {
+    if (!src) {
+      setGate("hidden");
+      return;
+    }
+    let cancelled = false;
+    setGate("loading");
+    const started = Date.now();
+    const sameOrigin = src.startsWith("/");
+
+    async function probe() {
+      while (!cancelled && Date.now() - started < PREVIEW_WAIT_MS) {
+        try {
+          if (sameOrigin) {
+            const response = await fetch(src, {
+              cache: "no-store",
+              signal: AbortSignal.timeout(2500),
+            });
+            if (response.ok) {
+              if (!cancelled) setGate("ready");
+              return;
+            }
+          } else {
+            await fetch(src, {
+              mode: "no-cors",
+              cache: "no-store",
+              signal: AbortSignal.timeout(2500),
+            });
+            if (!cancelled) setGate("ready");
+            return;
+          }
+        } catch {
+          // The container process is still starting.
+        }
+        await new Promise((resolve) => window.setTimeout(resolve, 400));
+      }
+      if (!cancelled) setGate("ready");
+    }
+
+    void probe();
+    return () => {
+      cancelled = true;
+    };
+  }, [src]);
+
+  return gate;
+}
+
 /**
  * Normalise a sandbox previewUrl for the iframe src.
  * Keep http://127.0.0.1:{port}/ as-is so the child is a different origin
@@ -175,11 +241,20 @@ export function PreviewPanel({
   const [publishing, setPublishing] = useState(false);
   const [publishNote, setPublishNote] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [framePainted, setFramePainted] = useState(false);
   const src = previewUrl ? iframeSrc(previewUrl) : null;
   const streamDocument = useMemo(() => fileMapToPreviewDocument(streamFiles), [streamFiles]);
   const showFrame = Boolean(src || streamDocument) && (status === "live" || status === "draft" || status === "updating");
+  const remoteGate = usePreviewGate(streamDocument ? null : src);
+  const showPreviewPane = showFrame && tab === "preview";
+  const mountFrame = showPreviewPane && (Boolean(streamDocument) || remoteGate === "ready");
+  const coverFrame = showPreviewPane && !streamDocument && !framePainted;
   const canPublish = Boolean(sessionId) && status === "live" && !publishing;
   const statusConfig = STATUS_CONFIG[status];
+
+  useEffect(() => {
+    setFramePainted(false);
+  }, [src, refreshKey]);
 
   useEffect(() => {
     if (!streamDocument || !iframeRef.current || tab !== "preview" || !showFrame) {
@@ -208,6 +283,16 @@ export function PreviewPanel({
   }, [onRuntimeError, sessionId]);
 
   function handleFrameLoad() {
+    if (!streamDocument) {
+      const frame = iframeRef.current;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (iframeRef.current === frame) {
+            setFramePainted(true);
+          }
+        });
+      });
+    }
     const frameWindow = iframeRef.current?.contentWindow;
     if (!frameWindow || streamDocument) {
       return;
@@ -354,7 +439,7 @@ export function PreviewPanel({
               {publishNote}
             </Typography>
           ) : null}
-          {showFrame && (
+          {mountFrame && (
             <Tooltip title="Refresh preview">
               <IconButton
                 size="small"
@@ -376,40 +461,58 @@ export function PreviewPanel({
         </Stack>
       </Stack>
 
-      {/* Content area */}
-      {showFrame && tab === "preview" ? (
-        <Box sx={{ position: "relative", flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-          {status === "updating" ? (
-            <LinearProgress
-              sx={{ 
-                position: "absolute", 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                zIndex: 2,
-                height: 3 
-              }}
-            />
+      {showPreviewPane ? (
+        <Box sx={{ position: "relative", flex: 1, minHeight: 0 }}>
+          {mountFrame ? (
+            <>
+              {status === "updating" && framePainted ? (
+                <LinearProgress
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    zIndex: 2,
+                    height: 3,
+                  }}
+                />
+              ) : null}
+              <Box
+                key={refreshKey}
+                component="iframe"
+                ref={iframeRef}
+                title="Generated app preview"
+                src={streamDocument ? undefined : src ?? undefined}
+                srcDoc={streamDocument ?? undefined}
+                onLoad={handleFrameLoad}
+                sandbox="allow-scripts allow-same-origin allow-forms"
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "block",
+                  width: "100%",
+                  height: "100%",
+                  border: 0,
+                  bgcolor: "#f6f3ee",
+                }}
+              />
+            </>
           ) : null}
-          <Box
-            key={refreshKey}
-            component="iframe"
-            ref={iframeRef}
-            title="Generated app preview"
-            src={streamDocument ? undefined : src ?? undefined}
-            srcDoc={streamDocument ?? undefined}
-            onLoad={handleFrameLoad}
-            sandbox="allow-scripts allow-same-origin allow-forms"
-            sx={{
-              display: "block",
-              flex: 1,
-              width: "100%",
-              height: "100%",
-              minHeight: 0,
-              border: 0,
-              bgcolor: "background.paper",
-            }}
-          />
+          {coverFrame ? (
+            <Box
+              className="preview-stage"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 3,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CircularProgress size={28} sx={{ color: "primary.main" }} aria-label="Opening preview" />
+            </Box>
+          ) : null}
         </Box>
       ) : null}
 

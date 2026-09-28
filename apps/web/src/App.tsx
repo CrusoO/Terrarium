@@ -18,14 +18,12 @@ export default function App() {
 
   if (view === "workspace") {
     return (
-      <div className="flex h-screen">
-        <AppShell 
-          chat={<div />} 
-          canvas={<WorkspaceDashboard onOpenTool={handleOpenTool} />}
-          view={view}
-          onViewChange={setView}
-        />
-      </div>
+      <AppShell
+        chat={<div />}
+        canvas={<WorkspaceDashboard onOpenTool={handleOpenTool} />}
+        view={view}
+        onViewChange={setView}
+      />
     );
   }
 
