@@ -146,16 +146,17 @@ function usePreviewGate(src: string | null): "hidden" | "loading" | "ready" {
       setGate("hidden");
       return;
     }
+    const previewSrc = src;
     let cancelled = false;
     setGate("loading");
     const started = Date.now();
-    const sameOrigin = src.startsWith("/");
+    const sameOrigin = previewSrc.startsWith("/");
 
     async function probe() {
       while (!cancelled && Date.now() - started < PREVIEW_WAIT_MS) {
         try {
           if (sameOrigin) {
-            const response = await fetch(src, {
+            const response = await fetch(previewSrc, {
               cache: "no-store",
               signal: AbortSignal.timeout(2500),
             });
@@ -164,7 +165,7 @@ function usePreviewGate(src: string | null): "hidden" | "loading" | "ready" {
               return;
             }
           } else {
-            await fetch(src, {
+            await fetch(previewSrc, {
               mode: "no-cors",
               cache: "no-store",
               signal: AbortSignal.timeout(2500),
