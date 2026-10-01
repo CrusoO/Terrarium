@@ -16,6 +16,10 @@ type ChatPaneProps = {
   onRetryAnyway?: () => void;
   onAcceptMatch?: (toolId: string) => void;
   onRejectMatch?: () => void;
+  canEdit?: boolean;
+  editRequestStatus?: "idle" | "pending" | "sent";
+  onRequestEdit?: () => void;
+  userName?: string;
 };
 
 export function ChatPane({
@@ -29,6 +33,10 @@ export function ChatPane({
   onRetryAnyway,
   onAcceptMatch,
   onRejectMatch,
+  canEdit = true,
+  editRequestStatus = "idle",
+  onRequestEdit,
+  userName,
 }: ChatPaneProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +75,19 @@ export function ChatPane({
         <Typography sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: "1.05rem", letterSpacing: "-0.02em" }}>
           Terrarium
         </Typography>
-        <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#1f8a4c" }} />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+          {userName ? (
+            <Typography
+              variant="body2"
+              noWrap
+              title={userName}
+              sx={{ fontWeight: 600, color: "text.secondary", maxWidth: 160 }}
+            >
+              {userName}
+            </Typography>
+          ) : null}
+          <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#1f8a4c", flexShrink: 0 }} />
+        </Box>
       </Box>
       <Box ref={scrollerRef} sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2.5, py: 3 }}>
         {chat.length === 0 ? (
@@ -108,6 +128,17 @@ export function ChatPane({
         prompt={prompt}
         busy={busy}
         status={status}
+        disabled={!canEdit}
+        disabledHint={
+          canEdit
+            ? undefined
+            : editRequestStatus === "sent"
+              ? "Edit request sent. You can keep using the app while the owner reviews it."
+              : "You can use this app. Request edit access from the owner to change it."
+        }
+        actionLabel={canEdit ? undefined : editRequestStatus === "sent" ? "Requested" : "Request edit"}
+        actionBusy={editRequestStatus === "pending"}
+        onAction={canEdit ? undefined : onRequestEdit}
         onPromptChange={onPromptChange}
         onSubmit={onSubmit}
       />
