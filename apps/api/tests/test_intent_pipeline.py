@@ -26,7 +26,7 @@ class SessionIntentPipelineTests(unittest.TestCase):
         self.assertEqual(event.payload["stack"], "react")
         self.assertEqual(event.payload["phase"], "clarify")
         self.assertIn("Excel", event.payload["summary"])
-        self.assertGreaterEqual(len(event.payload.get("questions") or []), 2)
+        self.assertEqual(len(event.payload.get("questions") or []), 6)
         self.assertNotIn("toolId", event.payload)
 
     def test_hello_is_greeting(self) -> None:

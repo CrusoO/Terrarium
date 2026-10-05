@@ -27,8 +27,16 @@ logger = logging.getLogger(__name__)
 
 _SUMMARY_MAX = 160
 _MAX_ATTEMPTS = 2
-_MAX_QUESTIONS = 4
-_MIN_QUESTIONS = 2
+_MAX_QUESTIONS = 6
+_MIN_QUESTIONS = 6
+_TECH_QUESTION_RE = re.compile(
+    r"\b("
+    r"frontend|backend|fullstack|full[\s-]?stack|api|apis|"
+    r"database|postgres|sqlite|auth(?:entication|orization)?|"
+    r"jwt|vite|react|endpoint|localstorage|docker|json schema"
+    r")\b",
+    re.IGNORECASE,
+)
 
 INTENT_JSON_SCHEMA: dict[str, object] = {
     "type": "object",
@@ -47,48 +55,53 @@ INTENT_JSON_SCHEMA: dict[str, object] = {
     "required": ["kind", "stack", "summary", "phase", "reply"],
 }
 
-SYSTEM_PROMPT = """You are Terrarium's Intent Agent — a product partner like Cursor Chat.
+SYSTEM_PROMPT = """You are Terrarium's Intent Agent — a friendly product partner.
 
-You do not write application code, file trees, Docker, or shell. You reason about what the user wants, talk like a sharp teammate, gather a crisp spec, then classify.
+You do not write application code, file trees, Docker, or shell. You help everyday people describe what they want. Many users are not technical (sales, HR, operations, teachers). Talk like a helpful colleague, never like an engineer.
 
 Return JSON only matching the schema. Decide phase first, then fill the rest.
 
 PHASES (pick exactly one)
 - greeting — social / identity / thanks only. No tool request. Warm and short. Ask how you can help. questions must be []. Never pretend they asked for an app. Never start a build.
-- clarify — they want a tool, but the spec is thin. Ask 2–4 concrete questions. Do not start building. Put questions ONLY in the questions array (not numbered in reply). reply is 1–2 sentences acknowledging the idea.
-- ready — you have enough to brief a builder: what it does, main input (or operations), main output. reply is a tight one-paragraph plan. questions must be [].
+- clarify — they want a tool, but the spec is thin. Ask exactly 6 simple questions. Do not start building. Put questions ONLY in the questions array (not numbered in reply). reply is 1–2 warm sentences acknowledging the idea.
+- ready — you have enough to brief a builder: what it does, what people put in, what they get back. reply is a tight one-paragraph plan in plain language. questions must be [].
 
 WHEN TO USE EACH
 - "hi", "hello", "hey", "how are you", "what's up", "who are you", "thanks" → greeting
 - After a greeting, the NEXT message that asks to build something is clarify, never another greeting
 - "hi, build me a calculator" / "can you build a website" → clarify (they asked for a tool)
-- "json converter" / "can you build a calculator" / "build a website" with no pages or details → clarify
-- After you already asked numbered spec questions, and they answered (or said go ahead / skip / just build it) → ready
-- A long first message that already names job + input + output → ready
+- "json converter" / "can you build a calculator" / "build a website" with no details → clarify
+- After you already asked the six questions, and they answered (or said go ahead / skip / just build it) → ready
+- A long first message that already names job + what they put in + what they get back → ready
 - Do not loop forever. After two rounds of answers, go ready even if a detail is missing — pick a sensible default and state it in reply.
 - Never reuse the greeting sentence once they have asked to build something.
 
-CLARIFY QUESTIONS (2–4, short, specific to THIS tool)
-- Ask whether this should stay frontend-only or include a backend when the prompt does not already make that obvious.
-- Converter: input format, output shape/download, mapping rules, extra features
-- Calculator: operations, history, presets/units, extra features
-- Other tools: main job, what they type/upload, what they see back, one must-have extra
-Never ask generic "tell me more". Never ask more than 4. Do not repeat questions they already answered.
-Write questions for THIS request only. Do not use a canned template (do not always ask landing/portfolio/pages unless that is what they asked for).
+CLARIFY QUESTIONS (exactly 6, everyday words, specific to THIS tool)
+Write questions a non-technical person can answer in one short sentence. Cover, in their own words:
+1. Who it is for
+2. What they should be able to do first
+3. What they type, choose, or bring in
+4. What they should see when they are done
+5. Whether they need to save, print, or come back later
+6. Whether it stays only on their screen, or other people should sign in and share it
+Tune the wording to THIS request (calculator, converter, website, form, dashboard, and so on).
+Banned words in questions: frontend, backend, API, database, auth, JWT, Vite, React, endpoint, localStorage, Docker, fullstack.
+Never ask generic "tell me more". Never ask more or fewer than 6. Do not repeat questions they already answered.
+Do not use a canned website template (do not always ask landing/portfolio/pages unless that is what they asked for).
 
 KIND / STACK
 - modify ONLY if an existing FileMap or toolId is in context. Otherwise new.
-- fullstack only if they need a backend, database, auth, shared users, secrets, uploads, payments, email, or HTTP API. Else react.
-- If backend need is unclear, ask a clarification question instead of forcing the user to pick with UI controls.
+- fullstack only if they clearly need sign-in, shared users, saved data for a team, payments, email, or file uploads to a server. Else react.
+- Infer stack from their plain answers. Do not ask them to pick a technology.
 - React/Vite is the default frontend stack unless the user explicitly asks for plain HTML/CSS/JS.
 
 SUMMARY
 - One line, <= 160 chars, the tool itself. Greeting → "Chat greeting".
 
 REPLY STYLE
-- Sound like Cursor: direct, no filler, no "As an AI", no "Great question!".
+- Direct, warm, no filler, no "As an AI", no "Great question!".
 - Greeting: "Hey — what should we build?" Then the UI shows starter chips.
-- Clarify: "A JSON converter is doable. I need a few details before I brief the builder."
+- Clarify: "I can make that. Six simple questions so it matches what you have in mind."
 - Ready: confirm the plan in plain language, including any default you assumed.
 
 SAFETY
@@ -434,8 +447,8 @@ def _stub_intent(inp: IntentAgentInput) -> IntentAgentOutput:
             stack=stack,
             summary=_summary(_thread_idea(inp)),
             phase="clarify",
-            reply="Whenever you're ready — answer those so I can brief the builder.",
-            questions=asked[:_MAX_QUESTIONS],
+            reply="Whenever you're ready — answer those so I can make it match what you meant.",
+            questions=_exactly_six(asked, _thread_idea(inp)),
         )
 
     idea = _thread_idea(inp)
@@ -455,18 +468,18 @@ def _stub_intent(inp: IntentAgentInput) -> IntentAgentOutput:
     prior = _last_assistant_questions(inp)
     if prior and _non_greeting_user_turns(inp) >= 2:
         remaining = [question for question in prior if not _question_answered(question, prompt)]
-        questions = remaining[:2] or _stub_questions(idea)[:2]
+        questions = remaining[:_MAX_QUESTIONS] or _exactly_six([], idea)
         numbered_ack = prompt if len(prompt) <= 40 else "that"
         return IntentAgentOutput(
             kind="new",
             stack=stack,
             summary=_summary(idea),
             phase="clarify",
-            reply=f"Got {numbered_ack}. Two more so the builder isn't guessing:",
+            reply=f"Got {numbered_ack}. A few more simple ones so I don't guess:",
             questions=questions,
         )
 
-    questions = _stub_questions(idea or prompt)
+    questions = _exactly_six(_stub_questions(idea or prompt), idea or prompt)
     return IntentAgentOutput(
         kind="new",
         stack=stack,
@@ -513,59 +526,109 @@ def _thread_idea(inp: IntentAgentInput) -> str:
 def _clarify_lead_in(idea: str) -> str:
     lower = idea.lower()
     if "convert" in lower or "json" in lower or "csv" in lower or "excel" in lower:
-        return "A converter is doable. I need a few details before I brief the builder."
+        return "I can make that converter. Six simple questions so it matches what you have in mind."
     if "calc" in lower:
-        return "A calculator is doable. A few choices so we don't overbuild it:"
+        return "I can make that calculator. Six simple questions so we don't overbuild it."
     if "website" in lower or "web site" in lower or "landing" in lower:
-        return "A site is doable. A few details so the first preview matches what you meant."
-    return "I can build that. A few details so the first preview matches what you meant."
+        return "I can make that site. Six simple questions so the first look matches what you meant."
+    return "I can make that. Six simple questions so the first look matches what you meant."
 
 
 def _fallback_questions(prompt: str) -> list[str]:
-    """Deterministic safety net when live intent omits required questions."""
-    return _stub_questions(prompt)
+    """Stub-mode questions only. Live mode must keep the LLM list."""
+    return _exactly_six(_stub_questions(prompt), prompt)
+
+
+def _live_or_stub_questions(questions: list[str], prompt: str) -> list[str]:
+    if questions:
+        return questions[:_MAX_QUESTIONS]
+    if agents_mode() == "stub":
+        return _fallback_questions(prompt)
+    return []
+
+
+def _everyday_pad() -> list[str]:
+    return [
+        "Who is this mainly for — just you, your team, or customers?",
+        "What should someone be able to do first when they open it?",
+        "What do they type, choose, or bring in?",
+        "What should they see when they are done?",
+        "Should they be able to save, print, or come back to earlier work?",
+        "Should this stay only on their screen, or should other people sign in and share it?",
+    ]
+
+
+def _plain_question(question: str) -> str | None:
+    text = question.strip()
+    if not text or _TECH_QUESTION_RE.search(text):
+        return None
+    return text
+
+
+def _exactly_six(questions: list[str], prompt: str) -> list[str]:
+    cleaned: list[str] = []
+    for item in questions:
+        plain = _plain_question(item)
+        if plain and plain not in cleaned:
+            cleaned.append(plain)
+    for extra in [*_stub_questions(prompt), *_everyday_pad()]:
+        if extra not in cleaned:
+            cleaned.append(extra)
+        if len(cleaned) >= _MAX_QUESTIONS:
+            break
+    return cleaned[:_MAX_QUESTIONS]
 
 
 def _stub_questions(prompt: str) -> list[str]:
     lower = prompt.lower()
-    stack_question = "Should this be frontend-only, or should I include a backend for auth, database, shared users, uploads, or server APIs?"
+    share = "Should this stay only on their screen, or should other people sign in and share it?"
     if "convert" in lower or "json" in lower or "csv" in lower or "excel" in lower:
         questions = [
-            "What is the input format (Excel, CSV, JSON, text)?",
-            "What should the output look like, and should they download a file?",
-            stack_question,
+            "What will people start with — a spreadsheet, a list, or copied text?",
+            "What should they get back, and do they need to download it?",
+            "Any special rules for how things should be matched or changed?",
+            "Who is this mainly for — just you, or other people too?",
+            "Should they be able to save a conversion and use it again later?",
+            share,
         ]
     elif "calc" in lower:
         questions = [
-            "Which operations do you need (basic, scientific, percentage)?",
-            "Should it keep a history of calculations?",
-            stack_question,
+            "What kinds of sums do you need — everyday math, science, or something else?",
+            "Should it remember past calculations so people can look back?",
+            "Any extras like percentages, units, or memory buttons?",
+            "Who will use this — just you, or a team?",
+            "What should they see first when they open it?",
+            share,
         ]
     elif "dashboard" in lower:
         questions = [
-            "What numbers or lists should the dashboard show?",
-            "Is the data typed in, pasted, or fetched from an API?",
-            stack_question,
+            "What should people see at a glance — numbers, lists, or both?",
+            "How does the information get in — they type it, paste it, or it comes from a file?",
+            "What is the one thing they should notice first?",
+            "Who is this for — you, a team, or customers?",
+            "Should they be able to filter, download, or save a view?",
+            share,
         ]
     elif "form" in lower:
         questions = [
-            "Which fields should the form collect?",
-            "What happens on submit (show a summary, download, or just validate)?",
-            stack_question,
+            "What information should people fill in?",
+            "What happens after they press submit — a thank-you, a summary, or a download?",
+            "Which details are required?",
+            "Who will fill this in?",
+            "Should they get a copy or be able to come back later?",
+            share,
         ]
     elif "website" in lower or "web site" in lower or "landing" in lower or "portfolio" in lower:
         questions = [
-            "What kind of website is this (landing page, portfolio, restaurant, blog)?",
-            "Which pages do you need (home, about, contact)?",
-            stack_question,
+            "What is this site for — a shop, a personal page, a restaurant, or a simple info page?",
+            "What should someone understand in the first few seconds?",
+            "Which sections do you need — for example home, about, and a way to contact you?",
+            "Any photos, prices, or hours that must be on the page?",
+            "Who is visiting — customers, hiring managers, or friends?",
+            "Should visitors only look, or also send a message or place an order?",
         ]
     else:
-        questions = [
-            "What is the main job this tool should do in one sentence?",
-            "What does the user type or upload?",
-            "What should they get back on screen?",
-            stack_question,
-        ]
+        questions = _everyday_pad()
     return questions[:_MAX_QUESTIONS]
 
 
@@ -618,16 +681,16 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
     elif not _is_greeting(inp.prompt) and phase == "greeting":
         # Live models often repeat the greeting on the first build request.
         phase = "clarify"
-        questions = questions or _fallback_questions(_thread_idea(inp))
+        questions = _live_or_stub_questions(questions, _thread_idea(inp))
     elif thin_build and phase in {"greeting", "ready"}:
         phase = "clarify"
-        questions = questions or _fallback_questions(_thread_idea(inp))
+        questions = _live_or_stub_questions(questions, _thread_idea(inp))
     elif phase == "greeting" and (build_now or _had_build_request(inp)):
         phase = "clarify"
     elif questions and phase == "ready":
         phase = "clarify"
     elif phase == "clarify" and not questions:
-        questions = _fallback_questions(_thread_idea(inp))
+        questions = _live_or_stub_questions([], _thread_idea(inp))
     elif (
         phase == "ready"
         and kind == "new"
@@ -636,16 +699,10 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
         and not _has_existing_app(inp)
     ):
         phase = "clarify"
-        questions = questions or _fallback_questions(inp.prompt)
+        questions = _live_or_stub_questions(questions, inp.prompt)
 
     if phase == "clarify" and agents_mode() == "stub":
-        if len(questions) < _MIN_QUESTIONS:
-            extra = [
-                item
-                for item in _stub_questions(_thread_idea(inp))
-                if item not in questions
-            ]
-            questions = (questions + extra)[:_MAX_QUESTIONS]
+        questions = _exactly_six(questions, _thread_idea(inp))
         if len(questions) < _MIN_QUESTIONS:
             phase = "ready"
             questions = []

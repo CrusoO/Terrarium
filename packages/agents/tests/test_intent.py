@@ -14,6 +14,21 @@ class IntentAgentTests(unittest.TestCase):
     def setUp(self) -> None:
         os.environ["TERRARIUM_AGENTS"] = "stub"
 
+    def assert_six_everyday(self, questions: list[str] | None) -> None:
+        self.assertEqual(len(questions or []), 6)
+        blob = " ".join(questions or []).lower()
+        for banned in (
+            "frontend",
+            "backend",
+            "fullstack",
+            " api",
+            "database",
+            "vite",
+            "jwt",
+            "localstorage",
+        ):
+            self.assertNotIn(banned, blob)
+
     def test_greeting_does_not_build(self) -> None:
         intent = classify_intent(IntentAgentInput(prompt="hello"))
         self.assertEqual(intent.phase, "greeting")
@@ -32,8 +47,7 @@ class IntentAgentTests(unittest.TestCase):
             IntentAgentInput(prompt="hi can you build a calculator")
         )
         self.assertEqual(intent.phase, "clarify")
-        self.assertGreaterEqual(len(intent.questions or []), 2)
-        self.assertLessEqual(len(intent.questions or []), 4)
+        self.assert_six_everyday(intent.questions)
 
     def test_build_website_after_hey_asks_questions(self) -> None:
         intent = classify_intent(
@@ -49,7 +63,7 @@ class IntentAgentTests(unittest.TestCase):
             )
         )
         self.assertEqual(intent.phase, "clarify")
-        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assert_six_everyday(intent.questions)
         self.assertFalse(re.search(r"what should we build", intent.reply or "", re.I))
 
     def test_gemini_greeting_on_first_build_is_forced_to_clarify(self) -> None:
@@ -75,7 +89,7 @@ class IntentAgentTests(unittest.TestCase):
             ),
         )
         self.assertEqual(intent.phase, "clarify")
-        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assert_six_everyday(intent.questions)
         self.assertFalse(re.search(r"what should we build", intent.reply or "", re.I))
 
     def test_build_website_after_hi_asks_questions(self) -> None:
@@ -92,7 +106,7 @@ class IntentAgentTests(unittest.TestCase):
             )
         )
         self.assertEqual(intent.phase, "clarify")
-        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assert_six_everyday(intent.questions)
         self.assertFalse(re.search(r"how can i help you today", intent.reply or "", re.I))
 
     def test_build_request_asks_questions(self) -> None:
@@ -101,15 +115,13 @@ class IntentAgentTests(unittest.TestCase):
         )
         self.assertEqual(intent.kind, "new")
         self.assertEqual(intent.phase, "clarify")
-        self.assertGreaterEqual(len(intent.questions or []), 2)
-        self.assertLessEqual(len(intent.questions or []), 4)
+        self.assert_six_everyday(intent.questions)
         self.assertNotIn("1.", intent.reply or "")
-        self.assertTrue(any("frontend-only" in question for question in intent.questions or []))
 
     def test_build_website_asks_questions(self) -> None:
         intent = classify_intent(IntentAgentInput(prompt="can you build a website"))
         self.assertEqual(intent.phase, "clarify")
-        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assert_six_everyday(intent.questions)
         self.assertNotRegex(intent.reply or "", r"how can i help you today")
 
     def test_library_app_after_hey_asks_questions(self) -> None:
@@ -123,7 +135,7 @@ class IntentAgentTests(unittest.TestCase):
             )
         )
         self.assertEqual(intent.phase, "clarify")
-        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assert_six_everyday(intent.questions)
         self.assertFalse(re.search(r"what should we build", intent.reply or "", re.I))
 
     def test_typo_built_calculator_asks_questions(self) -> None:
@@ -131,7 +143,7 @@ class IntentAgentTests(unittest.TestCase):
             IntentAgentInput(prompt="can you built a calculator")
         )
         self.assertEqual(intent.phase, "clarify")
-        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assert_six_everyday(intent.questions)
 
     def test_answers_make_ready(self) -> None:
         intent = classify_intent(
@@ -173,7 +185,7 @@ class IntentAgentTests(unittest.TestCase):
             )
         )
         self.assertEqual(intent.phase, "clarify")
-        self.assertGreaterEqual(len(intent.questions or []), 2)
+        self.assert_six_everyday(intent.questions)
 
     def test_just_build_it_is_ready(self) -> None:
         intent = classify_intent(
@@ -348,7 +360,7 @@ class IntentAgentTests(unittest.TestCase):
                 IntentAgentInput(prompt="Build a simple markdown notepad"),
             )
             self.assertEqual(intent.phase, "clarify")
-            self.assertGreaterEqual(len(intent.questions or []), 2)
+            self.assertFalse(intent.questions)
         finally:
             os.environ["TERRARIUM_AGENTS"] = "stub"
 
