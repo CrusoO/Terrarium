@@ -7,7 +7,9 @@ import {
   type OpenToolResponse,
   type RuntimeErrorRequest,
   type SessionEvent,
+  type ToolRole,
 } from "@terrarium/contracts";
+import { requestAppAccess } from "../api/groups";
 import { acceptSmartMatch, createSession, fetchSessionFiles, reportRuntimeError, subscribeSessionEvents } from "../api/sessions";
 import type { PreviewStatus } from "../components/canvas/PreviewPanel";
 import type { ChatItem } from "../types/chat";
@@ -76,6 +78,9 @@ export function useCreateSession() {
   const [canvasTab, setCanvasTab] = useState<"preview" | "code">("preview");
   const [intentPhase, setIntentPhase] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [toolRole, setToolRole] = useState<ToolRole | null>(null);
+  const [openedTool, setOpenedTool] = useState<{ id: string; name: string; ownerId: string } | null>(null);
+  const [editRequestStatus, setEditRequestStatus] = useState<"idle" | "pending" | "sent">("idle");
   const sourceRef = useRef<EventSource | null>(null);
   const sourceSessionRef = useRef<string | null>(null);
   const sessionIdRef = useRef<string | null>(null);
@@ -301,6 +306,10 @@ export function useCreateSession() {
       return;
     }
 
+    if (toolRole === "viewer") {
+      setStatus("You can use this app. Request edit access from the owner to change it.");
+      return;
+    }
     lastPromptRef.current = parsed.data.prompt;
     busyRef.current = true;
     setChat((current) =>
@@ -425,16 +434,37 @@ export function useCreateSession() {
     setSessionId(opened.sessionId);
     setPreviewUrl(opened.previewUrl);
     setPreviewKey((key) => key + 1);
+    setToolRole(opened.role);
+    setOpenedTool({ id: opened.tool.id, name: opened.tool.name, ownerId: opened.tool.ownerId });
+    setEditRequestStatus("idle");
+    const viewOnly = opened.role === "viewer";
     setChat([
       {
         kind: "assistant",
         id: crypto.randomUUID(),
-        text: `Opened “${opened.tool.name}” from your dashboard.`,
+        text: viewOnly
+          ? `Opened “${opened.tool.name}”. You can use it. Request edit access from the owner if you need to change it.`
+          : `Opened “${opened.tool.name}” from your dashboard.`,
         phase: "ready",
       },
     ]);
     connectEvents(opened.sessionId, true);
     void fetchSessionFiles(opened.sessionId).then(setFiles).catch(() => undefined);
+  }
+
+  async function requestEdit(userId: string, userEmail: string) {
+    if (!openedTool) {
+      return;
+    }
+    setEditRequestStatus("pending");
+    try {
+      await requestAppAccess(openedTool.id, openedTool.name, openedTool.ownerId, userId, userEmail);
+      setEditRequestStatus("sent");
+      setStatus("Edit request sent. The owner will see it under Approvals.");
+    } catch (error) {
+      setEditRequestStatus("idle");
+      setStatus(error instanceof Error ? error.message : "Could not send the edit request.");
+    }
   }
 
   async function rejectMatch() {
@@ -458,6 +488,8 @@ export function useCreateSession() {
     setCanvasTab,
     previewStatus: previewStatus(busy, intentPhase, previewUrl, streamFiles),
     sessionId,
+    toolRole,
+    editRequestStatus,
     onSubmit,
     sendPrompt,
     onPreviewRuntimeError,
@@ -465,5 +497,6 @@ export function useCreateSession() {
     acceptMatch,
     rejectMatch,
     openPublished,
+    requestEdit,
   };
 }

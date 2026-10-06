@@ -5,12 +5,31 @@ import CodeRoundedIcon from "@mui/icons-material/CodeRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import RocketLaunchRoundedIcon from "@mui/icons-material/RocketLaunchRounded";
-import { Box, CircularProgress, IconButton, LinearProgress, Paper, Stack, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  IconButton,
+  LinearProgress,
+  Paper,
+  Radio,
+  RadioGroup,
+  Stack,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import type { FileMap, RuntimeErrorRequest, SessionEvent } from "@terrarium/contracts";
 import { useSplitControls } from "../layout/SplitControls";
 import { CodePanel } from "./CodePanel";
 import { EventLogButton } from "./EventLogButton";
+import { listGroups, type Group } from "../../api/groups";
 import { publishSession } from "../../api/sessions";
+import { useAuth } from "../../hooks/useAuth";
 import { applyPreviewDocument } from "../../utils/domMorpher";
 import { fileMapToPreviewDocument } from "../../utils/previewDocument";
 
@@ -123,73 +142,6 @@ function PreviewPlaceholder({
   );
 }
 
-const PREVIEW_WAIT_MS = 25_000;
-
-/**
- * The sandbox URL is returned before its HTTP server is listening.
- * A failed iframe navigation stays on the error page until the frame is
- * recreated, which is why switching tabs made the preview appear.
- * Same-origin previews can be checked for HTTP 200. Cross-origin port
- * previews have no CORS headers, so a no-cors fetch only tells us the
- * port accepted a connection.
- */
-function usePreviewGate(src: string | null): "hidden" | "loading" | "ready" {
-  const [gate, setGate] = useState<"hidden" | "loading" | "ready">(src ? "loading" : "hidden");
-  const [trackedSrc, setTrackedSrc] = useState(src);
-  if (src !== trackedSrc) {
-    setTrackedSrc(src);
-    setGate(src ? "loading" : "hidden");
-  }
-
-  useEffect(() => {
-    if (!src) {
-      setGate("hidden");
-      return;
-    }
-    const previewSrc = src;
-    let cancelled = false;
-    setGate("loading");
-    const started = Date.now();
-    const sameOrigin = previewSrc.startsWith("/");
-
-    async function probe() {
-      while (!cancelled && Date.now() - started < PREVIEW_WAIT_MS) {
-        try {
-          if (sameOrigin) {
-            const response = await fetch(previewSrc, {
-              cache: "no-store",
-              signal: AbortSignal.timeout(2500),
-            });
-            if (response.ok) {
-              if (!cancelled) setGate("ready");
-              return;
-            }
-          } else {
-            await fetch(previewSrc, {
-              mode: "no-cors",
-              cache: "no-store",
-              signal: AbortSignal.timeout(2500),
-            });
-            if (!cancelled) setGate("ready");
-            return;
-          }
-        } catch {
-          // The container process is still starting.
-        }
-        await new Promise((resolve) => window.setTimeout(resolve, 400));
-      }
-      if (!cancelled) setGate("ready");
-    }
-
-    void probe();
-    return () => {
-      cancelled = true;
-    };
-  }, [src]);
-
-  return gate;
-}
-
 /**
  * Normalise a sandbox previewUrl for the iframe src.
  * Keep http://127.0.0.1:{port}/ as-is so the child is a different origin
@@ -240,22 +192,19 @@ export function PreviewPanel({
 }) {
   const split = useSplitControls();
   const [publishing, setPublishing] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [visibility, setVisibility] = useState<"all" | "group">("all");
+  const [groupId, setGroupId] = useState("");
+  const [groups, setGroups] = useState<Group[]>([]);
   const [publishNote, setPublishNote] = useState<string | null>(null);
+  const auth = useAuth();
+  const userEmail = auth.state.status === "authenticated" ? auth.state.user.email ?? "" : "";
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const [framePainted, setFramePainted] = useState(false);
   const src = previewUrl ? iframeSrc(previewUrl) : null;
   const streamDocument = useMemo(() => fileMapToPreviewDocument(streamFiles), [streamFiles]);
   const showFrame = Boolean(src || streamDocument) && (status === "live" || status === "draft" || status === "updating");
-  const remoteGate = usePreviewGate(streamDocument ? null : src);
-  const showPreviewPane = showFrame && tab === "preview";
-  const mountFrame = showPreviewPane && (Boolean(streamDocument) || remoteGate === "ready");
-  const coverFrame = showPreviewPane && !streamDocument && !framePainted;
   const canPublish = Boolean(sessionId) && status === "live" && !publishing;
   const statusConfig = STATUS_CONFIG[status];
-
-  useEffect(() => {
-    setFramePainted(false);
-  }, [src, refreshKey]);
 
   useEffect(() => {
     if (!streamDocument || !iframeRef.current || tab !== "preview" || !showFrame) {
@@ -284,16 +233,6 @@ export function PreviewPanel({
   }, [onRuntimeError, sessionId]);
 
   function handleFrameLoad() {
-    if (!streamDocument) {
-      const frame = iframeRef.current;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (iframeRef.current === frame) {
-            setFramePainted(true);
-          }
-        });
-      });
-    }
     const frameWindow = iframeRef.current?.contentWindow;
     if (!frameWindow || streamDocument) {
       return;
@@ -412,14 +351,11 @@ export function PreviewPanel({
                   if (!sessionId) {
                     return;
                   }
-                  setPublishing(true);
                   setPublishNote(null);
-                  void publishSession(sessionId, {})
-                    .then((result) => setPublishNote(`Saved “${result.tool.name}” to your dashboard`))
-                    .catch((error: unknown) =>
-                      setPublishNote(error instanceof Error ? error.message : "Publish failed.")
-                    )
-                    .finally(() => setPublishing(false));
+                  setPublishOpen(true);
+                  if (userEmail) {
+                    void listGroups(userEmail).then(setGroups).catch(() => setGroups([]));
+                  }
                 }}
                 sx={{
                   width: 32,
@@ -440,7 +376,7 @@ export function PreviewPanel({
               {publishNote}
             </Typography>
           ) : null}
-          {mountFrame && (
+          {showFrame && (
             <Tooltip title="Refresh preview">
               <IconButton
                 size="small"
@@ -462,58 +398,40 @@ export function PreviewPanel({
         </Stack>
       </Stack>
 
-      {showPreviewPane ? (
-        <Box sx={{ position: "relative", flex: 1, minHeight: 0 }}>
-          {mountFrame ? (
-            <>
-              {status === "updating" && framePainted ? (
-                <LinearProgress
-                  sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    zIndex: 2,
-                    height: 3,
-                  }}
-                />
-              ) : null}
-              <Box
-                key={refreshKey}
-                component="iframe"
-                ref={iframeRef}
-                title="Generated app preview"
-                src={streamDocument ? undefined : src ?? undefined}
-                srcDoc={streamDocument ?? undefined}
-                onLoad={handleFrameLoad}
-                sandbox="allow-scripts allow-same-origin allow-forms"
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "block",
-                  width: "100%",
-                  height: "100%",
-                  border: 0,
-                  bgcolor: "#f6f3ee",
-                }}
-              />
-            </>
-          ) : null}
-          {coverFrame ? (
-            <Box
-              className="preview-stage"
-              sx={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 3,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+      {/* Content area */}
+      {showFrame && tab === "preview" ? (
+        <Box sx={{ position: "relative", flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          {status === "updating" ? (
+            <LinearProgress
+              sx={{ 
+                position: "absolute", 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                zIndex: 2,
+                height: 3 
               }}
-            >
-              <CircularProgress size={28} sx={{ color: "primary.main" }} aria-label="Opening preview" />
-            </Box>
+            />
           ) : null}
+          <Box
+            key={refreshKey}
+            component="iframe"
+            ref={iframeRef}
+            title="Generated app preview"
+            src={streamDocument ? undefined : src ?? undefined}
+            srcDoc={streamDocument ?? undefined}
+            onLoad={handleFrameLoad}
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            sx={{
+              display: "block",
+              flex: 1,
+              width: "100%",
+              height: "100%",
+              minHeight: 0,
+              border: 0,
+              bgcolor: "background.paper",
+            }}
+          />
         </Box>
       ) : null}
 
@@ -524,6 +442,90 @@ export function PreviewPanel({
           status={status === "live" || status === "draft" || status === "updating" ? "idle" : status}
         />
       )}
+
+      <Dialog open={publishOpen} onClose={() => !publishing && setPublishOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Publish</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Who can use this app?
+          </Typography>
+          <FormControl>
+            <RadioGroup
+              value={visibility}
+              onChange={(event) => setVisibility(event.target.value as "all" | "group")}
+            >
+              <FormControlLabel value="all" control={<Radio />} label="Everyone" />
+              <FormControlLabel value="group" control={<Radio />} label="Your team" />
+            </RadioGroup>
+          </FormControl>
+          {visibility === "group" ? (
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              {groups.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  Create a team first.
+                </Typography>
+              ) : (
+                <Box
+                  component="select"
+                  value={groupId}
+                  onChange={(event) => setGroupId(event.target.value)}
+                  sx={{
+                    mt: 0.5,
+                    p: 1.25,
+                    borderRadius: 1,
+                    border: 1,
+                    borderColor: "divider",
+                    font: "inherit",
+                    bgcolor: "background.paper",
+                  }}
+                >
+                  <option value="">Select a team</option>
+                  {groups.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+                </Box>
+              )}
+            </FormControl>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPublishOpen(false)} disabled={publishing}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={publishing || (visibility === "group" && !groupId)}
+            onClick={() => {
+              if (!sessionId) {
+                return;
+              }
+              const selected = groups.find((group) => group.id === groupId);
+              setPublishing(true);
+              void publishSession(sessionId, {
+                visibility,
+                groupId: visibility === "group" ? groupId : undefined,
+                groupName: visibility === "group" ? selected?.name : undefined,
+              })
+                .then((result) => {
+                  setPublishNote(
+                    result.tool.visibility === "group"
+                      ? `Saved “${result.tool.name}” for ${result.tool.groupName ?? "your team"}`
+                      : `Saved “${result.tool.name}” for everyone`
+                  );
+                  setPublishOpen(false);
+                })
+                .catch((error: unknown) =>
+                  setPublishNote(error instanceof Error ? error.message : "Publish failed.")
+                )
+                .finally(() => setPublishing(false));
+            }}
+          >
+            {publishing ? "Publishing…" : "Publish"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -2,9 +2,22 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
-DEV_USER = "dev-user"
+DEV_USER = "dev-user"  # Test-only fallback after P6-S1
+
+
+# ── P6-S1 Auth ──────────────────────────────────────────────────────────────
+
+class User(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str
+    email: str  # Firebase UID email
+
+
+class AuthResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    user: User
 
 Stack = Literal["react", "fullstack"]
 FrontendStack = Literal["vanilla", "react"]
@@ -12,6 +25,7 @@ BackendNeed = Literal["auto", "yes", "no"]
 BackendStack = Literal["none", "node-express"]
 IntentKind = Literal["new", "modify"]
 ToolRole = Literal["owner", "editor", "viewer"]
+ToolVisibility = Literal["all", "group", "private"]
 RuntimeStatus = Literal["booting", "running", "unhealthy", "sleeping", "stopped"]
 SessionEventName = Literal[
     "session.created",
@@ -209,13 +223,39 @@ class Tool(BaseModel):
 
     id: str
     ownerId: str
+    ownerEmail: str | None = None
     name: str
     summary: str
     status: RuntimeStatus
+    visibility: ToolVisibility = "private"
+    groupId: str | None = None
+    groupName: str | None = None
+    myRole: ToolRole | None = None
     createdAt: str
     updatedAt: str
     latestVersionId: str | None = None
     latestSessionId: str | None = None
+
+
+class ToolMember(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    toolId: str
+    userId: str
+    role: ToolRole
+
+
+class ToolMembersResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    members: list[ToolMember]
+
+
+class ShareToolRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    emailOrUserId: str
+    role: Literal["editor", "viewer"]
 
 
 class ToolVersion(BaseModel):
@@ -241,6 +281,15 @@ class PublishToolRequest(BaseModel):
 
     name: str | None = None
     summary: str | None = None
+    visibility: Literal["all", "group"] = "all"
+    groupId: str | None = None
+    groupName: str | None = None
+
+    @model_validator(mode="after")
+    def group_required_for_group_visibility(self) -> PublishToolRequest:
+        if self.visibility == "group" and not (self.groupId or "").strip():
+            raise ValueError("groupId is required when visibility is group")
+        return self
 
 
 class PublishToolResponse(BaseModel):
@@ -262,6 +311,7 @@ class OpenToolResponse(BaseModel):
     sessionId: str
     previewUrl: str
     tool: ToolSummary
+    role: ToolRole
 
 
 class ToolIndexRecord(BaseModel):
