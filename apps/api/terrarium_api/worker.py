@@ -785,6 +785,15 @@ async def _run_editor_step(
     return await _boot_preview(log, session_id, job, files=merged, draft=False)
 
 
+async def _sync_github(log: SessionEventLog, session_id: str, files: dict[str, str]) -> None:
+    try:
+        from terrarium_api.github_sync import sync_session_to_github
+
+        await sync_session_to_github(log, session_id, files)
+    except Exception:
+        logger.exception("GitHub sync skipped for %s", session_id)
+
+
 async def _boot_preview(
     log: SessionEventLog,
     session_id: str,
@@ -815,6 +824,8 @@ async def _boot_preview(
     
     filemap = files
     await log.save_files(session_id, filemap)
+    if not draft:
+        await _sync_github(log, session_id, filemap)
     await log.append(
         make_event(
             "sandbox.booting",

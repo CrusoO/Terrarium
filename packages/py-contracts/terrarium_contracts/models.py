@@ -339,3 +339,31 @@ class AcceptMatchRequest(BaseModel):
 
     sessionId: str
     toolId: str
+
+
+class GitHubStatusResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    configured: bool
+    connected: bool
+    login: str | None = None
+    repo: str | None = None
+    htmlUrl: str | None = None
+
+
+class GitHubPushRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    sessionId: str
+    repoName: str | None = None
+    message: str | None = None
+    description: str | None = None
+    private: bool | None = None
+
+
+class GitHubPushResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    htmlUrl: str
+    repo: str
+    created: bool

@@ -30,6 +30,7 @@ export default defineConfig({
       },
       "/workspace": "http://127.0.0.1:3001",
       "/auth": "http://127.0.0.1:3001",
+      "/github": "http://127.0.0.1:3001",
       "/groups": "http://127.0.0.1:3001",
       "/access-requests": "http://127.0.0.1:3001",
     },

@@ -1,12 +1,27 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from urllib.parse import urlparse
 
 from arq.connections import RedisSettings
 from dotenv import load_dotenv
 
-load_dotenv()
+
+def _load_dotenv() -> None:
+    here = Path(__file__).resolve()
+    candidates = [
+        Path.cwd() / ".env",
+        here.parents[3] / ".env",  # Terrarium/.env from apps/api/terrarium_api
+    ]
+    for path in candidates:
+        if path.is_file():
+            load_dotenv(path, override=False)
+            return
+    load_dotenv(override=False)
+
+
+_load_dotenv()
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", "6379"))
@@ -36,6 +51,12 @@ DATABASE_URL = _database_url()
 # P6-S1 auth — Firebase ID tokens. Cookie is only for EventSource (no custom headers).
 AUTH_COOKIE = "terrarium_token"
 FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "terrariumauth")
+GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", "").strip()
+GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", "").strip()
+GITHUB_OAUTH_REDIRECT = os.environ.get(
+    "GITHUB_OAUTH_REDIRECT", "http://127.0.0.1:3001/github/callback"
+).strip()
+GITHUB_UI_ORIGIN = os.environ.get("GITHUB_UI_ORIGIN", "http://localhost:5173").strip()
 
 
 def ssl_verify() -> bool | str:
