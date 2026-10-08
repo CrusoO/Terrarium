@@ -147,6 +147,19 @@ export async function openWorkspaceTool(toolId: string): Promise<OpenToolRespons
   return parsed.data;
 }
 
+export async function wakeWorkspaceTool(toolId: string): Promise<OpenToolResponse> {
+  const response = await fetch(`/workspace/tools/${encodeURIComponent(toolId)}/wake`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const json: unknown = await response.json().catch(() => null);
+  const parsed = openToolResponseSchema.safeParse(json);
+  if (!response.ok || !parsed.success) {
+    throw new Error(`POST /workspace/tools/${toolId}/wake failed (${response.status}).`);
+  }
+  return parsed.data;
+}
+
 export async function sleepWorkspaceTool(toolId: string): Promise<ToolSummary> {
   const response = await fetch(`/workspace/tools/${encodeURIComponent(toolId)}/sleep`, {
     method: "POST",

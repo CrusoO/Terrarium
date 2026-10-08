@@ -54,17 +54,15 @@ function MainApp({
 
   if (view !== "chat") {
     return (
-      <div className="flex h-screen">
-        <AppShell
-          chat={<div />}
-          canvas={sidePanel ?? <div />}
-          view={view}
-          onViewChange={setView}
-          onLogout={onLogout}
-          pendingApprovals={pending.length}
-          userName={userName}
-        />
-      </div>
+      <AppShell
+        chat={<div />}
+        canvas={sidePanel ?? <div />}
+        view={view}
+        onViewChange={setView}
+        onLogout={onLogout}
+        pendingApprovals={pending.length}
+        userName={userName}
+      />
     );
   }
 
