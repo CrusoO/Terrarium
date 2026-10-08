@@ -25,6 +25,7 @@ export function AppShell({
 }) {
   const split = useSplitPanes();
   const chatSize = split.desktop ? split.chatWidth : split.chatHeight;
+  const showChat = view === "chat";
 
   return (
     <SplitControlsContext.Provider
@@ -38,9 +39,9 @@ export function AppShell({
     >
       <div ref={split.shellRef} className="flex h-full min-h-0 flex-col bg-white text-ink md:flex-row">
         <IconRail view={view} onViewChange={onViewChange} onLogout={onLogout} pendingApprovals={pendingApprovals} userName={userName} />
-        {split.collapsed ? (
+        {showChat && split.collapsed ? (
           <CollapsedChatStrip desktop={split.desktop} onRestore={split.restoreChat} />
-        ) : (
+        ) : showChat ? (
           <Box
             sx={{
               width: { xs: "100%", md: chatSize },
@@ -54,8 +55,8 @@ export function AppShell({
           >
             {chat}
           </Box>
-        )}
-        {split.collapsed ? null : (
+        ) : null}
+        {showChat && !split.collapsed ? (
           <Box
             role="separator"
             aria-orientation={split.desktop ? "vertical" : "horizontal"}
@@ -95,7 +96,7 @@ export function AppShell({
               }}
             />
           </Box>
-        )}
+        ) : null}
         <Box
           sx={{
             flex: 1,
