@@ -12,6 +12,9 @@ FILES_SUFFIX = ":files"
 CONV_SUFFIX = ":conversation"
 TOOL_SUFFIX = ":toolId"
 INTENT_SUFFIX = ":intent"
+GITHUB_SUFFIX = ":github"
+GITHUB_SESSION_TOKEN_SUFFIX = ":githubToken"
+GITHUB_TOKEN_PREFIX = "terrarium:github:token:"
 
 
 def stream_key(session_id: str) -> str:
@@ -32,6 +35,18 @@ def tool_id_key(session_id: str) -> str:
 
 def intent_key(session_id: str) -> str:
     return f"{STREAM_PREFIX}{session_id}{INTENT_SUFFIX}"
+
+
+def github_repo_key(session_id: str) -> str:
+    return f"{STREAM_PREFIX}{session_id}{GITHUB_SUFFIX}"
+
+
+def github_token_key(user_id: str) -> str:
+    return f"{GITHUB_TOKEN_PREFIX}{user_id}"
+
+
+def github_session_token_key(session_id: str) -> str:
+    return f"{STREAM_PREFIX}{session_id}{GITHUB_SESSION_TOKEN_SUFFIX}"
 
 
 def _as_str(value: object) -> str:
@@ -122,6 +137,45 @@ class SessionEventLog:
             json.dumps(turns),
             ex=60 * 60 * 24,
         )
+
+    async def save_github_token(self, user_id: str, token: str) -> None:
+        await self.redis.set(github_token_key(user_id), token, ex=60 * 60 * 8)
+
+    async def load_github_token(self, user_id: str) -> str | None:
+        raw = await self.redis.get(github_token_key(user_id))
+        if not raw:
+            return None
+        token = _as_str(raw).strip()
+        return token or None
+
+    async def save_github_session_token(self, session_id: str, token: str) -> None:
+        await self.redis.set(github_session_token_key(session_id), token, ex=60 * 60 * 24 * 7)
+
+    async def load_github_session_token(self, session_id: str) -> str | None:
+        raw = await self.redis.get(github_session_token_key(session_id))
+        if not raw:
+            return None
+        token = _as_str(raw).strip()
+        return token or None
+
+    async def resolve_github_token(self, user_id: str, session_id: str = "") -> str | None:
+        if session_id:
+            session_token = await self.load_github_session_token(session_id)
+            if session_token:
+                return session_token
+        return await self.load_github_token(user_id)
+
+    async def save_github_repo(self, session_id: str, repo: dict[str, str]) -> None:
+        await self.redis.set(github_repo_key(session_id), json.dumps(repo), ex=60 * 60 * 24 * 7)
+
+    async def load_github_repo(self, session_id: str) -> dict[str, str] | None:
+        raw = await self.redis.get(github_repo_key(session_id))
+        if not raw:
+            return None
+        parsed = json.loads(_as_str(raw))
+        if not isinstance(parsed, dict):
+            return None
+        return {str(key): str(value) for key, value in parsed.items() if value is not None}
 
     async def iter_events(
         self, session_id: str, last_id: str = "0-0"

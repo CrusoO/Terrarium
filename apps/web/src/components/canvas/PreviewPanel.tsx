@@ -3,11 +3,17 @@ import DesktopWindowsOutlinedIcon from "@mui/icons-material/DesktopWindowsOutlin
 import KeyboardTabRoundedIcon from "@mui/icons-material/KeyboardTabRounded";
 import CodeRoundedIcon from "@mui/icons-material/CodeRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import RocketLaunchRoundedIcon from "@mui/icons-material/RocketLaunchRounded";
 import {
+  Alert,
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -20,13 +26,19 @@ import {
   Radio,
   RadioGroup,
   Stack,
+  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-import type { FileMap, RuntimeErrorRequest, SessionEvent } from "@terrarium/contracts";
+import type { FileMap, GitHubStatusResponse, RuntimeErrorRequest, SessionEvent } from "@terrarium/contracts";
 import { useSplitControls } from "../layout/SplitControls";
 import { CodePanel } from "./CodePanel";
 import { EventLogButton } from "./EventLogButton";
+import {
+  connectGitHubToken,
+  fetchGitHubStatus,
+  pushSessionToGitHub,
+} from "../../api/github";
 import { listGroups, type Group } from "../../api/groups";
 import { publishSession } from "../../api/sessions";
 import { useAuth } from "../../hooks/useAuth";
@@ -167,6 +179,18 @@ export function iframeSrc(previewUrl: string): string {
   return previewUrl;
 }
 
+/** Absolute URL so the child app can open in a new browser tab. */
+export function previewHref(previewUrl: string): string {
+  const src = iframeSrc(previewUrl);
+  if (/^https?:\/\//i.test(src)) {
+    return src;
+  }
+  if (typeof window === "undefined") {
+    return src;
+  }
+  return new URL(src, window.location.origin).href;
+}
+
 export function PreviewPanel({
   events,
   previewUrl,
@@ -197,14 +221,57 @@ export function PreviewPanel({
   const [groupId, setGroupId] = useState("");
   const [groups, setGroups] = useState<Group[]>([]);
   const [publishNote, setPublishNote] = useState<string | null>(null);
+  const [githubStatus, setGithubStatus] = useState<GitHubStatusResponse | null>(null);
+  const [githubBusy, setGithubBusy] = useState(false);
+  const [githubNote, setGithubNote] = useState<string | null>(null);
+  const [githubError, setGithubError] = useState<string | null>(null);
+  const [githubSetupOpen, setGithubSetupOpen] = useState(false);
+  const [githubAddAccount, setGithubAddAccount] = useState(false);
+  const [githubToken, setGithubToken] = useState("");
+  const [githubRepoName, setGithubRepoName] = useState("");
+  const [githubPrivate, setGithubPrivate] = useState(true);
+  const githubReturnHandled = useRef(false);
   const auth = useAuth();
-  const userEmail = auth.state.status === "authenticated" ? auth.state.user.email ?? "" : "";
+  const signedIn = auth.state.status === "authenticated";
+  const userEmail = signedIn ? auth.state.user.email ?? "" : "";
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const src = previewUrl ? iframeSrc(previewUrl) : null;
   const streamDocument = useMemo(() => fileMapToPreviewDocument(streamFiles), [streamFiles]);
   const showFrame = Boolean(src || streamDocument) && (status === "live" || status === "draft" || status === "updating");
   const canPublish = Boolean(sessionId) && status === "live" && !publishing;
+  const canGitHub = Boolean(sessionId) && signedIn && !githubBusy;
+  const githubHasAccount = Boolean(githubStatus?.connected);
+  const githubHasRepo = Boolean(githubStatus?.htmlUrl);
   const statusConfig = STATUS_CONFIG[status];
+
+  useEffect(() => {
+    if (!sessionId || !signedIn) {
+      return;
+    }
+    void fetchGitHubStatus(sessionId)
+      .then(setGithubStatus)
+      .catch(() => setGithubStatus(null));
+  }, [sessionId, signedIn]);
+
+  useEffect(() => {
+    if (githubReturnHandled.current || !signedIn || typeof window === "undefined") {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    const flag = params.get("github");
+    if (!flag) {
+      return;
+    }
+    githubReturnHandled.current = true;
+    const returnedSession = params.get("session") || sessionId;
+    params.delete("github");
+    params.delete("session");
+    const next = `${window.location.pathname}${params.toString() ? `?${params}` : ""}${window.location.hash}`;
+    window.history.replaceState({}, "", next);
+    if (returnedSession) {
+      void fetchGitHubStatus(returnedSession).then(setGithubStatus).catch(() => undefined);
+    }
+  }, [sessionId, signedIn]);
 
   useEffect(() => {
     if (!streamDocument || !iframeRef.current || tab !== "preview" || !showFrame) {
@@ -342,6 +409,48 @@ export function PreviewPanel({
               <CodeRoundedIcon sx={{ fontSize: 18 }} />
             </IconButton>
           </Tooltip>
+          <Tooltip
+            title={
+              githubStatus?.htmlUrl
+                ? `Push to ${githubStatus.repo ?? "GitHub"}`
+                : githubStatus?.connected
+                  ? "Create GitHub repo and push"
+                  : "Connect GitHub and push this app"
+            }
+          >
+            <span>
+              <IconButton
+                aria-label="Push to GitHub"
+                disabled={!canGitHub}
+                onClick={() => {
+                  if (!sessionId) {
+                    setGithubNote("Build an app first, then push it.");
+                    return;
+                  }
+                  if (!signedIn) {
+                    setGithubNote("Sign in to Terrarium first.");
+                    return;
+                  }
+                  setGithubError(null);
+                  setGithubToken("");
+                  setGithubAddAccount(false);
+                  setGithubRepoName(sessionId ? `terrarium-app-${sessionId.slice(0, 8)}` : "terrarium-app");
+                  setGithubPrivate(true);
+                  setGithubSetupOpen(true);
+                }}
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "8px",
+                  color: githubStatus?.connected ? "#fff" : "text.secondary",
+                  bgcolor: githubStatus?.connected ? "#24292f" : "transparent",
+                  "&:hover": { bgcolor: githubStatus?.connected ? "#1b1f23" : "#f6f3ee" },
+                }}
+              >
+                <GitHubIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </span>
+          </Tooltip>
           <Tooltip title="Publish">
             <span>
               <IconButton
@@ -375,6 +484,38 @@ export function PreviewPanel({
             <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 140 }} title={publishNote}>
               {publishNote}
             </Typography>
+          ) : null}
+          {githubNote ? (
+            <Typography component="span" variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 180 }} title={githubNote}>
+              {githubStatus?.htmlUrl ? (
+                <Box
+                  component="a"
+                  href={githubStatus.htmlUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: "inherit", textDecoration: "underline" }}
+                >
+                  {githubNote}
+                </Box>
+              ) : (
+                githubNote
+              )}
+            </Typography>
+          ) : null}
+          {showFrame && src ? (
+            <Tooltip title="Open in new tab">
+              <IconButton
+                component="a"
+                href={previewHref(previewUrl ?? src)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open preview in new tab"
+                size="small"
+                sx={{ ml: 0.5, color: "text.secondary" }}
+              >
+                <OpenInNewRoundedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
           ) : null}
           {showFrame && (
             <Tooltip title="Refresh preview">
@@ -443,6 +584,285 @@ export function PreviewPanel({
         />
       )}
 
+      <Dialog
+        open={githubSetupOpen}
+        onClose={() => !githubBusy && setGithubSetupOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            borderRadius: "20px",
+            border: "1px solid #efeae4",
+            boxShadow: "0 28px 64px rgba(47, 36, 28, 0.16)",
+            overflow: "hidden",
+          },
+        }}
+      >
+        <Box
+          sx={{
+            px: 3,
+            py: 2.25,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            bgcolor: "#24292f",
+            color: "#fff",
+          }}
+        >
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "12px",
+              bgcolor: "#fff",
+              color: "#24292f",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <GitHubIcon />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontWeight: 700, letterSpacing: "-0.02em" }}>
+              {githubHasRepo ? "GitHub repository" : "Push this app to GitHub"}
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.7, display: "block" }}>
+              {githubHasRepo
+                ? "Keep this repo, or switch to another GitHub account"
+                : githubHasAccount
+                  ? "Use your linked account, or add a different one"
+                  : "Choose the repo name and whether it is public or private"}
+            </Typography>
+          </Box>
+        </Box>
+        <DialogContent sx={{ px: 3, py: 2.5 }}>
+          {githubHasAccount && !githubAddAccount ? (
+            <Stack spacing={2}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: "14px",
+                  border: "1px solid #efeae4",
+                  bgcolor: "#faf7f4",
+                }}
+              >
+                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 650 }}>
+                  {githubHasRepo ? "Linked repository" : "Linked GitHub account"}
+                </Typography>
+                <Typography sx={{ fontWeight: 700, mt: 0.25 }}>
+                  {githubHasRepo
+                    ? githubStatus?.repo ?? githubStatus?.login ?? "GitHub"
+                    : githubStatus?.login
+                      ? `@${githubStatus.login}`
+                      : "GitHub"}
+                </Typography>
+                {githubStatus?.login ? (
+                  <Typography variant="body2" color="text.secondary">
+                    {githubHasRepo
+                      ? `Connected as @${githubStatus.login}`
+                      : "Choose a name and visibility, then push this child app"}
+                  </Typography>
+                ) : null}
+              </Box>
+              {githubNote ? (
+                <Alert icon={<CheckRoundedIcon fontSize="inherit" />} severity="success" sx={{ borderRadius: "12px" }}>
+                  {githubNote}
+                </Alert>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  {githubHasRepo
+                    ? "Push the latest files to this repo, or connect a different GitHub account."
+                    : "Use this account for the new app, or add a different GitHub token."}
+                </Typography>
+              )}
+              <Button
+                onClick={() => {
+                  setGithubAddAccount(true);
+                  setGithubError(null);
+                  setGithubNote(null);
+                }}
+                sx={{ alignSelf: "flex-start", textTransform: "none", fontWeight: 650, px: 0 }}
+              >
+                Use a different GitHub account
+              </Button>
+            </Stack>
+          ) : (
+            <Stack spacing={2}>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.65 }}>
+                {githubAddAccount
+                  ? "Paste a token from the other GitHub account. This app will be pushed there."
+                  : "Paste a GitHub personal access token, choose the repo name and visibility, then push this child app."}
+              </Typography>
+              <Button
+                href="https://github.com/settings/tokens/new?scopes=repo&description=Terrarium"
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="outlined"
+                startIcon={<OpenInNewRoundedIcon />}
+                sx={{
+                  alignSelf: "flex-start",
+                  borderRadius: "10px",
+                  textTransform: "none",
+                  fontWeight: 650,
+                  borderColor: "#d9d0c8",
+                  color: "text.primary",
+                }}
+              >
+                Create token on GitHub
+              </Button>
+              <TextField
+                autoFocus
+                fullWidth
+                type="password"
+                label="Personal access token"
+                placeholder="ghp_••••••••••••••••"
+                value={githubToken}
+                onChange={(event) => {
+                  setGithubToken(event.target.value);
+                  setGithubError(null);
+                }}
+                InputProps={{
+                  startAdornment: <LockOutlinedIcon sx={{ mr: 1, color: "text.secondary", fontSize: 18 }} />,
+                }}
+                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px", bgcolor: "#fff" } }}
+              />
+              {githubAddAccount ? (
+                <Button
+                  onClick={() => {
+                    setGithubAddAccount(false);
+                    setGithubToken("");
+                    setGithubError(null);
+                  }}
+                  sx={{ alignSelf: "flex-start", textTransform: "none", fontWeight: 650, px: 0 }}
+                >
+                  Back to linked account
+                </Button>
+              ) : null}
+            </Stack>
+          )}
+          {!githubHasRepo || githubAddAccount ? (
+            <Stack spacing={1.5} sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                label="Repository name"
+                value={githubRepoName}
+                onChange={(event) => setGithubRepoName(event.target.value)}
+                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px", bgcolor: "#fff" } }}
+              />
+              <Typography variant="caption" sx={{ fontWeight: 650, color: "text.secondary" }}>
+                Visibility
+              </Typography>
+              <RadioGroup
+                value={githubPrivate ? "private" : "public"}
+                onChange={(event) => setGithubPrivate(event.target.value === "private")}
+              >
+                <FormControlLabel
+                  value="private"
+                  control={<Radio size="small" />}
+                  label="Private — only you can see this repo"
+                />
+                <FormControlLabel
+                  value="public"
+                  control={<Radio size="small" />}
+                  label="Public — anyone on GitHub can see this repo"
+                />
+              </RadioGroup>
+            </Stack>
+          ) : null}
+          {githubError ? (
+            <Alert severity="error" sx={{ mt: 2, borderRadius: "12px" }}>
+              {githubError}
+            </Alert>
+          ) : null}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, pt: 0, gap: 1 }}>
+          <Button
+            onClick={() => setGithubSetupOpen(false)}
+            disabled={githubBusy}
+            sx={{ textTransform: "none", color: "text.secondary" }}
+          >
+            Close
+          </Button>
+          {githubStatus?.htmlUrl && !githubAddAccount ? (
+            <Button
+              href={githubStatus.htmlUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ textTransform: "none", fontWeight: 650 }}
+            >
+              Open repo
+            </Button>
+          ) : null}
+          <Button
+            variant="contained"
+            disabled={
+              githubBusy ||
+              !sessionId ||
+              ((githubAddAccount || !githubHasAccount) && githubToken.trim().length < 8) ||
+              ((!githubHasRepo || githubAddAccount) && !githubRepoName.trim())
+            }
+            onClick={() => {
+              if (!sessionId) {
+                return;
+              }
+              setGithubBusy(true);
+              setGithubError(null);
+              const createOptions = {
+                repoName: githubRepoName.trim(),
+                private: githubPrivate,
+              };
+              const work =
+                githubAddAccount || !githubHasAccount
+                  ? connectGitHubToken(githubToken.trim(), sessionId, {
+                      setDefault: !githubHasAccount,
+                      replaceRepo: githubAddAccount,
+                    }).then(() => pushSessionToGitHub(sessionId, createOptions))
+                  : githubHasRepo
+                    ? pushSessionToGitHub(sessionId)
+                    : pushSessionToGitHub(sessionId, createOptions);
+              void work
+                .then((result) => {
+                  setGithubNote(result.created ? `Created ${result.repo}` : `Pushed to ${result.repo}`);
+                  setGithubToken("");
+                  setGithubAddAccount(false);
+                  return fetchGitHubStatus(sessionId);
+                })
+                .then((statusResult) => {
+                  if (statusResult) {
+                    setGithubStatus(statusResult);
+                  }
+                })
+                .catch((error: unknown) =>
+                  setGithubError(error instanceof Error ? error.message : "GitHub connect failed.")
+                )
+                .finally(() => setGithubBusy(false));
+            }}
+            sx={{
+              ml: "auto",
+              px: 2.25,
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: 700,
+              bgcolor: "#24292f",
+              "&:hover": { bgcolor: "#1b1f23" },
+            }}
+            startIcon={
+              githubBusy ? <CircularProgress size={14} color="inherit" /> : <GitHubIcon sx={{ fontSize: 18 }} />
+            }
+          >
+            {githubBusy
+              ? "Pushing…"
+              : githubAddAccount
+                ? "Connect new account and push"
+                : githubHasRepo
+                  ? "Push latest"
+                  : githubHasAccount
+                    ? "Push this app"
+                    : "Connect and push"}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog open={publishOpen} onClose={() => !publishing && setPublishOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Publish</DialogTitle>
         <DialogContent>

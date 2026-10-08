@@ -315,3 +315,28 @@ export const acceptMatchRequestSchema = z.object({
   toolId: z.string(),
 });
 export type AcceptMatchRequest = z.infer<typeof acceptMatchRequestSchema>;
+
+export const gitHubStatusResponseSchema = z.object({
+  configured: z.boolean(),
+  connected: z.boolean(),
+  login: z.string().nullish(),
+  repo: z.string().nullish(),
+  htmlUrl: z.string().nullish(),
+});
+export type GitHubStatusResponse = z.infer<typeof gitHubStatusResponseSchema>;
+
+export const gitHubPushRequestSchema = z.object({
+  sessionId: z.string(),
+  repoName: z.string().nullish(),
+  message: z.string().nullish(),
+  description: z.string().nullish(),
+  private: z.boolean().nullish(),
+});
+export type GitHubPushRequest = z.infer<typeof gitHubPushRequestSchema>;
+
+export const gitHubPushResponseSchema = z.object({
+  htmlUrl: z.string(),
+  repo: z.string(),
+  created: z.boolean(),
+});
+export type GitHubPushResponse = z.infer<typeof gitHubPushResponseSchema>;

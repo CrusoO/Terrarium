@@ -113,6 +113,31 @@ def _original_prompt(turns: list[dict[str, str]]) -> str:
     return prompts[0] if prompts else ""
 
 
+def _upsert_tool_index(db: Session, tool: ToolRecord, *, stack: str, fingerprint: str) -> None:
+    """Keep one Smart Match row per prompt. A second publish of the same idea must not 500."""
+    by_tool = db.get(ToolIndexRecord, tool.id)
+    by_fp = db.scalars(
+        select(ToolIndexRecord).where(ToolIndexRecord.prompt_fingerprint == fingerprint)
+    ).first()
+    if by_tool:
+        by_tool.stack = stack
+        by_tool.summary = tool.summary
+        by_tool.updated_at = utc_now()
+        if by_fp is None or by_fp.tool_id == tool.id:
+            by_tool.prompt_fingerprint = fingerprint
+        return
+    if by_fp:
+        return
+    db.add(
+        ToolIndexRecord(
+            tool_id=tool.id,
+            stack=stack,
+            summary=tool.summary,
+            prompt_fingerprint=fingerprint,
+        )
+    )
+
+
 def _default_name(prompt: str) -> str:
     cleaned = " ".join(prompt.split())
     if not cleaned:
@@ -285,25 +310,10 @@ async def publish_session(
         session.updated_at = utc_now()
     
     # P5-S1: Write/update tool index record for Smart Match
-    # Compute deterministic fingerprint for exact matching
     intent = await log.load_intent(session_id)
     stack = intent.get("stack", "react") if intent else "react"
     fingerprint = compute_prompt_fingerprint(prompt, stack)  # type: ignore[arg-type]
-    
-    index_record = db.get(ToolIndexRecord, tool.id)
-    if index_record:
-        index_record.stack = stack
-        index_record.summary = tool.summary
-        index_record.prompt_fingerprint = fingerprint
-        index_record.updated_at = utc_now()
-    else:
-        index_record = ToolIndexRecord(
-            tool_id=tool.id,
-            stack=stack,
-            summary=tool.summary,
-            prompt_fingerprint=fingerprint,
-        )
-        db.add(index_record)
+    _upsert_tool_index(db, tool, stack=str(stack), fingerprint=fingerprint)
     
     db.commit()
     db.refresh(tool)
