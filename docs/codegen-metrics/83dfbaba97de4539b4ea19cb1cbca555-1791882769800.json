@@ -1,0 +1,41 @@
+{
+  "durationMs": 2862,
+  "events": [],
+  "finishedAtMs": 1791882772662,
+  "headline": {
+    "generationSource": "fallback",
+    "healAttempts": 0,
+    "infrastructureStageSeconds": 0.0,
+    "modelStageSeconds": 2.859,
+    "timeToFirstFileSeconds": null,
+    "timeToHealthyPreviewSeconds": null
+  },
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 2838,
+      "inputTokens": 1067,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 199,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "build me a ecommerce wesbite like amazon",
+  "runId": "83dfbaba97de4539b4ea19cb1cbca555-1791882769800",
+  "runType": "new",
+  "sessionId": "83dfbaba97de4539b4ea19cb1cbca555",
+  "stages": [
+    {
+      "durationMs": 2859,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791882769801
+    }
+  ],
+  "startedAtMs": 1791882769800,
+  "status": "clarify"
+}

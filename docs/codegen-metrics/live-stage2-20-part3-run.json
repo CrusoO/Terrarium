@@ -1,0 +1,172 @@
+{
+  "plan": {
+    "dryRun": true,
+    "mode": "record-missing",
+    "model": "production",
+    "priceModel": "production-mix",
+    "fixtureCalls": 254,
+    "callsPerApp": 5,
+    "averageUsd": 0.012478,
+    "stages": [
+      {
+        "stage": 2,
+        "calls": 10,
+        "estimatedUsd": 0.0428,
+        "beforeRepairsUsd": 0.0372,
+        "repairMargin": 0.15,
+        "estimateSource": "measured-per-app-round-2",
+        "measuredPerAppUsd": 0.0186,
+        "status": "dry-run"
+      }
+    ],
+    "stop": "first failing stage",
+    "rerecord": "only hashes that are not already on disk",
+    "cacheReadTokens": 1381546,
+    "byTask": {
+      "codegen": {
+        "calls": 235,
+        "usd": 3.1183
+      },
+      "blueprint": {
+        "calls": 16,
+        "usd": 0.0245
+      },
+      "repair": {
+        "calls": 3,
+        "usd": 0.0266
+      }
+    },
+    "liveSpendUsd": 0.0,
+    "productionMix": {
+      "leaf": "eu.anthropic.claude-haiku-5-5",
+      "page": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "repair": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "monolith": "anthropic.claude-sonnet-4-6"
+    },
+    "repairMargin": 0.15
+  },
+  "report": {
+    "dryRun": false,
+    "results": [
+      {
+        "stage": 2,
+        "ok": false,
+        "apps": 2,
+        "written": [],
+        "perApp": [
+          {
+            "slug": "unsupported-01-unknown",
+            "route": "monolith",
+            "supported": false,
+            "archetype": "unknown",
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "unknown",
+              "supported": false,
+              "entity": "Project",
+              "title": "Video Editor"
+            },
+            "repairs": 0,
+            "degraded": [],
+            "wallSeconds": 194.764,
+            "costUsd": 0.496847,
+            "tokens": null,
+            "staticOk": false,
+            "calls": null,
+            "error": "CodeGeneratorError: The coding model did not return a runnable FileMap: src/components/layout/AppShell.jsx imports missing module ../../styles/appshell.css. Not serving a template."
+          },
+          {
+            "slug": "unsupported-02-unknown",
+            "route": "monolith",
+            "supported": false,
+            "archetype": "unknown",
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.05,
+              "archetype": "unknown",
+              "supported": false,
+              "entity": "",
+              "title": "Programming Language Compiler"
+            },
+            "repairs": 0,
+            "degraded": [],
+            "wallSeconds": 112.988,
+            "costUsd": 0.249312,
+            "tokens": null,
+            "staticOk": false,
+            "calls": null,
+            "error": "SpendExceeded: codegen spend $0.7462 would exceed CODEGEN_MAX_SPEND_USD=$0.5500"
+          }
+        ],
+        "spend": {
+          "usd": 0.746159,
+          "calls": 5,
+          "byTask": {
+            "blueprint": {
+              "usd": 0.001859,
+              "calls": 2
+            },
+            "codegen": {
+              "usd": 0.7443,
+              "calls": 3
+            }
+          },
+          "avoidedUsd": 0.0,
+          "replayCalls": 0,
+          "cacheReadTokens": 0,
+          "replayHits": 0,
+          "liveCalls": 5,
+          "repairAverage": 0.0
+        }
+      }
+    ],
+    "stopped": false,
+    "spend": {
+      "usd": 0.746159,
+      "calls": 5,
+      "byTask": {
+        "blueprint": {
+          "usd": 0.001859,
+          "calls": 2
+        },
+        "codegen": {
+          "usd": 0.7443,
+          "calls": 3
+        }
+      },
+      "avoidedUsd": 0.0,
+      "replayCalls": 0,
+      "cacheReadTokens": 0,
+      "replayHits": 0,
+      "liveCalls": 5,
+      "repairAverage": 0.0
+    }
+  },
+  "spend": {
+    "usd": 0.746159,
+    "calls": 5,
+    "byTask": {
+      "blueprint": {
+        "usd": 0.001859,
+        "calls": 2
+      },
+      "codegen": {
+        "usd": 0.7443,
+        "calls": 3
+      }
+    },
+    "avoidedUsd": 0.0,
+    "replayCalls": 0,
+    "cacheReadTokens": 0,
+    "replayHits": 0,
+    "liveCalls": 5,
+    "repairAverage": 0.0
+  },
+  "cost": {
+    "estimatedUsd": 0.0428,
+    "actualUsd": 0.7462,
+    "deltaUsd": 0.7034,
+    "source": "usage-tokens-x-price"
+  }
+}

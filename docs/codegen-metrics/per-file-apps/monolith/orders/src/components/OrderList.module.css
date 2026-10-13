@@ -1,0 +1,109 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.list::-webkit-scrollbar { width: 5px; }
+.list::-webkit-scrollbar-track { background: transparent; }
+.list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding: 0 2px 4px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-align: left;
+  width: 100%;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  box-shadow: var(--shadow);
+}
+
+.card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.selected {
+  border-color: var(--primary) !important;
+  background: var(--primary-light) !important;
+  box-shadow: 0 0 0 3px rgba(79,70,229,.15) !important;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.orderId {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: 'Courier New', monospace;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.customer {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.cardBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.total {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.itemPreview {
+  font-size: 12px;
+  color: var(--text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 2px dashed var(--border);
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty span { font-size: 36px; display: block; margin-bottom: 10px; }
+.empty p { font-size: 14px; }

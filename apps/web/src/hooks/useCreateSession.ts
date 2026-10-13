@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
+  clarifyQuestionSchema,
   createSessionRequestSchema,
   previewReadyPayloadSchema,
   previewStreamFilePayloadSchema,
@@ -25,6 +26,18 @@ function stringField(payload: Record<string, unknown> | undefined, key: string):
 function stringList(payload: Record<string, unknown> | undefined, key: string): string[] {
   const value = payload?.[key];
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function parseQuestionItems(payload: Record<string, unknown> | undefined) {
+  const raw = payload?.questionItems;
+  if (!Array.isArray(raw)) {
+    return undefined;
+  }
+  const items = raw
+    .map((entry) => clarifyQuestionSchema.safeParse(entry))
+    .filter((result) => result.success)
+    .map((result) => result.data);
+  return items.length ? items : undefined;
 }
 
 function withoutThinking(items: ChatItem[]): ChatItem[] {
@@ -193,6 +206,7 @@ export function useCreateSession() {
       const reply = stringField(payload, "reply");
       const phase = stringField(payload, "phase");
       const questions = stringList(payload, "questions");
+      const questionItems = parseQuestionItems(payload);
       const keepBuilding = phase === "ready";
       setIntentPhase(phase);
       const assistant: ChatItem = {
@@ -200,6 +214,7 @@ export function useCreateSession() {
         id: crypto.randomUUID(),
         text: reply || (questions.length ? "I can build that. A few details so we get it right." : "Hey — what should we build?"),
         questions: questions.length ? questions : undefined,
+        questionItems,
         phase,
       };
       busyRef.current = keepBuilding;
@@ -286,7 +301,27 @@ export function useCreateSession() {
         { kind: "heal-exhausted", id: crypto.randomUUID(), logs },
       ]);
     }
-    if (event.name === "sandbox.unhealthy") {
+    if (event.name === "codegen.retry") {
+      const message = stringField(event.payload, "message") || "Trying once more.";
+      busyRef.current = true;
+      setBusy(true);
+      setStatus(null);
+      setChat((current) => withThinking(current, message));
+      armTimeout();
+    }
+    if (event.name === "sandbox.unhealthy" && event.payload?.terminal === true) {
+      const logs = stringField(event.payload, "message") || stringField(event.payload, "logs");
+      busyRef.current = false;
+      setBusy(false);
+      clearTimeoutSafe();
+      setPreviewUrl(null);
+      setStreamFiles(null);
+      setStatus(null);
+      setChat((current) => [
+        ...withoutThinking(current),
+        { kind: "session-ended", id: crypto.randomUUID(), logs: logs || "This preview was not validated." },
+      ]);
+    } else if (event.name === "sandbox.unhealthy") {
       // Healer may emit heal.attempt next. Stay busy until that or heal.exhausted.
       setStatus(null);
     }
@@ -498,5 +533,6 @@ export function useCreateSession() {
     rejectMatch,
     openPublished,
     requestEdit,
+    activeToolId: openedTool?.id ?? null,
   };
 }

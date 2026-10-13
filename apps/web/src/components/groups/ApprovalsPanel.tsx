@@ -13,9 +13,9 @@ interface Props {
 export function ApprovalsPanel({ pending, onApprove, onDeny }: Props) {
   return (
     <Box sx={{ p: 3, maxWidth: 600, mx: "auto" }}>
-      <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 3 }}>
         <NotificationsActiveIcon color="primary" />
-        <Typography variant="h6" fontWeight={700}>Edit requests</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>Edit requests</Typography>
         {pending.length > 0 && (
           <Chip label={pending.length} color="error" size="small" sx={{ fontWeight: 700 }} />
         )}
@@ -31,12 +31,11 @@ export function ApprovalsPanel({ pending, onApprove, onDeny }: Props) {
             <Box key={req.id}>
               <Stack
                 direction={{ xs: "column", sm: "row" }}
-                alignItems={{ sm: "center" }}
-                justifyContent="space-between"
-                spacing={1} py={1.5}
+                spacing={1}
+                sx={{ alignItems: { sm: "center" }, justifyContent: "space-between", py: 1.5 }}
               >
                 <Box>
-                  <Typography variant="body2" fontWeight={600}>{req.requester_email}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{req.requester_email}</Typography>
                   <Typography variant="caption" color="text.secondary">
                     wants to edit <strong>{req.tool_name || "your app"}</strong>
                   </Typography>

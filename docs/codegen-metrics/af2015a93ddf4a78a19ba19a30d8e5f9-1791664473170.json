@@ -1,0 +1,515 @@
+{
+  "durationMs": 398869,
+  "events": [
+    {
+      "atMs": 1791664508480,
+      "name": "codegen.first_file",
+      "payload": {
+        "path": "package.json",
+        "secondsSinceCodegenStage": 19.592
+      }
+    },
+    {
+      "atMs": 1791664572614,
+      "name": "codegen.streamed_files",
+      "payload": {
+        "count": 18,
+        "paths": [
+          "package.json",
+          "index.html",
+          "vite.config.js",
+          "src/main.jsx",
+          "src/App.jsx",
+          "src/data/products.js",
+          "src/context/CartContext.jsx",
+          "src/hooks/useCart.js",
+          "src/pages/CataloguePage.jsx",
+          "src/pages/ProductDetailPage.jsx",
+          "src/pages/CheckoutPage.jsx",
+          "src/components/Header.jsx",
+          "src/components/ProductCard.jsx",
+          "src/components/CategoryFilter.jsx",
+          "src/components/CartDrawer.jsx",
+          "src/components/CartItem.jsx",
+          "src/components/Badge.jsx",
+          "src/styles/global.css"
+        ]
+      }
+    },
+    {
+      "atMs": 1791664572637,
+      "name": "heal.attempt",
+      "payload": {
+        "attempt": 1
+      }
+    },
+    {
+      "atMs": 1791664670850,
+      "name": "heal.attempt",
+      "payload": {
+        "attempt": 2
+      }
+    },
+    {
+      "atMs": 1791664771502,
+      "name": "heal.attempt",
+      "payload": {
+        "attempt": 3
+      }
+    }
+  ],
+  "fileMap": {
+    "boilerplate": {
+      "estimatedBoilerplateShare": 0.401,
+      "estimatedBoilerplateTokens": 4792,
+      "estimatedTokensByCategory": {
+        "business-logic": 777,
+        "config": 311,
+        "layout": 1927,
+        "mock-data": 2203,
+        "ui": 6392,
+        "ui-primitives": 351
+      }
+    },
+    "fileCount": 23,
+    "jsonOverheadEstimatedTokens": 684,
+    "jsonWrappedBytes": 50601,
+    "jsonWrappedEstimatedTokens": 12650,
+    "rawCodeBytes": 47893,
+    "rawCodeEstimatedTokens": 11966,
+    "tokensPerFileEstimated": {
+      "index.html": {
+        "bytes": 499,
+        "category": "config",
+        "estimatedTokens": 123
+      },
+      "package.json": {
+        "bytes": 368,
+        "category": "config",
+        "estimatedTokens": 92
+      },
+      "src/App.jsx": {
+        "bytes": 2258,
+        "category": "ui",
+        "estimatedTokens": 564
+      },
+      "src/components/cart/CartDrawer.jsx": {
+        "bytes": 2469,
+        "category": "ui",
+        "estimatedTokens": 617
+      },
+      "src/components/cart/CartItem.jsx": {
+        "bytes": 1470,
+        "category": "ui",
+        "estimatedTokens": 367
+      },
+      "src/components/checkout/CheckoutSummary.jsx": {
+        "bytes": 2950,
+        "category": "ui",
+        "estimatedTokens": 736
+      },
+      "src/components/checkout/OrderConfirmation.jsx": {
+        "bytes": 2305,
+        "category": "ui",
+        "estimatedTokens": 576
+      },
+      "src/components/layout/Header.jsx": {
+        "bytes": 1646,
+        "category": "ui",
+        "estimatedTokens": 411
+      },
+      "src/components/layout/Sidebar.jsx": {
+        "bytes": 2483,
+        "category": "ui",
+        "estimatedTokens": 621
+      },
+      "src/components/products/ProductCard.jsx": {
+        "bytes": 2205,
+        "category": "ui",
+        "estimatedTokens": 551
+      },
+      "src/components/products/ProductGrid.jsx": {
+        "bytes": 1359,
+        "category": "ui",
+        "estimatedTokens": 340
+      },
+      "src/components/products/ProductModal.jsx": {
+        "bytes": 3910,
+        "category": "ui",
+        "estimatedTokens": 976
+      },
+      "src/components/ui/Badge.jsx": {
+        "bytes": 207,
+        "category": "ui",
+        "estimatedTokens": 52
+      },
+      "src/components/ui/PriceRangeSlider.jsx": {
+        "bytes": 1544,
+        "category": "ui",
+        "estimatedTokens": 386
+      },
+      "src/components/ui/RatingStars.jsx": {
+        "bytes": 786,
+        "category": "ui",
+        "estimatedTokens": 195
+      },
+      "src/context/CartContext.jsx": {
+        "bytes": 2046,
+        "category": "business-logic",
+        "estimatedTokens": 512
+      },
+      "src/context/FilterContext.jsx": {
+        "bytes": 1059,
+        "category": "business-logic",
+        "estimatedTokens": 265
+      },
+      "src/data/products.js": {
+        "bytes": 8815,
+        "category": "mock-data",
+        "estimatedTokens": 2203
+      },
+      "src/hooks/useFilteredProducts.js": {
+        "bytes": 1403,
+        "category": "ui-primitives",
+        "estimatedTokens": 351
+      },
+      "src/main.jsx": {
+        "bytes": 247,
+        "category": "config",
+        "estimatedTokens": 62
+      },
+      "src/styles/global.css": {
+        "bytes": 7614,
+        "category": "layout",
+        "estimatedTokens": 1904
+      },
+      "styles.css": {
+        "bytes": 92,
+        "category": "layout",
+        "estimatedTokens": 23
+      },
+      "vite.config.js": {
+        "bytes": 136,
+        "category": "config",
+        "estimatedTokens": 34
+      }
+    }
+  },
+  "finishedAtMs": 1791664872039,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 10886,
+      "inputTokens": 617,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1088,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 1705,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "durationMs": 10893,
+      "inputTokens": 608,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1079,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 1687,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "chunkCount": 2939,
+      "durationMs": 83662,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 16000,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "codegen",
+      "timeToFirstTokenSeconds": 19.585959112999262,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "durationMs": 11654,
+      "inputTokens": 617,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1103,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "codegen",
+      "totalTokens": 1720,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 1693,
+      "inputTokens": 177,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 33,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "heal",
+      "totalTokens": 210,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 12338,
+      "inputTokens": 617,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1212,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "codegen",
+      "totalTokens": 1829,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "chunkCount": 2960,
+      "durationMs": 82959,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 16000,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "codegen",
+      "timeToFirstTokenSeconds": 19.61150472999725,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 1640,
+      "inputTokens": 177,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 32,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "heal",
+      "totalTokens": 209,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "chunkCount": 2993,
+      "durationMs": 84720,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 16000,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "heal",
+      "timeToFirstTokenSeconds": 19.22609357399051,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "durationMs": 1676,
+      "inputTokens": 195,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 28,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "heal",
+      "totalTokens": 223,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 14196,
+      "inputTokens": 617,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1404,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "codegen",
+      "totalTokens": 2021,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "chunkCount": 2970,
+      "durationMs": 84291,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 16000,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "codegen",
+      "timeToFirstTokenSeconds": 19.551453027001116,
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "Go ahead and build it. Skip remaining questions. Use Vite + React, in-memory mock data (no backend), desktop-first English UI, and ship a working MVP preview now.",
+  "runId": "af2015a93ddf4a78a19ba19a30d8e5f9-1791664473170",
+  "runType": "new",
+  "sessionId": "af2015a93ddf4a78a19ba19a30d8e5f9",
+  "stages": [
+    {
+      "durationMs": 1358,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791664473171
+    },
+    {
+      "durationMs": 10897,
+      "kind": "model",
+      "name": "plan",
+      "startedAtMs": 1791664474534
+    },
+    {
+      "durationMs": 3457,
+      "kind": "infrastructure",
+      "name": "preview_skeleton_stream",
+      "startedAtMs": 1791664485431
+    },
+    {
+      "durationMs": 83729,
+      "kind": "model",
+      "name": "codegen",
+      "startedAtMs": 1791664488888
+    },
+    {
+      "durationMs": 4,
+      "kind": "infrastructure",
+      "name": "save_filemap",
+      "startedAtMs": 1791664572614
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "preview_file_replay",
+      "startedAtMs": 1791664572618
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791664572621
+    },
+    {
+      "durationMs": 3,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791664572622
+    },
+    {
+      "durationMs": 6,
+      "kind": "infrastructure",
+      "name": "sandbox_boot_and_health",
+      "startedAtMs": 1791664572621
+    },
+    {
+      "durationMs": 3372,
+      "kind": "model",
+      "name": "heal_decision_1",
+      "startedAtMs": 1791664572638
+    },
+    {
+      "durationMs": 94828,
+      "kind": "model",
+      "name": "heal_codegen_1",
+      "startedAtMs": 1791664576008
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "heal_save_filemap_1",
+      "startedAtMs": 1791664670830
+    },
+    {
+      "durationMs": 14,
+      "kind": "infrastructure",
+      "name": "heal_preview_replay_1",
+      "startedAtMs": 1791664670832
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791664670846
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791664670848
+    },
+    {
+      "durationMs": 3,
+      "kind": "infrastructure",
+      "name": "heal_sandbox_boot_and_health_1",
+      "startedAtMs": 1791664670846
+    },
+    {
+      "durationMs": 3382,
+      "kind": "model",
+      "name": "heal_decision_2",
+      "startedAtMs": 1791664670851
+    },
+    {
+      "durationMs": 97272,
+      "kind": "model",
+      "name": "heal_codegen_2",
+      "startedAtMs": 1791664674233
+    },
+    {
+      "durationMs": 3139,
+      "kind": "model",
+      "name": "heal_decision_3",
+      "startedAtMs": 1791664771502
+    },
+    {
+      "durationMs": 97382,
+      "kind": "model",
+      "name": "heal_codegen_3",
+      "startedAtMs": 1791664774642
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "heal_save_filemap_3",
+      "startedAtMs": 1791664872018
+    },
+    {
+      "durationMs": 11,
+      "kind": "infrastructure",
+      "name": "heal_preview_replay_3",
+      "startedAtMs": 1791664872020
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791664872032
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791664872034
+    },
+    {
+      "durationMs": 6,
+      "kind": "infrastructure",
+      "name": "heal_sandbox_boot_and_health_3",
+      "startedAtMs": 1791664872032
+    }
+  ],
+  "startedAtMs": 1791664473170,
+  "status": "heal-exhausted"
+}

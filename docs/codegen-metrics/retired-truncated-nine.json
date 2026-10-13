@@ -1,0 +1,7 @@
+{
+  "retired": true,
+  "reason": "All 9 regenerations stopped at max_tokens with the last file unclosed. They are not healthy apps and are not used for token-share totals.",
+  "source": "docs/codegen-metrics/token-share-9.json",
+  "apps": 9,
+  "failed": 9
+}

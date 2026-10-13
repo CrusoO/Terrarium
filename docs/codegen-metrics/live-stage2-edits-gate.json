@@ -1,0 +1,165 @@
+{
+  "apps": 3,
+  "loaded": 2,
+  "interactionValidated": 2,
+  "cold": {
+    "coldWallSeconds": 8.305,
+    "exit": 0,
+    "marks": [
+      "MARK docker-ready 1791738459641",
+      "MARK symlink 1791738459706",
+      "MARK build 1791738465497"
+    ],
+    "tail": "dist/assets/index-Cnd1uCxR.css    1.93 kB \u00e2\u201d\u201a gzip:  0.79 kB\ndist/assets/index-CNG5yIxB.js   229.14 kB \u00e2\u201d\u201a gzip: 71.66 kB\n\u00e2\u0153\u201c built in 4.88s\nMARK build 1791738465497"
+  },
+  "poolSeconds": 3.029,
+  "rows": [
+    {
+      "slug": "01-library-add-field",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-edits\\01-library-add-field",
+      "copySeconds": 0.291,
+      "serverReadySeconds": 6.772,
+      "buildOk": true,
+      "buildSeconds": 33.169,
+      "loaded": null,
+      "interactionValidated": false,
+      "relevanceOk": null,
+      "validated": false,
+      "firstPaintMs": null,
+      "timing": null,
+      "behaviour": null,
+      "errors": null,
+      "browserProcessSeconds": 25.996,
+      "gateInteractiveSeconds": 6.772,
+      "gateValidatedSeconds": null,
+      "poolSeconds": 3.029,
+      "buildTail": "dist/assets/index-Cnd1uCxR.css    1.93 kB \u00e2\u201d\u201a gzip:  0.79 kB\ndist/assets/index-CNG5yIxB.js   229.14 kB \u00e2\u201d\u201a gzip: 71.66 kB\n\u00e2\u0153\u201c built in 10.10s"
+    },
+    {
+      "slug": "02-library-change-label",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-edits\\02-library-change-label",
+      "copySeconds": 0.165,
+      "serverReadySeconds": 6.405,
+      "buildOk": true,
+      "buildSeconds": 22.502,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 3048,
+      "timing": {
+        "browserLaunchMs": 1792,
+        "firstPaintMs": 3048,
+        "routesMs": 814,
+        "interactionMs": 2690
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Out",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 15.769,
+      "gateInteractiveSeconds": 9.453,
+      "gateValidatedSeconds": 22.502,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-Cnd1uCxR.css    1.93 kB \u00e2\u201d\u201a gzip:  0.79 kB\ndist/assets/index-dzfAp-yg.js   229.40 kB \u00e2\u201d\u201a gzip: 71.67 kB\n\u00e2\u0153\u201c built in 10.62s"
+    },
+    {
+      "slug": "03-parts-bin-rename",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-edits\\03-parts-bin-rename",
+      "copySeconds": 0.335,
+      "serverReadySeconds": 8.431,
+      "buildOk": false,
+      "buildSeconds": 20.666,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": false,
+      "firstPaintMs": 793,
+      "timing": {
+        "browserLaunchMs": 1593,
+        "firstPaintMs": 793,
+        "routesMs": 869,
+        "interactionMs": 1409
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "New",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 6.767,
+      "gateInteractiveSeconds": 9.224,
+      "gateValidatedSeconds": null,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DwbkggPB.js   229.28 kB \u00e2\u201d\u201a gzip: 71.66 kB\n\u00e2\u0153\u201c built in 10.67s\nsrc/components/PartCard.tsx(1,15): error TS2305: Module '\"react\"' has no exported member 'ReturnType'."
+    }
+  ]
+}

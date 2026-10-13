@@ -219,7 +219,8 @@ def project_runtime(files: FileMap | None) -> str:
     names = set(files)
     if "frontend/package.json" in names and "backend/package.json" in names:
         return "react-node"
-    if "package.json" in names and ("src/main.jsx" in names or "src/App.jsx" in names):
+    react_entries = {"src/main.jsx", "src/App.jsx", "src/main.tsx", "src/App.tsx"}
+    if "package.json" in names and names & react_entries:
         return "react"
     return "static"
 

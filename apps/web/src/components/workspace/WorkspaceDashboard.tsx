@@ -22,6 +22,7 @@ import {
 import type { ToolSummary } from "@terrarium/contracts";
 import { getMyAccessRequests, requestAppAccess, type AccessRequest } from "../../api/groups";
 import { fetchWorkspaceTools, sleepWorkspaceTool, wakeWorkspaceTool } from "../../api/sessions";
+import { ToolCardHealth } from "../trust/ToolCardHealth";
 
 type WorkspaceDashboardProps = {
   onOpenTool: (toolId: string) => Promise<void>;
@@ -348,6 +349,7 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
                       <Box sx={{ minWidth: 0 }}>
                         <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.35, flexWrap: "wrap" }}>
                           <Typography sx={{ fontWeight: 700, fontSize: "0.98rem" }}>{tool.name}</Typography>
+                          <ToolCardHealth toolId={tool.id} />
                           <Box
                             component="span"
                             sx={{

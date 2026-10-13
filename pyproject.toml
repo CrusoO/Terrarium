@@ -9,6 +9,7 @@ dependencies = [
 [tool.uv.workspace]
 members = [
     "apps/api",
+    "apps/relay",
     "packages/py-contracts",
     "packages/agents",
     "packages/sandbox",
@@ -19,6 +20,7 @@ terrarium-api = { workspace = true }
 terrarium-contracts = { workspace = true }
 terrarium-agents = { workspace = true }
 terrarium-sandbox = { workspace = true }
+terrarium-relay = { workspace = true }
 
 [dependency-groups]
 dev = [

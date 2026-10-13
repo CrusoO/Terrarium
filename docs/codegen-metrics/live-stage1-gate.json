@@ -1,0 +1,295 @@
+{
+  "apps": 5,
+  "loaded": 5,
+  "interactionValidated": 5,
+  "cold": {
+    "coldWallSeconds": 7.109,
+    "exit": 0,
+    "marks": [
+      "MARK docker-ready 1791728257364",
+      "MARK symlink 1791728257428",
+      "MARK build 1791728262461"
+    ],
+    "tail": "dist/assets/index-BKDlpSIl.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-DbxnFJsB.js   226.77 kB \u00e2\u201d\u201a gzip: 70.75 kB\n\u00e2\u0153\u201c built in 4.11s\nMARK build 1791728262461"
+  },
+  "poolSeconds": 3.219,
+  "rows": [
+    {
+      "slug": "01-build-a-library-checkout-desk-li",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage1\\01-build-a-library-checkout-desk-li",
+      "copySeconds": 0.111,
+      "serverReadySeconds": 10.379,
+      "buildOk": false,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 1315,
+      "timing": {
+        "browserLaunchMs": 1287,
+        "firstPaintMs": 1315,
+        "routesMs": 173,
+        "interactionMs": 1271
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Open",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 7.161,
+      "poolSeconds": 3.219,
+      "buildTail": "src/views/ListPage.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(5,42): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type."
+    },
+    {
+      "slug": "02-roster",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage1\\02-roster",
+      "copySeconds": 0.142,
+      "serverReadySeconds": 9.811,
+      "buildOk": false,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 1482,
+      "timing": {
+        "browserLaunchMs": 2199,
+        "firstPaintMs": 1482,
+        "routesMs": 190,
+        "interactionMs": 1130
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Present",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 7.421,
+      "poolSeconds": 0,
+      "buildTail": "src/views/ListPage.tsx(4,25): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(5,48): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type."
+    },
+    {
+      "slug": "03-build-a-parts-bin-mechanics-sear",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage1\\03-build-a-parts-bin-mechanics-sear",
+      "copySeconds": 0.152,
+      "serverReadySeconds": 8.036,
+      "buildOk": false,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 2821,
+      "timing": {
+        "browserLaunchMs": 1855,
+        "firstPaintMs": 2821,
+        "routesMs": 246,
+        "interactionMs": 1612
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Open",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 9.481,
+      "poolSeconds": 0,
+      "buildTail": "src/views/ListPage.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(5,42): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type."
+    },
+    {
+      "slug": "04-build-a-volunteer-list-coordinat",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage1\\04-build-a-volunteer-list-coordinat",
+      "copySeconds": 0.148,
+      "serverReadySeconds": 8.033,
+      "buildOk": false,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 768,
+      "timing": {
+        "browserLaunchMs": 1295,
+        "firstPaintMs": 768,
+        "routesMs": 233,
+        "interactionMs": 1399
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Open",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 5.896,
+      "poolSeconds": 0,
+      "buildTail": "src/views/ListPage.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(5,42): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type."
+    },
+    {
+      "slug": "05-inventory",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage1\\05-inventory",
+      "copySeconds": 0.17,
+      "serverReadySeconds": 8.281,
+      "buildOk": false,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 892,
+      "timing": {
+        "browserLaunchMs": 1348,
+        "firstPaintMs": 892,
+        "routesMs": 303,
+        "interactionMs": 1188
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Ok",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 5.812,
+      "poolSeconds": 0,
+      "buildTail": "src/views/ListPage.tsx(4,21): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(5,40): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\nsrc/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type."
+    }
+  ]
+}

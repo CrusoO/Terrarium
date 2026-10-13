@@ -11,8 +11,10 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 from terrarium_contracts import (
     AcceptMatchRequest,
+    AcceptanceCheck,
     OpenToolResponse,
     PreviewReadyPayload,
+    PublishBlockedResponse,
     PublishToolRequest,
     PublishToolResponse,
     SandboxReadyPayload,
@@ -40,6 +42,9 @@ from terrarium_api.tool_access import (
     visible_group_ids,
 )
 from terrarium_api.session_log import SessionEventLog
+from terrarium_api.trust.drafts import upsert_draft_version
+from terrarium_api.trust.gate import run_publish_check
+from terrarium_api.trust.regression import merge_regression_checks
 from terrarium_api.settings import IDLE_TIMEOUT_SECONDS
 
 logger = logging.getLogger(__name__)
@@ -78,6 +83,8 @@ def _tool_summary(tool: ToolRecord, user: dict[str, str] | None = None, db: Sess
         groupId=tool.group_id,
         groupName=tool.group_name,
         myRole=role,  # type: ignore[arg-type]
+        autoApproveTests=tool.auto_approve_tests,
+        draftVersionId=tool.draft_version_id,
         createdAt=_iso(tool.created_at),
         updatedAt=_iso(tool.updated_at),
         latestVersionId=latest.id if latest else None,
@@ -294,15 +301,52 @@ async def publish_session(
         tool.owner_email = tool.owner_email or ((user.get("email") or "").strip().lower() or None)
         tool.updated_at = utc_now()
     ensure_owner_member(db, tool)
-    version = ToolVersionRecord(
-        id=uuid4().hex,
-        tool_id=tool.id,
-        version_number=len(tool.versions) + 1,
+    intent = await log.load_intent(session_id)
+    raw_checks = await log.load_acceptance_checks(session_id)
+    new_checks = [AcceptanceCheck.model_validate(c) for c in raw_checks] if raw_checks else None
+    draft = upsert_draft_version(
+        db,
+        tool,
+        files,
         prompt=prompt,
         summary=tool.summary,
-        files=files,
+        new_checks=new_checks,
     )
-    db.add(version)
+    preview_url = await log.load_preview_url(session_id)
+    checks = [
+        AcceptanceCheck.model_validate(item)
+        for item in (draft.acceptance_checks or [])
+    ]
+    regression = merge_regression_checks(db, tool, checks)
+
+    async def emit(name: str, payload: dict) -> None:
+        await log.append(make_event(name, session_id, payload))
+
+    health = await run_publish_check(
+        db,
+        tool,
+        draft,
+        preview_url=preview_url,
+        checks=checks,
+        regression_checks=regression,
+        emit=emit,
+    )
+    if health.status == "unsafe":
+        await log.append(
+            make_event("publish.blocked", session_id, {"blockingReasons": health.blockingReasons})
+        )
+        raise HTTPException(
+            status_code=409,
+            detail=PublishBlockedResponse(blockingReasons=health.blockingReasons, health=health).model_dump(),
+        )
+    if health.status == "warning" and not body.acknowledgeWarnings:
+        raise HTTPException(status_code=409, detail="Warnings require acknowledgeWarnings=true")
+
+    for other in tool.versions:
+        other.is_live = False
+    draft.is_live = True
+    tool.draft_version_id = None
+    version = draft
     session = db.get(SessionRecord, session_id)
     if session:
         session.tool_id = tool.id
@@ -310,7 +354,6 @@ async def publish_session(
         session.updated_at = utc_now()
     
     # P5-S1: Write/update tool index record for Smart Match
-    intent = await log.load_intent(session_id)
     stack = intent.get("stack", "react") if intent else "react"
     fingerprint = compute_prompt_fingerprint(prompt, stack)  # type: ignore[arg-type]
     _upsert_tool_index(db, tool, stack=str(stack), fingerprint=fingerprint)

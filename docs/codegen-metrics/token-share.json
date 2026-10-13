@@ -1,0 +1,134 @@
+{
+  "fileCount": 23,
+  "estimatedTokensByCategory": {
+    "config": 311,
+    "business-logic": 6780,
+    "ui-primitives": 1346,
+    "mock-data": 1732,
+    "layout-css": 4998
+  },
+  "estimatedTotalTokens": 15167,
+  "scaffoldUiKitTokens": 6655,
+  "scaffoldUiKitShare": 0.439,
+  "estimatedSecondsSaved": 25.0,
+  "estimatedOutputUsdSaved": 0.0998,
+  "files": [
+    {
+      "path": "index.html",
+      "category": "config",
+      "estimatedTokens": 124
+    },
+    {
+      "path": "package.json",
+      "category": "config",
+      "estimatedTokens": 91
+    },
+    {
+      "path": "src/App.jsx",
+      "category": "business-logic",
+      "estimatedTokens": 364
+    },
+    {
+      "path": "src/components/AppShell.jsx",
+      "category": "ui-primitives",
+      "estimatedTokens": 84
+    },
+    {
+      "path": "src/components/DailyTotalsCard.jsx",
+      "category": "ui-primitives",
+      "estimatedTokens": 124
+    },
+    {
+      "path": "src/components/Modal.jsx",
+      "category": "ui-primitives",
+      "estimatedTokens": 220
+    },
+    {
+      "path": "src/components/Navbar.jsx",
+      "category": "ui-primitives",
+      "estimatedTokens": 257
+    },
+    {
+      "path": "src/components/OrderCard.jsx",
+      "category": "ui-primitives",
+      "estimatedTokens": 228
+    },
+    {
+      "path": "src/components/OrderTable.jsx",
+      "category": "business-logic",
+      "estimatedTokens": 597
+    },
+    {
+      "path": "src/components/SearchBar.jsx",
+      "category": "ui-primitives",
+      "estimatedTokens": 174
+    },
+    {
+      "path": "src/components/StatusBadge.jsx",
+      "category": "ui-primitives",
+      "estimatedTokens": 113
+    },
+    {
+      "path": "src/context/OrderContext.jsx",
+      "category": "business-logic",
+      "estimatedTokens": 335
+    },
+    {
+      "path": "src/data/seedData.js",
+      "category": "mock-data",
+      "estimatedTokens": 1732
+    },
+    {
+      "path": "src/hooks/useDailyTotals.js",
+      "category": "business-logic",
+      "estimatedTokens": 196
+    },
+    {
+      "path": "src/hooks/useOrderSearch.js",
+      "category": "ui-primitives",
+      "estimatedTokens": 146
+    },
+    {
+      "path": "src/main.jsx",
+      "category": "config",
+      "estimatedTokens": 62
+    },
+    {
+      "path": "src/styles/global.css",
+      "category": "layout-css",
+      "estimatedTokens": 4975
+    },
+    {
+      "path": "src/views/Dashboard.jsx",
+      "category": "business-logic",
+      "estimatedTokens": 1202
+    },
+    {
+      "path": "src/views/NewOrder.jsx",
+      "category": "business-logic",
+      "estimatedTokens": 2410
+    },
+    {
+      "path": "src/views/OrderDetail.jsx",
+      "category": "business-logic",
+      "estimatedTokens": 1058
+    },
+    {
+      "path": "src/views/OrderList.jsx",
+      "category": "business-logic",
+      "estimatedTokens": 618
+    },
+    {
+      "path": "styles.css",
+      "category": "layout-css",
+      "estimatedTokens": 23
+    },
+    {
+      "path": "vite.config.js",
+      "category": "config",
+      "estimatedTokens": 34
+    }
+  ],
+  "sessionId": "e4594a9540e549ce938a6c4c12d4b2b6",
+  "tokenEstimate": "chars/4"
+}

@@ -1,0 +1,116 @@
+{
+  "apps": 9,
+  "failed": 9,
+  "passed": 0,
+  "note": "Stream ok is not a healthy preview. These runs never produced a closed file set.",
+  "rows": [
+    {
+      "prompt": "customer-order-tracker",
+      "run": 1,
+      "validation": "failed",
+      "reason": "truncated at max_tokens; last file was not closed",
+      "stopReason": "max_tokens",
+      "lastFileClosed": false,
+      "fileCut": true,
+      "openPath": "src/components/OrderForm.jsx",
+      "outputTokens": 16000,
+      "priorStreamOk": true
+    },
+    {
+      "prompt": "customer-order-tracker",
+      "run": 2,
+      "validation": "failed",
+      "reason": "truncated at max_tokens; last file was not closed",
+      "stopReason": "max_tokens",
+      "lastFileClosed": false,
+      "fileCut": true,
+      "openPath": "src/components/OrderDetail.module.css",
+      "outputTokens": 16000,
+      "priorStreamOk": true
+    },
+    {
+      "prompt": "customer-order-tracker",
+      "run": 3,
+      "validation": "failed",
+      "reason": "truncated at max_tokens; last file was not closed",
+      "stopReason": "max_tokens",
+      "lastFileClosed": false,
+      "fileCut": true,
+      "openPath": "src/components/OrderForm.jsx",
+      "outputTokens": 16000,
+      "priorStreamOk": true
+    },
+    {
+      "prompt": "ecommerce-catalogue",
+      "run": 1,
+      "validation": "failed",
+      "reason": "truncated at max_tokens; last file was not closed",
+      "stopReason": "max_tokens",
+      "lastFileClosed": false,
+      "fileCut": true,
+      "openPath": "src/pages/ProductDetailPage.jsx",
+      "outputTokens": 16000,
+      "priorStreamOk": true
+    },
+    {
+      "prompt": "ecommerce-catalogue",
+      "run": 2,
+      "validation": "failed",
+      "reason": "truncated at max_tokens; last file was not closed",
+      "stopReason": "max_tokens",
+      "lastFileClosed": false,
+      "fileCut": true,
+      "openPath": "src/pages/CheckoutPage.module.css",
+      "outputTokens": 16000,
+      "priorStreamOk": true
+    },
+    {
+      "prompt": "ecommerce-catalogue",
+      "run": 3,
+      "validation": "failed",
+      "reason": "truncated at max_tokens; last file was not closed",
+      "stopReason": "max_tokens",
+      "lastFileClosed": false,
+      "fileCut": true,
+      "openPath": "src/components/Header.module.css",
+      "outputTokens": 16000,
+      "priorStreamOk": true
+    },
+    {
+      "prompt": "operations-dashboard",
+      "run": 1,
+      "validation": "failed",
+      "reason": "truncated at max_tokens; last file was not closed",
+      "stopReason": "max_tokens",
+      "lastFileClosed": false,
+      "fileCut": true,
+      "openPath": "src/pages/JobsTable.jsx",
+      "outputTokens": 16000,
+      "priorStreamOk": true
+    },
+    {
+      "prompt": "operations-dashboard",
+      "run": 2,
+      "validation": "failed",
+      "reason": "truncated at max_tokens; last file was not closed",
+      "stopReason": "max_tokens",
+      "lastFileClosed": false,
+      "fileCut": true,
+      "openPath": "src/pages/Dashboard.jsx",
+      "outputTokens": 16000,
+      "priorStreamOk": true
+    },
+    {
+      "prompt": "operations-dashboard",
+      "run": 3,
+      "validation": "failed",
+      "reason": "truncated at max_tokens; last file was not closed",
+      "stopReason": "max_tokens",
+      "lastFileClosed": false,
+      "fileCut": true,
+      "openPath": "src/views/JobsView.jsx",
+      "outputTokens": 16000,
+      "priorStreamOk": true
+    }
+  ]
+}

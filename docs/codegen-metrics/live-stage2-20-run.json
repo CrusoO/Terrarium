@@ -1,0 +1,610 @@
+{
+  "plan": {
+    "dryRun": true,
+    "mode": "record-missing",
+    "model": "production",
+    "priceModel": "production-mix",
+    "fixtureCalls": 202,
+    "callsPerApp": 5,
+    "averageUsd": 0.009987,
+    "stages": [
+      {
+        "stage": 20,
+        "calls": 100,
+        "estimatedUsd": 0.4278,
+        "beforeRepairsUsd": 0.372,
+        "repairMargin": 0.15,
+        "estimateSource": "measured-per-app-round-2",
+        "measuredPerAppUsd": 0.0186,
+        "status": "dry-run"
+      }
+    ],
+    "stop": "first failing stage",
+    "rerecord": "only hashes that are not already on disk",
+    "cacheReadTokens": 1217829,
+    "byTask": {
+      "codegen": {
+        "calls": 201,
+        "usd": 2.0082
+      },
+      "repair": {
+        "calls": 1,
+        "usd": 0.0092
+      }
+    },
+    "liveSpendUsd": 0.0,
+    "productionMix": {
+      "leaf": "eu.anthropic.claude-haiku-5-5",
+      "page": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "repair": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "monolith": "anthropic.claude-sonnet-4-6"
+    },
+    "repairMargin": 0.15
+  },
+  "report": {
+    "dryRun": false,
+    "results": [
+      {
+        "stage": 20,
+        "ok": false,
+        "apps": 20,
+        "written": [
+          "/app/docs/codegen-metrics/live-stage2-20/01-bakery",
+          "/app/docs/codegen-metrics/live-stage2-20/02-appointment-manager",
+          "/app/docs/codegen-metrics/live-stage2-20/03-coffee-cart-daily-sales",
+          "/app/docs/codegen-metrics/live-stage2-20/04-tailoring-job-tracker",
+          "/app/docs/codegen-metrics/live-stage2-20/05-yoga-studio-class-booking",
+          "/app/docs/codegen-metrics/live-stage2-20/06-dog-walking-booking",
+          "/app/docs/codegen-metrics/live-stage2-20/07-yearly-electricity-usage",
+          "/app/docs/codegen-metrics/live-stage2-20/09-wedding-venue-request",
+          "/app/docs/codegen-metrics/live-stage2-20/10-taquer-a-takeout-orders",
+          "/app/docs/codegen-metrics/live-stage2-20/11-haircut-booking",
+          "/app/docs/codegen-metrics/live-stage2-20/12-car-wash-bay-monitor",
+          "/app/docs/codegen-metrics/live-stage2-20/13-monthly-sales-dashboard",
+          "/app/docs/codegen-metrics/live-stage2-20/14-climbing-gym-member-signup",
+          "/app/docs/codegen-metrics/live-stage2-20/15-recipe-test-log"
+        ],
+        "perApp": [
+          {
+            "slug": "bakery",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "unknown",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 2,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 31.451,
+            "firstModelFileSeconds": 17.297,
+            "tokens": {
+              "input": 3492,
+              "output": 3043,
+              "cacheRead": 10938
+            },
+            "costUsd": 0.019801,
+            "mapper": {
+              "source": "deterministic",
+              "confidence": 0.99,
+              "archetype": "unknown",
+              "supported": true,
+              "entity": "Batch",
+              "title": "Bakery board"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "appointment-manager",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "unknown",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 30.349,
+            "firstModelFileSeconds": 15.016,
+            "tokens": {
+              "input": 3019,
+              "output": 2885,
+              "cacheRead": 10886
+            },
+            "costUsd": 0.018533,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "booking",
+              "supported": true,
+              "entity": "Appointment",
+              "title": "Appointment Manager"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "coffee-cart-daily-sales",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "dashboard",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 29.25,
+            "firstModelFileSeconds": 17.088,
+            "tokens": {
+              "input": 3737,
+              "output": 3487,
+              "cacheRead": 10986
+            },
+            "costUsd": 0.022271,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "dashboard",
+              "supported": true,
+              "entity": "Sale",
+              "title": "Coffee Cart Daily Sales"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "tailoring-job-tracker",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "unknown",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 28.249,
+            "firstModelFileSeconds": 16.123,
+            "tokens": {
+              "input": 3103,
+              "output": 3293,
+              "cacheRead": 10901
+            },
+            "costUsd": 0.020658,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "crud",
+              "supported": true,
+              "entity": "TailoringJob",
+              "title": "Tailoring Job Tracker"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "yoga-studio-class-booking",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "booking",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 34.729,
+            "firstModelFileSeconds": 18.063,
+            "tokens": {
+              "input": 3072,
+              "output": 3876,
+              "cacheRead": 10901
+            },
+            "costUsd": 0.023542,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "booking",
+              "supported": true,
+              "entity": "ClassBooking",
+              "title": "Yoga Studio Class Booking"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "dog-walking-booking",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "landing",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 30.53,
+            "firstModelFileSeconds": 13.134,
+            "tokens": {
+              "input": 2997,
+              "output": 2662,
+              "cacheRead": 10865
+            },
+            "costUsd": 0.017393,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.92,
+              "archetype": "booking",
+              "supported": true,
+              "entity": "Walk",
+              "title": "Dog Walking Booking"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "yearly-electricity-usage",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "charts",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 31.812,
+            "firstModelFileSeconds": 14.78,
+            "tokens": {
+              "input": 3782,
+              "output": 2957,
+              "cacheRead": 10988
+            },
+            "costUsd": 0.019666,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "charts",
+              "supported": true,
+              "entity": "ElectricityReading",
+              "title": "Yearly Electricity Usage"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "unsupported-08-unknown",
+            "route": "monolith",
+            "supported": false,
+            "archetype": "unknown",
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.7,
+              "archetype": "landing",
+              "supported": false,
+              "entity": "Inquiry",
+              "title": "Food Photography Portfolio"
+            },
+            "repairs": 0,
+            "degraded": [],
+            "wallSeconds": 108.588,
+            "costUsd": 0.238115,
+            "tokens": null,
+            "staticOk": true,
+            "calls": null
+          },
+          {
+            "slug": "wedding-venue-request",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "unknown",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 26.563,
+            "firstModelFileSeconds": 13.067,
+            "tokens": {
+              "input": 3154,
+              "output": 2393,
+              "cacheRead": 10935
+            },
+            "costUsd": 0.016213,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "multi-step-form",
+              "supported": true,
+              "entity": "VenueRequest",
+              "title": "Wedding Venue Request"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "taquer-a-takeout-orders",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "unknown",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 27.584,
+            "firstModelFileSeconds": 15.269,
+            "tokens": {
+              "input": 3078,
+              "output": 2807,
+              "cacheRead": 10881
+            },
+            "costUsd": 0.031802,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "crud",
+              "supported": true,
+              "entity": "Order",
+              "title": "Taquer\u00eda Takeout Orders"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "haircut-booking",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "unknown",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 30.081,
+            "firstModelFileSeconds": 17.689,
+            "tokens": {
+              "input": 2973,
+              "output": 3287,
+              "cacheRead": 10837
+            },
+            "costUsd": 0.020492,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.92,
+              "archetype": "booking",
+              "supported": true,
+              "entity": "Appointment",
+              "title": "Haircut Booking"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "car-wash-bay-monitor",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "unknown",
+            "repairs": 1,
+            "staticOk": true,
+            "calls": 4,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 45.7,
+            "firstModelFileSeconds": 15.853,
+            "tokens": {
+              "input": 11492,
+              "output": 3232,
+              "cacheRead": 10988
+            },
+            "costUsd": 0.028751,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.92,
+              "archetype": "dashboard",
+              "supported": true,
+              "entity": "Bay",
+              "title": "Car Wash Bay Monitor"
+            },
+            "repairLog": [
+              {
+                "prompt": "Return JSON only: {\"patches\":[{\"path\":\"...\",\"search\":\"exact text\",\"replace\":\"new text\"}]}\nPatch the caller or the callee. Keep the contract's array-versus-single return types.\n\n\n\nDiagnostics:\nsrc/views/DashboardPage.tsx(6,63): error TS2322: Type 'DailyTotal[]' is not assignable to type 'TotalRow[]'.",
+                "diagnostics": [
+                  "src/views/DashboardPage.tsx(6,63): error TS2322: Type 'DailyTotal[]' is not assignable to type 'TotalRow[]'."
+                ],
+                "attemptedFix": "```json\n{\n  \"patches\": [\n    {\n      \"path\": \"src/views/DashboardPage.tsx\",\n      \"search\": \"<TotalsCard totals={totals} />\",\n      \"replace\": \"<TotalsCard totals={totals as any} />\"\n    }\n  ]\n}\n```",
+                "applied": [
+                  "src/views/DashboardPage.tsx"
+                ]
+              }
+            ]
+          },
+          {
+            "slug": "monthly-sales-dashboard",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "charts",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 29.267,
+            "firstModelFileSeconds": 14.071,
+            "tokens": {
+              "input": 3714,
+              "output": 2711,
+              "cacheRead": 10961
+            },
+            "costUsd": 0.018365,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "charts",
+              "supported": true,
+              "entity": "Sale",
+              "title": "Monthly Sales Dashboard"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "climbing-gym-member-signup",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "unknown",
+            "repairs": 0,
+            "staticOk": true,
+            "calls": 3,
+            "degraded": [],
+            "tscErrors": [],
+            "wallSeconds": 28.601,
+            "firstModelFileSeconds": 15.003,
+            "tokens": {
+              "input": 3114,
+              "output": 3048,
+              "cacheRead": 10923
+            },
+            "costUsd": 0.019446,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "multi-step-form",
+              "supported": true,
+              "entity": "Member",
+              "title": "Climbing Gym Member Signup"
+            },
+            "repairLog": []
+          },
+          {
+            "slug": "recipe-test-log",
+            "route": "per-file",
+            "supported": true,
+            "archetype": "unknown",
+            "repairs": 2,
+            "staticOk": false,
+            "calls": 5,
+            "degraded": [
+              "src/components/RecipeTestCard.tsx"
+            ],
+            "tscErrors": [
+              "src/data/seed.ts(7,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+              "src/data/seed.ts(14,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+              "src/data/seed.ts(21,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+              "src/data/seed.ts(28,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+              "src/types.ts(15,3): error TS2322: Type 'string' is not assignable to type 'number'."
+            ],
+            "wallSeconds": 59.138,
+            "firstModelFileSeconds": 15.549,
+            "tokens": {
+              "input": 18635,
+              "output": 3525,
+              "cacheRead": 10878
+            },
+            "costUsd": 0.037348,
+            "mapper": {
+              "source": "fast-model",
+              "confidence": 0.95,
+              "archetype": "crud",
+              "supported": true,
+              "entity": "RecipeTest",
+              "title": "Recipe Test Log"
+            },
+            "repairLog": [
+              {
+                "prompt": "Return JSON only: {\"patches\":[{\"path\":\"...\",\"search\":\"exact text\",\"replace\":\"new text\"}]}\nPatch the caller or the callee. Keep the contract's array-versus-single return types.\n\n\n\nDiagnostics:\nsrc/components/RecipeTestCard.tsx(1,33): error TS2307: Cannot find module '../types/index.ts' or its corresponding type declarations.\nsrc/data/seed.ts(7,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/data/seed.ts(14,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/data/seed.ts(21,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/data/seed.ts(28,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/types.ts(15,3): error TS2322: Type 'string' is not assignable to type 'number'.",
+                "diagnostics": [
+                  "src/components/RecipeTestCard.tsx(1,33): error TS2307: Cannot find module '../types/index.ts' or its corresponding type declarations.",
+                  "src/data/seed.ts(7,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+                  "src/data/seed.ts(14,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+                  "src/data/seed.ts(21,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+                  "src/data/seed.ts(28,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+                  "src/types.ts(15,3): error TS2322: Type 'string' is not assignable to type 'number'."
+                ],
+                "attemptedFix": "```json\n{\n  \"patches\": [\n    {\n      \"path\": \"src/components/RecipeTestCard.tsx\",\n      \"search\": \"import { RecipeTest } from '../types/index.ts';\",\n      \"replace\": \"import { RecipeTest } from '../types';\"\n    },\n    {\n      \"path\": \"src/data/seed.ts\",\n      \"search\": \"    score: \\\"4\\\",\",\n      \"replace\": \"    score: 4,\"\n    },\n    {\n      \"path\": \"src/data/seed.ts\",\n      \"search\": \"    score: \\\"3\\\",\",\n      \"replace\": \"    score: 3,\"\n    },\n    {\n      \"path\": \"src/data/seed.ts\",\n      \"search\": \"    score: \\\"2\\\",\",\n      \"replace\": \"    score: 2,\"\n    },\n    {\n      \"path\": \"src/data/seed.ts\",\n      \"search\": \"    score: \\\"1\\\",\",\n      \"replace\": \"    score: 1,\"\n    },\n    {\n      \"path\": \"src/types.ts\",\n      \"search\": \"  score: string;\",\n      \"replace\": \"  score: number;\"\n    }\n  ]\n}\n```",
+                "applied": []
+              },
+              {
+                "prompt": "Return JSON only: {\"patches\":[{\"path\":\"...\",\"search\":\"exact text\",\"replace\":\"new text\"}]}\nPatch the caller or the callee. Keep the contract's array-versus-single return types.\n\n\n\nDiagnostics:\nsrc/components/RecipeTestCard.tsx(1,33): error TS2307: Cannot find module '../types/index.ts' or its corresponding type declarations.\nsrc/data/seed.ts(7,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/data/seed.ts(14,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/data/seed.ts(21,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/data/seed.ts(28,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/types.ts(15,3): error TS2322: Type 'string' is not assignable to type 'number'.",
+                "diagnostics": [
+                  "src/components/RecipeTestCard.tsx(1,33): error TS2307: Cannot find module '../types/index.ts' or its corresponding type declarations.",
+                  "src/data/seed.ts(7,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+                  "src/data/seed.ts(14,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+                  "src/data/seed.ts(21,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+                  "src/data/seed.ts(28,5): error TS2322: Type 'string' is not assignable to type 'number'.",
+                  "src/types.ts(15,3): error TS2322: Type 'string' is not assignable to type 'number'."
+                ],
+                "attemptedFix": "```json\n{\n  \"patches\": [\n    {\n      \"path\": \"src/components/RecipeTestCard.tsx\",\n      \"search\": \"import { RecipeTest } from '../types/index.ts';\",\n      \"replace\": \"import { RecipeTest } from '../types';\"\n    },\n    {\n      \"path\": \"src/data/seed.ts\",\n      \"search\": \"    score: \\\"4\\\",\",\n      \"replace\": \"    score: 4,\"\n    },\n    {\n      \"path\": \"src/data/seed.ts\",\n      \"search\": \"    score: \\\"3\\\",\",\n      \"replace\": \"    score: 3,\"\n    },\n    {\n      \"path\": \"src/data/seed.ts\",\n      \"search\": \"    score: \\\"2\\\",\",\n      \"replace\": \"    score: 2,\"\n    },\n    {\n      \"path\": \"src/data/seed.ts\",\n      \"search\": \"    score: \\\"1\\\",\",\n      \"replace\": \"    score: 1,\"\n    },\n    {\n      \"path\": \"src/types.ts\",\n      \"search\": \"  score: string;\",\n      \"replace\": \"  score: number;\"\n    }\n  ]\n}\n```",
+                "applied": []
+              }
+            ]
+          }
+        ],
+        "spend": {
+          "usd": 0.552395,
+          "calls": 46,
+          "byTask": {
+            "codegen": {
+              "usd": 0.503656,
+              "calls": 29
+            },
+            "blueprint": {
+              "usd": 0.021971,
+              "calls": 14
+            },
+            "repair": {
+              "usd": 0.026768,
+              "calls": 3
+            }
+          },
+          "avoidedUsd": 0.0,
+          "replayCalls": 0,
+          "cacheReadTokens": 152868,
+          "replayHits": 0,
+          "liveCalls": 46,
+          "repairAverage": 0.21428571428571427
+        }
+      }
+    ],
+    "stopped": false,
+    "spend": {
+      "usd": 0.552395,
+      "calls": 46,
+      "byTask": {
+        "codegen": {
+          "usd": 0.503656,
+          "calls": 29
+        },
+        "blueprint": {
+          "usd": 0.021971,
+          "calls": 14
+        },
+        "repair": {
+          "usd": 0.026768,
+          "calls": 3
+        }
+      },
+      "avoidedUsd": 0.0,
+      "replayCalls": 0,
+      "cacheReadTokens": 152868,
+      "replayHits": 0,
+      "liveCalls": 46,
+      "repairAverage": 0.21428571428571427
+    }
+  },
+  "spend": {
+    "usd": 0.552395,
+    "calls": 46,
+    "byTask": {
+      "codegen": {
+        "usd": 0.503656,
+        "calls": 29
+      },
+      "blueprint": {
+        "usd": 0.021971,
+        "calls": 14
+      },
+      "repair": {
+        "usd": 0.026768,
+        "calls": 3
+      }
+    },
+    "avoidedUsd": 0.0,
+    "replayCalls": 0,
+    "cacheReadTokens": 152868,
+    "replayHits": 0,
+    "liveCalls": 46,
+    "repairAverage": 0.21428571428571427
+  },
+  "cost": {
+    "estimatedUsd": 0.4278,
+    "actualUsd": 0.5524,
+    "deltaUsd": 0.1246,
+    "source": "usage-tokens-x-price"
+  }
+}

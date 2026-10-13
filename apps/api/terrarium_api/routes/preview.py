@@ -4,11 +4,24 @@ import os
 import re
 
 import httpx
-from fastapi import APIRouter, HTTPException, Request, Response
+from arq.connections import ArqRedis
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from sqlalchemy.orm import Session
 
 from terrarium_sandbox import config, session_slug
+from terrarium_api.auth.deps import get_optional_user
+from terrarium_api.db import get_db
+from terrarium_api.preview_access import require_preview_access
+from terrarium_api.session_log import SessionEventLog
 
 router = APIRouter()
+
+
+def _redis(request: Request) -> ArqRedis:
+    redis = getattr(request.app.state, "redis", None)
+    if redis is None:
+        raise HTTPException(status_code=503, detail="Redis pool is not ready.")
+    return redis
 
 _SLUG = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
 _HOP = {
@@ -50,7 +63,13 @@ def _traefik_upstream(slug: str, path: str, query: str) -> str:
 
 @router.api_route("/preview/{slug}", methods=["GET", "HEAD"])
 @router.api_route("/preview/{slug}/{path:path}", methods=["GET", "HEAD"])
-async def preview_proxy(slug: str, request: Request, path: str = "") -> Response:
+async def preview_proxy(
+    slug: str,
+    request: Request,
+    path: str = "",
+    db: Session = Depends(get_db),
+    user: dict[str, str] | None = Depends(get_optional_user),
+) -> Response:
     """Same-origin iframe proxy. Avoids Zscaler eating *.nip.io Host routes."""
     try:
         clean = session_slug(slug)
@@ -58,6 +77,9 @@ async def preview_proxy(slug: str, request: Request, path: str = "") -> Response
         raise HTTPException(status_code=400, detail="invalid preview session") from error
     if clean != slug.lower() or not _SLUG.match(clean):
         raise HTTPException(status_code=400, detail="invalid preview session")
+
+    log = SessionEventLog(_redis(request))
+    await require_preview_access(log, db, clean, user)
 
     errors: list[Exception] = []
     upstream = None

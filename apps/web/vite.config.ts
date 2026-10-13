@@ -10,7 +10,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/sessions": {
-        target: "http://127.0.0.1:3001",
+        target: "http://127.0.0.1:3010",
         timeout: 0,
         configure: (proxy) => {
           proxy.on("proxyRes", (proxyRes, _req, res) => {
@@ -22,17 +22,19 @@ export default defineConfig({
           });
         },
       },
-      "/health": "http://127.0.0.1:3001",
+      "/health": "http://127.0.0.1:3010",
       "/preview": {
         target: "http://127.0.0.1",
         changeOrigin: true,
         ws: true,
       },
-      "/workspace": "http://127.0.0.1:3001",
-      "/auth": "http://127.0.0.1:3001",
-      "/github": "http://127.0.0.1:3001",
-      "/groups": "http://127.0.0.1:3001",
-      "/access-requests": "http://127.0.0.1:3001",
+      "/workspace": "http://127.0.0.1:3010",
+      "/auth": "http://127.0.0.1:3010",
+      "/github": "http://127.0.0.1:3010",
+      "/groups": "http://127.0.0.1:3010",
+      "/access-requests": "http://127.0.0.1:3010",
+      "/tools": "http://127.0.0.1:3010",
+      "/settings": "http://127.0.0.1:3010",
     },
   },
 });

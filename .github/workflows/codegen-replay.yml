@@ -1,0 +1,51 @@
+name: codegen-replay
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      live:
+        description: "Run a staged live sweep. Leave false. Replay is the only CI path."
+        type: boolean
+        default: false
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Replay tests at $0
+        env:
+          CODEGEN_LLM_MODE: replay
+          TERRARIUM_AGENTS: stub
+          PYTHONPATH: packages/agents:packages/py-contracts
+        run: |
+          pip install pytest
+          python scripts/codegen-fixtures.py
+          python scripts/codegen-sweep.py --model haiku
+          pytest packages/agents/tests -q
+
+  nightly-dry-run:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Print estimated cost and stop
+        env:
+          CODEGEN_LLM_MODE: replay
+          PYTHONPATH: packages/agents:packages/py-contracts
+        run: python scripts/codegen-sweep.py --model haiku
+      - name: Keep CI on replay
+        if: github.event.inputs.live == 'true'
+        run: |
+          echo "CI stays on replay ($0). A live sweep is manual: CODEGEN_LLM_MODE=record-missing CODEGEN_MAX_SPEND_USD=... python scripts/codegen-sweep.py --live"
+          exit 1

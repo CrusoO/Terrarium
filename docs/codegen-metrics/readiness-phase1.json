@@ -1,0 +1,236 @@
+{
+  "host": "Windows 11 10.0.26200",
+  "demoMode": "",
+  "scaffoldVersion": "3",
+  "cases": [
+    {
+      "case": "truncated output (max_tokens)",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "retry then stub_fallbacks=['src/components/StatusBadge.jsx', 'src/components/OrderCard.jsx', 'src/components/PageHero.jsx', 'src/components/EmptyState.jsx', 'src/components/TotalsCard.jsx']; staticOk=True; no session event names the cutoff"
+    },
+    {
+      "case": "unclosed file",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "stub_fallbacks=[]; staticOk=True; closed files replace the cut file with no user-facing reason"
+    },
+    {
+      "case": "bad import path",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "repairs=0; staticOk=True; mismatches=0; tsc=0; degraded=[]"
+    },
+    {
+      "case": "function passed to addItem",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "repairs=0; staticOk=True; mismatches=0; tsc=0; degraded=[]"
+    },
+    {
+      "case": "array vs single row",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "repairs=0; staticOk=True; mismatches=0; tsc=0; degraded=[]"
+    },
+    {
+      "case": "tsc error",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "repairs=2; staticOk=False; mismatches=0; tsc=3; degraded=[]"
+    },
+    {
+      "case": "repair patch search does not match",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "applied=[]; file unchanged (True); no one-shot regenerate"
+    },
+    {
+      "case": "two failed repairs degrade to scaffold default",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "live repairs=2; forced applied=[]/[]; degraded=['src/components/OrderCard.tsx']; no user-facing degrade message"
+    },
+    {
+      "case": "model timeout",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "fail swallowed into stub_fallbacks=['src/components/StatusBadge.jsx', 'src/components/OrderCard.jsx', 'src/components/PageHero.jsx', 'src/components/EmptyState.jsx', 'src/components/TotalsCard.jsx']; staticOk=True; gateThrottles=0"
+    },
+    {
+      "case": "429 throttle",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "fail swallowed into stub_fallbacks=['src/components/StatusBadge.jsx', 'src/components/OrderCard.jsx', 'src/components/PageHero.jsx', 'src/components/EmptyState.jsx', 'src/components/TotalsCard.jsx']; staticOk=True; gateThrottles=17"
+    },
+    {
+      "case": "provider error",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "fail swallowed into stub_fallbacks=['src/components/StatusBadge.jsx', 'src/components/OrderCard.jsx', 'src/components/PageHero.jsx', 'src/components/EmptyState.jsx', 'src/components/TotalsCard.jsx']; staticOk=True; gateThrottles=17"
+    },
+    {
+      "case": "sandbox crash",
+      "pass": true,
+      "userMessage": true,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "worker emits sandbox.unhealthy and does not emit preview.ready when start throws; UI label is Preview failed. Not driven in the browser."
+    },
+    {
+      "case": "preview health failure",
+      "pass": true,
+      "userMessage": true,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "unhealthy or stopped health returns before preview.ready. Chat copy is The sandbox stayed unhealthy. Not driven in the browser."
+    },
+    {
+      "case": "SSE disconnect and reconnect",
+      "pass": true,
+      "userMessage": true,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "useCreateSession retries then sets Lost the session event stream. Not driven in the browser."
+    },
+    {
+      "case": "duplicate submit",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": true,
+      "detail": "a second job is dropped when the Redis lock is held. The only record is a worker log line. The user gets no message."
+    },
+    {
+      "case": "unsupported prompt",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": false,
+      "detail": "supported=False; DEMO_MODE is unset so generate() still enters the monolith path. There is no not-supported-yet response."
+    },
+    {
+      "case": "non-allowlisted account",
+      "pass": false,
+      "userMessage": false,
+      "brokenAppShownAsSuccess": false,
+      "sessionEndsCleanly": false,
+      "detail": "canary_per_file=False; internal=False. The request is not rejected. It falls through to the monolith."
+    }
+  ],
+  "concurrency": {
+    "burst5": {
+      "apps": 5,
+      "spreadSeconds": 0,
+      "callsPerApp": 2,
+      "queueSecondsMean": 0.0,
+      "queueSecondsP95": 0.0,
+      "validatedProxySecondsP95": 162.805,
+      "errors": 0,
+      "host": "Windows 11",
+      "method": "simulated AdaptiveGate(limit=8) with FakeProvider recorded latencies; no Bedrock calls"
+    },
+    "burst20": {
+      "apps": 20,
+      "spreadSeconds": 0,
+      "callsPerApp": 2,
+      "queueSecondsMean": 5.297,
+      "queueSecondsP95": 55.675,
+      "validatedProxySecondsP95": 109.933,
+      "errors": 0,
+      "host": "Windows 11",
+      "method": "simulated AdaptiveGate(limit=8) with FakeProvider recorded latencies; no Bedrock calls"
+    },
+    "spread50": {
+      "apps": 50,
+      "spreadSeconds": 300,
+      "callsPerApp": 2,
+      "queueSecondsMean": 0.649,
+      "queueSecondsP95": 0.0,
+      "validatedProxySecondsP95": 165.229,
+      "errors": 0,
+      "host": "Windows 11",
+      "method": "simulated AdaptiveGate(limit=8) with FakeProvider recorded latencies; no Bedrock calls"
+    }
+  },
+  "prompts": [
+    {
+      "prompt": "Purchase order tracker with search, status filter (open, approved, received), add form, detail view and daily totals.",
+      "archetype": "crud",
+      "confidence": 0.78,
+      "supported": true,
+      "allowlistedCanary": true,
+      "publicCanary": false
+    },
+    {
+      "prompt": "Operations dashboard for failed integration messages: owners, status chips, overdue items, daily totals and a report view.",
+      "archetype": "dashboard",
+      "confidence": 0.92,
+      "supported": true,
+      "allowlistedCanary": true,
+      "publicCanary": false
+    },
+    {
+      "prompt": "Spare parts inventory with search, category filter, add form, detail view and stock totals.",
+      "archetype": "crud",
+      "confidence": 0.78,
+      "supported": true,
+      "allowlistedCanary": true,
+      "publicCanary": false
+    },
+    {
+      "prompt": "Equipment booking: book a device for a date and time, upcoming bookings, status filter, booking details.",
+      "archetype": "booking",
+      "confidence": 0.92,
+      "supported": true,
+      "allowlistedCanary": true,
+      "publicCanary": false
+    },
+    {
+      "prompt": "IT change request tracker with owner, system (Dev, QA, Prod), status and due date; search, status filter, add form and detail view.",
+      "archetype": "crud",
+      "confidence": 0.78,
+      "supported": true,
+      "allowlistedCanary": true,
+      "publicCanary": false
+    }
+  ],
+  "secrets": {
+    "filesScanned": 1040,
+    "needleHits": 0
+  },
+  "phase3Estimate": {
+    "apps": 15,
+    "edits": 15,
+    "measuredPerAppUsd": 0.0186,
+    "repairMargin": 0.15,
+    "appsUsd": 0.3208,
+    "editsUsd": 0.3045,
+    "totalUsd": 0.6253,
+    "capUsd": 1.5,
+    "note": "Per-file estimate only. A monolith Sonnet call is about $0.50 and is not included. Phase 3 was not started."
+  },
+  "generatedAt": "2026-10-11T17:35:26Z"
+}

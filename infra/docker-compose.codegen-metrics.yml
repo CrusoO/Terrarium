@@ -1,0 +1,24 @@
+# Local override for Step 0 measurement only. Do not use in production.
+services:
+  api:
+    environment:
+      CODEGEN_METRICS: "1"
+      CODEGEN_METRICS_DIR: /app/docs/codegen-metrics
+      DEMO_MODE: "1"
+      CODEGEN_LLM_MODE: live
+      CODEGEN_MAX_SPEND_USD: "1.50"
+      TERRARIUM_KILL_SWITCH_FILE: /app/docs/codegen-metrics/kill-switch
+      TERRARIUM_METRICS_HOST: ${TERRARIUM_METRICS_HOST:-}
+    volumes:
+      - ../docs/codegen-metrics:/app/docs/codegen-metrics
+  worker:
+    environment:
+      CODEGEN_METRICS: "1"
+      CODEGEN_METRICS_DIR: /app/docs/codegen-metrics
+      DEMO_MODE: "1"
+      CODEGEN_LLM_MODE: live
+      CODEGEN_MAX_SPEND_USD: "1.50"
+      TERRARIUM_KILL_SWITCH_FILE: /app/docs/codegen-metrics/kill-switch
+      TERRARIUM_METRICS_HOST: ${TERRARIUM_METRICS_HOST:-}
+    volumes:
+      - ../docs/codegen-metrics:/app/docs/codegen-metrics

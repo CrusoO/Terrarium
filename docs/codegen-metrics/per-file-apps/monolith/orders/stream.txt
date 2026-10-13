@@ -1,0 +1,2039 @@
+<<<FILE path="index.html">>>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Tracker</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+<<<END FILE>>>
+
+<<<FILE path="package.json">>>
+{
+  "name": "order-tracker",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
+}
+<<<END FILE>>>
+
+<<<FILE path="vite.config.js">>>
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+<<<END FILE>>>
+
+<<<FILE path="src/main.jsx">>>
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+<<<END FILE>>>
+
+<<<FILE path="src/index.css">>>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #f8f9fb;
+  --border: #e2e6ea;
+  --primary: #4f46e5;
+  --primary-light: #ede9fe;
+  --primary-dark: #3730a3;
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+<<<END FILE>>>
+
+<<<FILE path="src/data/seed.js">>>
+export const STATUSES = ['Pending', 'Paid', 'Refunded', 'Cancelled']
+
+export const ITEMS_CATALOG = [
+  { id: 'p1', name: 'Espresso', price: 3.5 },
+  { id: 'p2', name: 'Cappuccino', price: 4.5 },
+  { id: 'p3', name: 'Latte', price: 5.0 },
+  { id: 'p4', name: 'Croissant', price: 3.0 },
+  { id: 'p5', name: 'Bagel', price: 3.5 },
+  { id: 'p6', name: 'Muffin', price: 2.5 },
+  { id: 'p7', name: 'Sandwich', price: 7.5 },
+  { id: 'p8', name: 'Salad Bowl', price: 9.0 },
+  { id: 'p9', name: 'Orange Juice', price: 4.0 },
+  { id: 'p10', name: 'Green Tea', price: 3.0 },
+]
+
+function randomItem(arr) { return arr[Math.floor(Math.random() * arr.length)] }
+function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min }
+
+let idCounter = 1000
+
+export function generateOrders(count = 40) {
+  const names = ['Alice Johnson','Bob Martinez','Carol White','David Lee','Eva Brown',
+    'Frank Wilson','Grace Kim','Henry Davis','Iris Chen','Jack Taylor']
+  const now = Date.now()
+  const DAY = 86400000
+  const orders = []
+  for (let i = 0; i < count; i++) {
+    const daysAgo = randomInt(0, 6)
+    const ts = now - daysAgo * DAY - randomInt(0, DAY - 1)
+    const itemCount = randomInt(1, 4)
+    const items = []
+    for (let j = 0; j < itemCount; j++) {
+      const cat = randomItem(ITEMS_CATALOG)
+      const existing = items.find(x => x.id === cat.id)
+      if (existing) existing.qty += 1
+      else items.push({ ...cat, qty: randomInt(1, 3) })
+    }
+    const total = items.reduce((s, x) => s + x.price * x.qty, 0)
+    orders.push({
+      id: `ORD-${++idCounter}`,
+      customer: randomItem(names),
+      status: randomItem(STATUSES),
+      items,
+      total: +total.toFixed(2),
+      createdAt: ts,
+      note: Math.random() > 0.7 ? 'Please pack separately.' : '',
+    })
+  }
+  return orders.sort((a, b) => b.createdAt - a.createdAt)
+}
+
+export function nextId() { return `ORD-${++idCounter}` }
+<<<END FILE>>>
+
+<<<FILE path="src/store/useStore.js">>>
+import { useState, useCallback } from 'react'
+import { generateOrders, nextId } from '../data/seed'
+
+const initialOrders = generateOrders(40)
+
+let _orders = initialOrders
+let _listeners = []
+
+function notify() { _listeners.forEach(fn => fn([..._orders])) }
+
+export function useOrders() {
+  const [orders, setOrders] = useState([..._orders])
+
+  const subscribe = useCallback(() => {
+    const fn = (next) => setOrders(next)
+    _listeners.push(fn)
+    return () => { _listeners = _listeners.filter(l => l !== fn) }
+  }, [])
+
+  useState(() => { return subscribe() })
+
+  const addOrder = useCallback((order) => {
+    const newOrder = { ...order, id: nextId(), createdAt: Date.now() }
+    _orders = [newOrder, ..._orders]
+    notify()
+  }, [])
+
+  const updateStatus = useCallback((id, status) => {
+    _orders = _orders.map(o => o.id === id ? { ...o, status } : o)
+    notify()
+  }, [])
+
+  return { orders, addOrder, updateStatus }
+}
+<<<END FILE>>>
+
+<<<FILE path="src/utils/format.js">>>
+export function formatCurrency(n) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+}
+
+export function formatDate(ts) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  }).format(new Date(ts))
+}
+
+export function formatDay(ts) {
+  const d = new Date(ts)
+  const today = new Date()
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1)
+  if (d.toDateString() === today.toDateString()) return 'Today'
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(d)
+}
+
+export function dayKey(ts) {
+  const d = new Date(ts)
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+}
+<<<END FILE>>>
+
+<<<FILE path="src/App.jsx">>>
+import React, { useState } from 'react'
+import Header from './components/Header'
+import OrderList from './components/OrderList'
+import OrderDetail from './components/OrderDetail'
+import CreateOrder from './components/CreateOrder'
+import DailyTotals from './components/DailyTotals'
+import { useOrders } from './store/useStore'
+import styles from './App.module.css'
+
+export default function App() {
+  const { orders, addOrder, updateStatus } = useOrders()
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('All')
+  const [selectedId, setSelectedId] = useState(null)
+  const [showCreate, setShowCreate] = useState(false)
+  const [activeTab, setActiveTab] = useState('orders') // 'orders' | 'totals'
+
+  const filtered = orders.filter(o => {
+    const matchSearch = search === '' ||
+      o.id.toLowerCase().includes(search.toLowerCase()) ||
+      o.customer.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = statusFilter === 'All' || o.status === statusFilter
+    return matchSearch && matchStatus
+  })
+
+  const selectedOrder = orders.find(o => o.id === selectedId) || null
+
+  return (
+    <div className={styles.app}>
+      <Header
+        search={search}
+        onSearch={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilter={setStatusFilter}
+        onCreateOrder={() => setShowCreate(true)}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+      <main className={styles.main}>
+        {activeTab === 'orders' ? (
+          <div className={styles.layout}>
+            <OrderList
+              orders={filtered}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
+            {selectedOrder ? (
+              <OrderDetail
+                order={selectedOrder}
+                onClose={() => setSelectedId(null)}
+                onStatusChange={updateStatus}
+              />
+            ) : (
+              <div className={styles.empty}>
+                <div className={styles.emptyInner}>
+                  <span className={styles.emptyIcon}>📋</span>
+                  <p>Select an order to view details</p>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <DailyTotals orders={orders} />
+        )}
+      </main>
+      {showCreate && (
+        <CreateOrder
+          onClose={() => setShowCreate(false)}
+          onSubmit={(order) => { addOrder(order); setShowCreate(false) }}
+        />
+      )}
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/App.module.css">>>
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.empty {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 2px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+}
+
+.emptyInner {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.emptyInner p {
+  font-size: 15px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .empty { display: none; }
+  .main { padding: 16px; }
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.jsx">>>
+import React from 'react'
+import { STATUSES } from '../data/seed'
+import styles from './Header.module.css'
+
+export default function Header({ search, onSearch, statusFilter, onStatusFilter, onCreateOrder, activeTab, onTabChange }) {
+  return (
+    <header className={styles.header}>
+      <div className={styles.top}>
+        <div className={styles.brand}>
+          <span className={styles.logo}>🛒</span>
+          <div>
+            <h1 className={styles.title}>Order Tracker</h1>
+            <p className={styles.subtitle}>Staff Dashboard</p>
+          </div>
+        </div>
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === 'orders' ? styles.tabActive : ''}`}
+            onClick={() => onTabChange('orders')}
+          >
+            Orders
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'totals' ? styles.tabActive : ''}`}
+            onClick={() => onTabChange('totals')}
+          >
+            Daily Totals
+          </button>
+        </div>
+        <button className={styles.createBtn} onClick={onCreateOrder}>
+          <span>+</span> New Order
+        </button>
+      </div>
+      {activeTab === 'orders' && (
+        <div className={styles.controls}>
+          <div className={styles.searchWrap}>
+            <span className={styles.searchIcon}>🔍</span>
+            <input
+              className={styles.search}
+              type="text"
+              placeholder="Search by order ID or customer name…"
+              value={search}
+              onChange={e => onSearch(e.target.value)}
+            />
+            {search && (
+              <button className={styles.clearBtn} onClick={() => onSearch('')}>✕</button>
+            )}
+          </div>
+          <div className={styles.filters}>
+            <span className={styles.filterLabel}>Status:</span>
+            {['All', ...STATUSES].map(s => (
+              <button
+                key={s}
+                className={`${styles.filterBtn} ${statusFilter === s ? styles.filterActive : ''}`}
+                onClick={() => onStatusFilter(s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </header>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.module.css">>>
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.logo { font-size: 28px; }
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg);
+  padding: 4px;
+  border-radius: 8px;
+  margin-left: auto;
+}
+
+.tab {
+  padding: 7px 18px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all .15s;
+}
+
+.tab:hover { color: var(--text); background: var(--surface); }
+
+.tabActive {
+  background: var(--surface) !important;
+  color: var(--primary) !important;
+  box-shadow: var(--shadow);
+}
+
+.createBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .15s, transform .1s;
+  flex-shrink: 0;
+}
+
+.createBtn:hover { background: var(--primary-dark); }
+.createBtn:active { transform: scale(.97); }
+.createBtn span { font-size: 18px; line-height: 1; }
+
+.controls {
+  padding: 12px 24px 14px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.searchWrap {
+  position: relative;
+  max-width: 480px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  padding: 9px 36px 9px 36px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--surface2);
+  color: var(--text);
+  transition: border-color .15s, box-shadow .15s;
+  outline: none;
+}
+
+.search:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+  background: var(--surface);
+}
+
+.clearBtn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.clearBtn:hover { color: var(--text); background: var(--border); }
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filterLabel {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-right: 2px;
+}
+
+.filterBtn {
+  padding: 5px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all .15s;
+}
+
+.filterBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.filterActive {
+  background: var(--primary-light) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+@media (max-width: 700px) {
+  .top { flex-wrap: wrap; }
+  .tabs { order: 3; width: 100%; }
+  .createBtn { margin-left: auto; }
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/OrderList.jsx">>>
+import React from 'react'
+import { formatCurrency, formatDate } from '../utils/format'
+import styles from './OrderList.module.css'
+
+const STATUS_COLORS = {
+  Pending: { bg: 'var(--warning-light)', color: 'var(--warning)' },
+  Paid: { bg: 'var(--success-light)', color: 'var(--success)' },
+  Refunded: { bg: '#e0e7ff', color: '#4338ca' },
+  Cancelled: { bg: 'var(--danger-light)', color: 'var(--danger)' },
+}
+
+export default function OrderList({ orders, selectedId, onSelect }) {
+  if (orders.length === 0) {
+    return (
+      <div className={styles.empty}>
+        <span>🔎</span>
+        <p>No orders match your search.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.list}>
+      <div className={styles.count}>{orders.length} order{orders.length !== 1 ? 's' : ''}</div>
+      {orders.map(order => {
+        const sc = STATUS_COLORS[order.status] || {}
+        return (
+          <button
+            key={order.id}
+            className={`${styles.card} ${selectedId === order.id ? styles.selected : ''}`}
+            onClick={() => onSelect(order.id)}
+          >
+            <div className={styles.cardTop}>
+              <span className={styles.orderId}>{order.id}</span>
+              <span className={styles.badge} style={{ background: sc.bg, color: sc.color }}>
+                {order.status}
+              </span>
+            </div>
+            <div className={styles.customer}>{order.customer}</div>
+            <div className={styles.cardBottom}>
+              <span className={styles.date}>{formatDate(order.createdAt)}</span>
+              <span className={styles.total}>{formatCurrency(order.total)}</span>
+            </div>
+            <div className={styles.itemPreview}>
+              {order.items.slice(0, 3).map(i => `${i.name} ×${i.qty}`).join(' · ')}
+              {order.items.length > 3 && ' · …'}
+            </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/OrderList.module.css">>>
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.list::-webkit-scrollbar { width: 5px; }
+.list::-webkit-scrollbar-track { background: transparent; }
+.list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding: 0 2px 4px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-align: left;
+  width: 100%;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  box-shadow: var(--shadow);
+}
+
+.card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.selected {
+  border-color: var(--primary) !important;
+  background: var(--primary-light) !important;
+  box-shadow: 0 0 0 3px rgba(79,70,229,.15) !important;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.orderId {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: 'Courier New', monospace;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.customer {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.cardBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.total {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.itemPreview {
+  font-size: 12px;
+  color: var(--text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 2px dashed var(--border);
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty span { font-size: 36px; display: block; margin-bottom: 10px; }
+.empty p { font-size: 14px; }
+<<<END FILE>>>
+
+<<<FILE path="src/components/OrderDetail.jsx">>>
+import React, { useState } from 'react'
+import { STATUSES } from '../data/seed'
+import { formatCurrency, formatDate } from '../utils/format'
+import styles from './OrderDetail.module.css'
+
+const STATUS_COLORS = {
+  Pending: { bg: 'var(--warning-light)', color: 'var(--warning)' },
+  Paid: { bg: 'var(--success-light)', color: 'var(--success)' },
+  Refunded: { bg: '#e0e7ff', color: '#4338ca' },
+  Cancelled: { bg: 'var(--danger-light)', color: 'var(--danger)' },
+}
+
+export default function OrderDetail({ order, onClose, onStatusChange }) {
+  const [changing, setChanging] = useState(false)
+  const sc = STATUS_COLORS[order.status] || {}
+  const subtotal = order.items.reduce((s, i) => s + i.price * i.qty, 0)
+  const tax = subtotal * 0.08
+  const total = subtotal + tax
+
+  return (
+    <div className={styles.detail}>
+      <div className={styles.detailHeader}>
+        <div>
+          <div className={styles.detailId}>{order.id}</div>
+          <div className={styles.detailDate}>{formatDate(order.createdAt)}</div>
+        </div>
+        <button className={styles.closeBtn} onClick={onClose} title="Close">✕</button>
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>Customer</div>
+        <div className={styles.customerName}>{order.customer}</div>
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>Payment Status</div>
+        <div className={styles.statusRow}>
+          <span className={styles.badge} style={{ background: sc.bg, color: sc.color }}>
+            {order.status}
+          </span>
+          <button className={styles.changeBtn} onClick={() => setChanging(v => !v)}>
+            {changing ? 'Cancel' : 'Change'}
+          </button>
+        </div>
+        {changing && (
+          <div className={styles.statusOptions}>
+            {STATUSES.filter(s => s !== order.status).map(s => {
+              const c = STATUS_COLORS[s] || {}
+              return (
+                <button
+                  key={s}
+                  className={styles.statusOption}
+                  style={{ background: c.bg, color: c.color }}
+                  onClick={() => { onStatusChange(order.id, s); setChanging(false) }}
+                >
+                  {s}
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>Order Items</div>
+        <div className={styles.itemsTable}>
+          <div className={styles.tableHead}>
+            <span>Item</span>
+            <span>Qty</span>
+            <span>Unit</span>
+            <span>Total</span>
+          </div>
+          {order.items.map((item, i) => (
+            <div key={i} className={styles.tableRow}>
+              <span className={styles.itemName}>{item.name}</span>
+              <span className={styles.itemQty}>{item.qty}</span>
+              <span>{formatCurrency(item.price)}</span>
+              <span className={styles.itemTotal}>{formatCurrency(item.price * item.qty)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.totalsBox}>
+          <div className={styles.totalRow}>
+            <span>Subtotal</span>
+            <span>{formatCurrency(subtotal)}</span>
+          </div>
+          <div className={styles.totalRow}>
+            <span>Tax (8%)</span>
+            <span>{formatCurrency(tax)}</span>
+          </div>
+          <div className={`${styles.totalRow} ${styles.grandTotal}`}>
+            <span>Total</span>
+            <span>{formatCurrency(total)}</span>
+          </div>
+        </div>
+      </div>
+
+      {order.note && (
+        <div className={styles.section}>
+          <div className={styles.sectionTitle}>Note</div>
+          <div className={styles.note}>{order.note}</div>
+        </div>
+      )}
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/OrderDetail.module.css">>>
+.detail {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: sticky;
+  top: 180px;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.detailId {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: 'Courier New', monospace;
+  margin-bottom: 4px;
+}
+
+.detailDate {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background .15s, color .15s;
+}
+
+.closeBtn:hover { background: var(--border); color: var(--text); }
+
+.section {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section:last-child { border-bottom: none; }
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.customerName {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.changeBtn {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary);
+  background: var(--primary-light);
+  border: none;
+  padding: 5px 12px;
+  border-radius: 6px;
+  transition: background .15s;
+}
+
+.changeBtn:hover { background: #ddd6fe; }
+
+.statusOptions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.statusOption {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  transition: opacity .15s, transform .1s;
+}
+
+.statusOption:hover { opacity: .8; transform: scale(.97); }
+
+.itemsTable {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tableHead {
+  display: grid;
+  grid-template-columns: 1fr 50px 70px 70px;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  background: var(--surface2);
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 1fr 50px 70px 70px;
+  gap: 8px;
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  transition: background .1s;
+}
+
+.tableRow:hover { background: var(--surface2); }
+
+.itemName { font-weight: 500; color: var(--text); }
+.itemQty { color: var(--text-muted); text-align: center; }
+.itemTotal { font-weight: 600; color: var(--text); }
+
+.totalsBox {
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.grandTotal {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  padding-top: 8px;
+  border-top: 1.5px solid var(--border);
+  margin-top: 4px;
+}
+
+.note {
+  font-size: 14px;
+  color: var(--text-muted);
+  background: var(--warning-light);
+  border-left: 3px solid var(--warning);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/CreateOrder.jsx">>>
+import React, { useState } from 'react'
+import { ITEMS_CATALOG } from '../data/seed'
+import { formatCurrency } from '../utils/format'
+import styles from './CreateOrder.module.css'
+
+export default function CreateOrder({ onClose, onSubmit }) {
+  const [customer, setCustomer] = useState('')
+  const [note, setNote] = useState('')
+  const [cart, setCart] = useState([])
+  const [errors, setErrors] = useState({})
+
+  const addItem = (item) => {
+    setCart(prev => {
+      const ex = prev.find(x => x.id === item.id)
+      if (ex) return prev.map(x => x.id === item.id ? { ...x, qty: x.qty + 1 } : x)
+      return [...prev, { ...item, qty: 1 }]
+    })
+  }
+
+  const removeItem = (id) => setCart(prev => prev.filter(x => x.id !== id))
+
+  const updateQty = (id, qty) => {
+    if (qty < 1) { removeItem(id); return }
+    setCart(prev => prev.map(x => x.id === id ? { ...x, qty } : x))
+  }
+
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0)
+  const tax = subtotal * 0.08
+  const total = subtotal + tax
+
+  const validate = () => {
+    const e = {}
+    if (!customer.trim()) e.customer = 'Customer name is required'
+    if (cart.length === 0) e.cart = 'Add at least one item'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!validate()) return
+    onSubmit({
+      customer: customer.trim(),
+      items: cart,
+      total: +total.toFixed(2),
+      status: 'Pending',
+      note: note.trim(),
+    })
+  }
+
+  return (
+    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Create New Order</h2>
+          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.body}>
+            <div className={styles.left}>
+              <div className={styles.field}>
+                <label className={styles.label}>Customer Name *</label>
+                <input
+                  className={`${styles.input} ${errors.customer ? styles.inputError : ''}`}
+                  type="text"
+                  placeholder="Enter customer name"
+                  value={customer}
+                  onChange={e => { setCustomer(e.target.value); setErrors(p => ({ ...p, customer: '' })) }}
+                />
+                {errors.customer && <span className={styles.error}>{errors.customer}</span>}
+              </div>
+
+              <div className={styles.field}>
+                <label className={styles.label}>Note (optional)</label>
+                <textarea
+                  className={styles.textarea}
+                  placeholder="Any special instructions…"
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                  rows={2}
+                />
+              </div>
+
+              <div className={styles.field}>
+                <label className={styles.label}>Menu Items</label>
+                {errors.cart && <span className={styles.error}>{errors.cart}</span>}
+                <div className={styles.catalog}>
+                  {ITEMS_CATALOG.map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={styles.catalogItem}
+                      onClick={() => addItem(item)}
+                    >
+                      <span className={styles.catalogName}>{item.name}</span>
+                      <span className={styles.catalogPrice}>{formatCurrency(item.price)}</span>
+                      <span className={styles.addIcon}>+</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.right}>
+              <div className={styles.cartHeader}>
+                <span className={styles.label}>Cart</span>
+                <span className={styles.cartCount}>{cart.length} item{cart.length !== 1 ? 's' : ''}</span>
+              </div>
+
+              {cart.length === 0 ? (
+                <div className={styles.cartEmpty}>
+                  <span>🛒</span>
+                  <p>No items added yet</p>
+                </div>
+              ) : (
+                <div className={styles.cartItems}>
+                  {cart.map(item => (
+                    <div key={item.id} className={styles.cartItem}>
+                      <div className={styles.cartItemInfo}>
+                        <span className={styles.cartItemName}>{item.name}</span>
+                        <span className={styles.cartItemPrice}>{formatCurrency(item.price)}</span>
+                      </div>
+                      <div className={styles.cartItemControls}>
+                        <button type="button" className={styles.qtyBtn} onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
+                        <span className={styles.qty}>{item.qty}</span>
+                        <button type="button" className={styles.qtyBtn} onClick={() => updateQty(item.id, item.qty + 1)}>+</button>
+                        <span className={styles.cartItemTotal}>{formatCurrency(item.price * item.qty)}</span>
+                        <button type="button" className={styles.removeBtn} onClick={() => removeItem(item.id)}>✕</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className={styles.cartTotals}>
+                <div className={styles.totalRow}>
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(subtotal)}</span>
+                </div>
+                <div className={styles.totalRow}>
+                  <span>Tax (8%)</span>
+                  <span>{formatCurrency(tax)}</span>
+                </div>
+                <div className={`${styles.totalRow} ${styles.grandTotal}`}>
+                  <span>Total</span>
+                  <span>{formatCurrency(total)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.footer}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+            <button type="submit" className={styles.submitBtn}>Create Order</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/CreateOrder.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.45);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp .2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background .15s;
+}
+
+.closeBtn:hover { background: var(--border); }
+
+.form { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.left {
+  padding: 20px 24px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.right {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--text-muted);
+}
+
+.input, .textarea {
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface2);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  resize: none;
+}
+
+.input:focus, .textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+  background: var(--surface);
+}
+
+.inputError { border-color: var(--danger) !important; }
+
+.error {
+  font-size: 12px;
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.catalogItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  text-align: left;
+  transition: border-color .15s, background .15s;
+}
+
+.catalogItem:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.catalogName { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); }
+.catalogPrice { font-size: 13px; color: var(--text-muted); }
+.addIcon {
+  width: 22px; height: 22px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cartCount {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.cartEmpty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  gap: 8px;
+  padding: 40px 0;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+}
+
+.cartEmpty span { font-size: 32px; }
+.cartEmpty p { font-size: 13px; }
+
+.cartItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cartItem {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cartItemInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cartItemName { font-size: 14px; font-weight: 500; color: var(--text); }
+.cartItemPrice { font-size: 12px; color: var(--text-muted); }
+
+.cartItemControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qtyBtn {
+  width: 26px; height: 26px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .1s, border-color .1s;
+}
+
+.qtyBtn:hover { background: var(--primary-light); border-color: var(--primary); }
+
+.qty {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.cartItemTotal {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-left: auto;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color .1s, background .1s;
+}
+
+.removeBtn:hover { color: var(--danger); background: var(--danger-light); }
+
+.cartTotals {
+  margin-top: auto;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--border);
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.grandTotal {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  padding-top: 8px;
+  border-top: 1.5px solid var(--border);
+  margin-top: 4px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.cancelBtn {
+  padding: 9px 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: border-color .15s, color .15s;
+}
+
+.cancelBtn:hover { border-color: var(--text-muted); color: var(--text); }
+
+.submitBtn {
+  padding: 9px 24px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .15s, transform .1s;
+}
+
+.submitBtn:hover { background: var(--primary-dark); }
+.submitBtn:active { transform: scale(.97); }
+
+@media (max-width: 640px) {
+  .body { grid-template-columns: 1fr; }
+  .left { border-right: none; border-bottom: 1px solid var(--border); }
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/DailyTotals.jsx">>>
+import React from 'react'
+import { formatCurrency, formatDay, dayKey } from '../utils/format'
+import styles from './DailyTotals.module.css'
+
+const STATUS_COLORS = {
+  Pending: { bg: 'var(--warning-light)', color: 'var(--warning)' },
+  Paid: { bg: 'var(--success-light)', color: 'var(--success)' },
+  Refunded: { bg: '#e0e7ff', color: '#4338ca' },
+  Cancelled: { bg: 'var(--danger-light)', color: 'var(--danger)' },
+}
+
+export default function DailyTotals({ orders }) {
+  const grouped = {}
+  orders.forEach(o => {
+    const key = dayKey(o.createdAt)
+    if (!grouped[key]) grouped[key] = { ts: o.createdAt, orders: [] }
+    grouped[key].orders.push(o)
+  })
+
+  const days = Object.entries(grouped)
+    .sort((a, b) => b[1].ts - a[1].ts)
+    .map(([key, { ts, orders: dayOrders }]) => {
+      const revenue = dayOrders.reduce((s, o) => s + o.total, 0)
+      const paid = dayOrders.filter(o => o.status === 'Paid').reduce((s, o) => s + o.total, 0)
+      const pending = dayOrders.filter(o => o.status === 'Pending').reduce((s, o) => s + o.total, 0)
+      const refunded = dayOrders.filter(o => o.status === 'Refunded').reduce((s, o) => s + o.total, 0)
+      const cancelled = dayOrders.filter(o => o.status === 'Cancelled').reduce((s, o) => s + o.total, 0)
+      const statusCounts = {}
+      dayOrders.forEach(o => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1 })
+      return { key, ts, dayOrders, revenue, paid, pending, refunded, cancelled, statusCounts }
+    })
+
+  const grandTotal = days.reduce((s, d) => s + d.revenue, 0)
+  const grandPaid = days.reduce((s, d) => s + d.paid, 0)
+  const grandOrders = orders.length
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.summaryCards}>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryLabel}>Total Revenue</div>
+          <div className={styles.summaryValue}>{formatCurrency(grandTotal)}</div>
+          <div className={styles.summaryNote}>{grandOrders} orders total</div>
+        </div>
+        <div className={`${styles.summaryCard} ${styles.summaryGreen}`}>
+          <div className={styles.summaryLabel}>Paid Revenue</div>
+          <div className={styles.summaryValue}>{formatCurrency(grandPaid)}</div>
+          <div className={styles.summaryNote}>{orders.filter(o => o.status === 'Paid').length} paid orders</div>
+        </div>
+        <div className={`${styles.summaryCard} ${styles.summaryYellow}`}>
+          <div className={styles.summaryLabel}>Pending</div>
+          <div className={styles.summaryValue}>{formatCurrency(days.reduce((s, d) => s + d.pending, 0))}</div>
+          <div className={styles.summaryNote}>{orders.filter(o => o.status === 'Pending').length} pending orders</div>
+        </div>
+        <div className={`${styles.summaryCard} ${styles.summaryRed}`}>
+          <div className={styles.summaryLabel}>Refunded</div>
+          <div className={styles.summaryValue}>{formatCurrency(days.reduce((s, d) => s + d.refunded, 0))}</div>
+          <div className={styles.summaryNote}>{orders.filter(o => o.status === 'Refunded').length} refunded</div>
+        </div>
+      </div>
+
+      <div className={styles.days}>
+        {days.map(day => (
+          <div key={day.key} className={styles.dayCard}>
+            <div className={styles.dayHeader}>
+              <div>
+                <div className={styles.dayLabel}>{formatDay(day.ts)}</div>
+                <div className={styles.dayMeta}>{day.dayOrders.length} order{day.dayOrders.length !== 1 ? 's' : ''}</div>
+              </div>
+              <div className={styles.dayRevenue}>{formatCurrency(day.revenue)}</div>
+            </div>
+
+            <div className={styles.dayStats}>
+              {Object.entries(day.statusCounts).map(([status, count]) => {
+                const sc = STATUS_COLORS[status] || {}
+                return (
+                  <span key={status} className={styles.statusChip} style={{ background: sc.bg, color: sc.color }}>
+                    {status}: {count}
+                  </span>
+                )
+              })}
+            </div>
+
+            <div className={styles.barGroup}>
+              {day.paid > 0 && (
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>Paid</span>
+                  <div className={styles.barTrack}>
+                    <div
+                      className={styles.barFill}
+                      style={{
+                        width: `${(day.paid / day.revenue) * 100}%`,
+                        background: 'var(--success)',
+                      }}
+                    />
+                  </div>
+                  <span className={styles.barValue}>{formatCurrency(day.paid)}</span>
+                </div>
+              )}
+              {day.pending > 0 && (
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>Pending</span>
+                  <div className={styles.barTrack}>
+                    <div
+                      className={styles.barFill}
+                      style={{
+                        width: `${(day.pending / day.revenue) * 100}%`,
+                        background: 'var(--warning)',
+                      }}
+                    />
+                  </div>
+                  <span className={styles.barValue}>{formatCurrency(day.pending)}</span>
+                </div>
+              )}
+              {day.refunded > 0 && (
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>Refunded</span>
+                  <div className={styles.barTrack}>
+                    <div
+                      className={styles.barFill}
+                      style={{
+                        width: `${(day.refunded / day.revenue) * 100}%`,
+                        background: '#818cf8',
+                      }}
+                    />
+                  </div>
+                  <span className={styles.barValue}>{formatCurrency(day.refunded)}</span>
+                </div>
+              )}
+              {day.cancelled > 0 && (
+                <div className={styles.barRow}>
+                  <span className={styles.barLabel}>Cancelled</span>
+                  <div className={styles.barTrack}>
+                    <div
+                      className={styles.barFill}
+                      style={{
+                        width: `${(day.cancelled / day.revenue) * 100}%`,
+                        background: 'var(--danger)',
+                      }}
+                    />
+                  </div>
+                  <span className={styles.barValue}>{formatCurrency(day.cancelled)}</span>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.orderList}>
+              {day.dayOrders.map(o => {
+                const sc = STATUS_COLORS[o.status] || {}
+                return (
+                  <div key={o.id} className={styles.orderRow}>
+                    <span className={styles.orderRowId}>{o.id}</span>
+                    <span className={styles.orderRowCustomer}>{o.customer}</span>
+                    <span className={styles.orderRowBadge} style={{ background: sc.bg, color: sc.color }}>
+                      {o.status}
+                    </span>
+                    <span className={styles.orderRowTotal}>{formatCurrency(o.total)}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+<<<FILE path="src/components/DailyTotals.jsx">>>
+import { useMemo } from "react";
+import useStore from "../store/useStore";
+import { formatCurrency } from "../utils/format";
+import styles from "./DailyTotals.module.css";
+
+export default function DailyTotals() {
+  const orders = useStore((s) => s.orders);
+
+  const dailyData = useMemo(() => {
+    const map = {};
+    orders.forEach((order) => {
+      const date = order.createdAt.slice(0, 10);
+      if (!map[date]) {
+        map[date] = { date, total: 0, count: 0, paid: 0, unpaid: 0, partial: 0 };
+      }
+      map[date].total += order.total;
+      map[date].count += 1;
+      if (order.paymentStatus === "paid") map[date].paid += 1;
+      else if (order.paymentStatus === "unpaid") map[date].unpaid += 1;
+      else if (order.paymentStatus === "partial") map[date].partial += 1;
+    });
+    return Object.values(map).sort((a, b) => b.date.localeCompare(a.date));
+  }, [orders]);
+
+  const grandTotal = useMemo(
+    () => dailyData.reduce((sum, d) => sum + d.total, 0),
+    [dailyData]
+  );
+
+  if (dailyData.length === 0) {
+    return (
+      <div className={styles.empty}>
+        <p>No orders to display.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.wrapper}>
+      <div className={styles.summary}>
+        <div className={styles.summaryCard}>
+          <span className={styles.summaryLabel}>Grand Total</span>
+          <span className={styles.summaryValue}>{formatCurrency(grandTotal)}</span>
+        </div>
+        <div className={styles.summaryCard}>
+          <span className={styles.summaryLabel}>Total Orders</span>
+          <span className={styles.summaryValue}>
+            {dailyData.reduce((s, d) => s + d.count, 0)}
+          </span>
+        </div>
+        <div className={styles.summaryCard}>
+          <span className={styles.summaryLabel}>Days Tracked</span>
+          <span className={styles.summaryValue}>{dailyData.length}</span>
+        </div>
+      </div>
+
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Orders</th>
+              <th className={styles.right}>Daily Total</th>
+              <th className={styles.center}>Paid</th>
+              <th className={styles.center}>Partial</th>
+              <th className={styles.center}>Unpaid</th>
+              <th className={styles.right}>Avg Order</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dailyData.map((row) => (
+              <tr key={row.date} className={styles.row}>
+                <td className={styles.date}>
+                  {new Date(row.date + "T00:00:00").toLocaleDateString("en-US", {
+                    weekday: "short",
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </td>
+                <td className={styles.center}>{row.count}</td>
+                <td className={`${styles.right} ${styles.total}`}>
+                  {formatCurrency(row.total)}
+                </td>
+                <td className={styles.center}>
+                  {row.paid > 0 ? (
+                    <span className={`${styles.badge} ${styles.paid}`}>{row.paid}</span>
+                  ) : (
+                    <span className={styles.zero}>—</span>
+                  )}
+                </td>
+                <td className={styles.center}>
+                  {row.partial > 0 ? (
+                    <span className={`${styles.badge} ${styles.partial}`}>{row.partial}</span>
+                  ) : (
+                    <span className={styles.zero}>—</span>
+                  )}
+                </td>
+                <td className={styles.center}>
+                  {row.unpaid > 0 ? (
+                    <span className={`${styles.badge} ${styles.unpaid}`}>{row.unpaid}</span>
+                  ) : (
+                    <span className={styles.zero}>—</span>
+                  )}
+                </td>
+                <td className={styles.right}>
+                  {formatCurrency(row.total / row.count)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className={styles.footRow}>
+              <td>
+                <strong>Total</strong>
+              </td>
+              <td className={styles.center}>
+                <strong>{dailyData.reduce((s, d) => s + d.count, 0)}</strong>
+              </td>
+              <td className={`${styles.right} ${styles.total}`}>
+                <strong>{formatCurrency(grandTotal)}</strong>
+              </td>
+              <td className={styles.center}>
+                <strong>{dailyData.reduce((s, d) => s + d.paid, 0)}</strong>
+              </td>
+              <td className={styles.center}>
+                <strong>{dailyData.reduce((s, d) => s + d.partial, 0)}</strong>
+              </td>
+              <td className={styles.center}>
+                <strong>{dailyData.reduce((s, d) => s + d.unpaid, 0)}</strong>
+              </td>
+              <td className={styles.right}>—</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/DailyTotals.module.css">>>
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* Summary cards */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.summaryCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.summaryValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.1;
+}
+
+/* Table */
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  background: var(--surface);
+}
+
+.table thead tr {
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+}
+
+.table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.85rem 1rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.row:hover td {
+  background: var(--bg);
+}
+
+.row:last-child td {
+  border-bottom: none;
+}
+
+.footRow td {
+  padding: 0.85rem 1rem;
+  background: var(--bg);
+  border-top: 2px solid var(--border);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+/* Alignment helpers */
+.right {
+  text-align: right !important;
+}
+
+.center {
+  text-align: center !important;
+}
+
+/* Date cell */
+.date {
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Total cell */
+.total {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 0.4rem;
+}
+
+.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.partial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.unpaid {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.zero {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  .summaryValue {
+    font-size: 1.3rem;
+  }
+
+  .table th,
+  .table td,
+  .footRow td {
+    padding: 0.65rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+<<<END FILE>>>

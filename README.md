@@ -20,7 +20,7 @@ npx pnpm@9.15.4 --filter @terrarium/web dev
 
 Open http://localhost:5173/
 
-`infra:up` starts Postgres, Redis, Traefik, the API on port 3001, and the worker. The parent UI proxies `/sessions` to that API.
+`infra:up` starts Postgres (**host port 5433**), Redis (**6380**), Traefik, the API on port 3001, and the worker — so Terrarium does not bind 5432/6379 if another project already uses them. The parent UI proxies `/sessions` to that API.
 
 After a code change in the API, agents, or sandbox, rebuild those containers:
 

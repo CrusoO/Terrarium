@@ -1,0 +1,227 @@
+{
+  "durationMs": 22734,
+  "events": [
+    {
+      "atMs": 1791667061280,
+      "name": "preview.healthy",
+      "payload": {
+        "previewUrl": "http://127.0.0.1:50522/"
+      }
+    }
+  ],
+  "fileMap": {
+    "boilerplate": {
+      "estimatedBoilerplateShare": 0.509,
+      "estimatedBoilerplateTokens": 7718,
+      "estimatedTokensByCategory": {
+        "business-logic": 5288,
+        "config": 311,
+        "layout": 4998,
+        "mock-data": 2067,
+        "ui": 2161,
+        "ui-primitives": 342
+      }
+    },
+    "fileCount": 23,
+    "jsonOverheadEstimatedTokens": 870,
+    "jsonWrappedBytes": 64172,
+    "jsonWrappedEstimatedTokens": 16043,
+    "rawCodeBytes": 60865,
+    "rawCodeEstimatedTokens": 15173,
+    "tokensPerFileEstimated": {
+      "index.html": {
+        "bytes": 502,
+        "category": "config",
+        "estimatedTokens": 124
+      },
+      "package.json": {
+        "bytes": 363,
+        "category": "config",
+        "estimatedTokens": 91
+      },
+      "src/App.jsx": {
+        "bytes": 1454,
+        "category": "ui",
+        "estimatedTokens": 364
+      },
+      "src/components/AppShell.jsx": {
+        "bytes": 338,
+        "category": "ui",
+        "estimatedTokens": 84
+      },
+      "src/components/DailyTotalsCard.jsx": {
+        "bytes": 497,
+        "category": "ui",
+        "estimatedTokens": 124
+      },
+      "src/components/Modal.jsx": {
+        "bytes": 878,
+        "category": "ui",
+        "estimatedTokens": 220
+      },
+      "src/components/Navbar.jsx": {
+        "bytes": 1032,
+        "category": "ui",
+        "estimatedTokens": 257
+      },
+      "src/components/OrderCard.jsx": {
+        "bytes": 911,
+        "category": "ui",
+        "estimatedTokens": 228
+      },
+      "src/components/OrderTable.jsx": {
+        "bytes": 2390,
+        "category": "ui",
+        "estimatedTokens": 597
+      },
+      "src/components/SearchBar.jsx": {
+        "bytes": 698,
+        "category": "ui",
+        "estimatedTokens": 174
+      },
+      "src/components/StatusBadge.jsx": {
+        "bytes": 453,
+        "category": "ui",
+        "estimatedTokens": 113
+      },
+      "src/context/OrderContext.jsx": {
+        "bytes": 1341,
+        "category": "mock-data",
+        "estimatedTokens": 335
+      },
+      "src/data/seedData.js": {
+        "bytes": 6930,
+        "category": "mock-data",
+        "estimatedTokens": 1732
+      },
+      "src/hooks/useDailyTotals.js": {
+        "bytes": 786,
+        "category": "ui-primitives",
+        "estimatedTokens": 196
+      },
+      "src/hooks/useOrderSearch.js": {
+        "bytes": 584,
+        "category": "ui-primitives",
+        "estimatedTokens": 146
+      },
+      "src/main.jsx": {
+        "bytes": 247,
+        "category": "config",
+        "estimatedTokens": 62
+      },
+      "src/styles/global.css": {
+        "bytes": 20036,
+        "category": "layout",
+        "estimatedTokens": 4975
+      },
+      "src/views/Dashboard.jsx": {
+        "bytes": 4820,
+        "category": "business-logic",
+        "estimatedTokens": 1202
+      },
+      "src/views/NewOrder.jsx": {
+        "bytes": 9648,
+        "category": "business-logic",
+        "estimatedTokens": 2410
+      },
+      "src/views/OrderDetail.jsx": {
+        "bytes": 4234,
+        "category": "business-logic",
+        "estimatedTokens": 1058
+      },
+      "src/views/OrderList.jsx": {
+        "bytes": 2473,
+        "category": "business-logic",
+        "estimatedTokens": 618
+      },
+      "styles.css": {
+        "bytes": 92,
+        "category": "layout",
+        "estimatedTokens": 23
+      },
+      "vite.config.js": {
+        "bytes": 136,
+        "category": "config",
+        "estimatedTokens": 34
+      }
+    }
+  },
+  "finishedAtMs": 1791667061288,
+  "headline": {
+    "generationSource": "fallback",
+    "healAttempts": 0,
+    "infrastructureStageSeconds": 8.271,
+    "modelStageSeconds": 18.567,
+    "timeToFirstFileSeconds": null,
+    "timeToHealthyPreviewSeconds": 22.726
+  },
+  "modelCalls": [],
+  "prompt": "Add a status filter to the main list. Go ahead and build it.",
+  "runId": "e4594a9540e549ce938a6c4c12d4b2b6-1791667038554",
+  "runType": "new",
+  "sessionId": "e4594a9540e549ce938a6c4c12d4b2b6",
+  "stages": [
+    {
+      "durationMs": 2273,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791667038557
+    },
+    {
+      "durationMs": 16294,
+      "kind": "model",
+      "name": "editor",
+      "startedAtMs": 1791667040834
+    },
+    {
+      "durationMs": 5,
+      "kind": "infrastructure",
+      "name": "save_edit_filemap",
+      "startedAtMs": 1791667057129
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "preview_edit_file_replay",
+      "startedAtMs": 1791667057134
+    },
+    {
+      "durationMs": 3,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791667057137
+    },
+    {
+      "durationMs": 4,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791667057141
+    },
+    {
+      "durationMs": 3,
+      "kind": "infrastructure",
+      "name": "github_sync",
+      "startedAtMs": 1791667057146
+    },
+    {
+      "durationMs": 1430,
+      "kind": "infrastructure",
+      "name": "sandbox_start",
+      "startedAtMs": 1791667057174
+    },
+    {
+      "durationMs": 2674,
+      "kind": "infrastructure",
+      "name": "sandbox_health_check",
+      "startedAtMs": 1791667058604
+    },
+    {
+      "durationMs": 4150,
+      "kind": "infrastructure",
+      "name": "sandbox_boot_and_health",
+      "startedAtMs": 1791667057137
+    }
+  ],
+  "startedAtMs": 1791667038554,
+  "status": "edited"
+}

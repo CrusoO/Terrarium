@@ -62,6 +62,10 @@ class SmokeReportTests(unittest.TestCase):
             "react",
         )
         self.assertEqual(
+            project_runtime({"package.json": "{}", "src/main.tsx": "", "src/App.tsx": ""}),
+            "react",
+        )
+        self.assertEqual(
             project_runtime(
                 {
                     "frontend/package.json": "{}",

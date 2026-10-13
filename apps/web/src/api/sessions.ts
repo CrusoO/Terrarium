@@ -43,7 +43,7 @@ export async function createSession(
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error("Could not reach the API. Check that it is running on port 3001.");
+      throw new Error("Could not reach the API. Check that it is running on port 3010.");
     }
     throw error;
   } finally {

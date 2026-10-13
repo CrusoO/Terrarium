@@ -1,0 +1,20 @@
+{
+  "sessionId": "5c15cf8247b24b66b6395a14c0a0e074",
+  "events": [
+    {
+      "name": "session.created",
+      "payload": {
+        "actorId": "eMRTBevJGWP0UtqxYCXKpGpYDQs1"
+      }
+    },
+    {
+      "name": "sandbox.unhealthy",
+      "payload": {
+        "logs": "not supported in this demo",
+        "message": "not supported in this demo",
+        "offerRetry": false,
+        "terminal": true
+      }
+    }
+  ]
+}

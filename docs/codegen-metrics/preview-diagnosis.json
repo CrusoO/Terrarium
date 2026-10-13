@@ -1,0 +1,48 @@
+{
+  "rows": [
+    {
+      "sessionId": "16905fa5b32f403187e9930e719b8ede",
+      "fileCount": 21,
+      "secrets": 0,
+      "codeIssues": 0,
+      "blocked": false,
+      "cause": "not-blocked-by-preboot",
+      "sandboxBooted": true,
+      "findings": [],
+      "health": "running",
+      "previewUrl": "http://127.0.0.1:62434/",
+      "logsExcerpt": "\n> order-tracker@1.0.0 dev\n> vite --host 0.0.0.0 --base /\n\n",
+      "port": "http://127.0.0.1:62434/"
+    },
+    {
+      "sessionId": "af2015a93ddf4a78a19ba19a30d8e5f9",
+      "fileCount": 23,
+      "secrets": 0,
+      "codeIssues": 0,
+      "blocked": false,
+      "cause": "not-blocked-by-preboot",
+      "sandboxBooted": false,
+      "findings": []
+    },
+    {
+      "sessionId": "fd0f6906ca8f4f3fa09b825352ed1903",
+      "fileCount": 17,
+      "secrets": 0,
+      "codeIssues": 0,
+      "blocked": false,
+      "cause": "not-blocked-by-preboot",
+      "sandboxBooted": false,
+      "findings": []
+    },
+    {
+      "label": "known-good-template",
+      "sandboxBooted": true,
+      "prebootBlocked": false,
+      "health": "running",
+      "previewUrl": "http://127.0.0.1:64199/",
+      "containerId": "4b92cfc9361c77c28c5e7f6e0a129a59493811d93e77471075d91d702d85e224",
+      "logsExcerpt": "\n> dev\n> vite --host 0.0.0.0 --base /\n\n\n  VITE v7.3.7  ready in 1897 ms\n\n  \u279c  Local:   http://localhost:5173/\n  \u279c  Network: http://172.19.0.7:5173/\n",
+      "cause": "infrastructure-ok"
+    }
+  ]
+}

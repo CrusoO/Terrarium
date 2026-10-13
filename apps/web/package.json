@@ -15,6 +15,7 @@
     "@mui/material": "^9.3.1",
     "@terrarium/contracts": "workspace:*",
     "firebase": "^12.19.0",
+    "gsap": "^3.15.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

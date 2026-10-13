@@ -1,0 +1,1755 @@
+<<<FILE path="package.json">>>
+{
+  "name": "class-roster",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.4.0"
+  }
+}
+<<<END FILE>>>
+<<<FILE path="vite.config.js">>>
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+<<<END FILE>>>
+<<<FILE path="index.html">>>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Class Roster</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+<<<END FILE>>>
+<<<FILE path="src/main.jsx">>>
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+<<<END FILE>>>
+<<<FILE path="src/index.css">>>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #f0f4f8;
+  color: #1a202c;
+  min-height: 100vh;
+}
+
+:root {
+  --primary: #4f46e5;
+  --primary-dark: #3730a3;
+  --primary-light: #e0e7ff;
+  --success: #059669;
+  --success-light: #d1fae5;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+}
+<<<END FILE>>>
+<<<FILE path="src/data/students.js">>>
+export const INITIAL_STUDENTS = [
+  { id: 1,  firstName: 'Ava',      lastName: 'Thompson',  email: 'ava.thompson@school.edu',   grade: '10th', gpa: 3.8, status: 'active',    phone: '555-0101', address: '12 Maple St', notes: 'Honor roll student. Participates actively in class discussions.' },
+  { id: 2,  firstName: 'Liam',     lastName: 'Nguyen',    email: 'liam.nguyen@school.edu',    grade: '10th', gpa: 3.2, status: 'active',    phone: '555-0102', address: '34 Oak Ave',  notes: 'Strong in mathematics. Needs support in writing.' },
+  { id: 3,  firstName: 'Sophia',   lastName: 'Patel',     email: 'sophia.patel@school.edu',   grade: '11th', gpa: 3.9, status: 'active',    phone: '555-0103', address: '56 Pine Rd',  notes: 'Exceptional student. Science fair winner.' },
+  { id: 4,  firstName: 'Noah',     lastName: 'Williams',  email: 'noah.williams@school.edu',  grade: '9th',  gpa: 2.7, status: 'inactive',  phone: '555-0104', address: '78 Elm Blvd', notes: 'Transferred from another district. Still adjusting.' },
+  { id: 5,  firstName: 'Isabella', lastName: 'Martinez',  email: 'isabella.m@school.edu',     grade: '11th', gpa: 3.5, status: 'active',    phone: '555-0105', address: '90 Cedar Ln', notes: 'Active in drama club and student council.' },
+  { id: 6,  firstName: 'Ethan',    lastName: 'Johnson',   email: 'ethan.j@school.edu',        grade: '9th',  gpa: 2.4, status: 'probation', phone: '555-0106', address: '11 Birch Way', notes: 'Attendance issues this semester. Parent meeting scheduled.' },
+  { id: 7,  firstName: 'Mia',      lastName: 'Chen',      email: 'mia.chen@school.edu',       grade: '12th', gpa: 4.0, status: 'active',    phone: '555-0107', address: '22 Walnut Dr', notes: 'Valedictorian candidate. College applications in progress.' },
+  { id: 8,  firstName: 'Oliver',   lastName: 'Brown',     email: 'oliver.b@school.edu',       grade: '10th', gpa: 3.1, status: 'active',    phone: '555-0108', address: '33 Spruce Ct', notes: 'Good team player. Excels in group projects.' },
+  { id: 9,  firstName: 'Emma',     lastName: 'Davis',     email: 'emma.davis@school.edu',     grade: '12th', gpa: 3.6, status: 'active',    phone: '555-0109', address: '44 Ash St',   notes: 'Debate team captain. Strong public speaker.' },
+  { id: 10, firstName: 'James',    lastName: 'Wilson',    email: 'james.w@school.edu',        grade: '9th',  gpa: 1.9, status: 'probation', phone: '555-0110', address: '55 Poplar Ave', notes: 'Struggling academically. Tutoring sessions twice a week.' },
+  { id: 11, firstName: 'Charlotte',lastName: 'Moore',     email: 'charlotte.m@school.edu',    grade: '11th', gpa: 3.3, status: 'active',    phone: '555-0111', address: '66 Hickory Rd', notes: 'Art club president. Creative thinker.' },
+  { id: 12, firstName: 'Benjamin', lastName: 'Taylor',    email: 'ben.taylor@school.edu',     grade: '12th', gpa: 2.8, status: 'inactive',  phone: '555-0112', address: '77 Magnolia Blvd', notes: 'On medical leave. Expected return next semester.' },
+]
+
+export const GRADES = ['9th', '10th', '11th', '12th']
+export const STATUSES = ['active', 'inactive', 'probation']
+<<<END FILE>>>
+<<<FILE path="src/App.jsx">>>
+import React, { useState, useMemo } from 'react'
+import { INITIAL_STUDENTS } from './data/students'
+import Toolbar from './components/Toolbar'
+import StudentTable from './components/StudentTable'
+import StudentDetail from './components/StudentDetail'
+import AddStudentModal from './components/AddStudentModal'
+import styles from './App.module.css'
+
+export default function App() {
+  const [students, setStudents] = useState(INITIAL_STUDENTS)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [gradeFilter, setGradeFilter] = useState('all')
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [showAdd, setShowAdd] = useState(false)
+  const [sortConfig, setSortConfig] = useState({ key: 'lastName', dir: 'asc' })
+
+  const filtered = useMemo(() => {
+    let list = students.filter(s => {
+      const q = search.toLowerCase()
+      const matchSearch =
+        !q ||
+        s.firstName.toLowerCase().includes(q) ||
+        s.lastName.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q) ||
+        s.grade.toLowerCase().includes(q)
+      const matchStatus = statusFilter === 'all' || s.status === statusFilter
+      const matchGrade = gradeFilter === 'all' || s.grade === gradeFilter
+      return matchSearch && matchStatus && matchGrade
+    })
+
+    list = [...list].sort((a, b) => {
+      const av = a[sortConfig.key] ?? ''
+      const bv = b[sortConfig.key] ?? ''
+      const cmp = typeof av === 'number'
+        ? av - bv
+        : String(av).localeCompare(String(bv))
+      return sortConfig.dir === 'asc' ? cmp : -cmp
+    })
+
+    return list
+  }, [students, search, statusFilter, gradeFilter, sortConfig])
+
+  function handleSort(key) {
+    setSortConfig(prev =>
+      prev.key === key
+        ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+        : { key, dir: 'asc' }
+    )
+  }
+
+  function handleAddStudent(data) {
+    const newStudent = {
+      ...data,
+      id: Date.now(),
+    }
+    setStudents(prev => [...prev, newStudent])
+    setShowAdd(false)
+  }
+
+  function handleUpdateStudent(updated) {
+    setStudents(prev => prev.map(s => s.id === updated.id ? updated : s))
+    setSelectedStudent(updated)
+  }
+
+  function handleDeleteStudent(id) {
+    setStudents(prev => prev.filter(s => s.id !== id))
+    setSelectedStudent(null)
+  }
+
+  const counts = useMemo(() => ({
+    all: students.length,
+    active: students.filter(s => s.status === 'active').length,
+    inactive: students.filter(s => s.status === 'inactive').length,
+    probation: students.filter(s => s.status === 'probation').length,
+  }), [students])
+
+  return (
+    <div className={styles.app}>
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <div className={styles.headerLeft}>
+            <div className={styles.logo}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="currentColor"/>
+                <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="currentColor" opacity=".7"/>
+              </svg>
+            </div>
+            <div>
+              <h1 className={styles.title}>Class Roster</h1>
+              <p className={styles.subtitle}>Advanced Biology · Period 3 · Ms. Rivera</p>
+            </div>
+          </div>
+          <button className={styles.addBtn} onClick={() => setShowAdd(true)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Student
+          </button>
+        </div>
+      </header>
+
+      <main className={styles.main}>
+        <Toolbar
+          search={search}
+          onSearch={setSearch}
+          statusFilter={statusFilter}
+          onStatusFilter={setStatusFilter}
+          gradeFilter={gradeFilter}
+          onGradeFilter={setGradeFilter}
+          counts={counts}
+          total={filtered.length}
+        />
+
+        <div className={styles.content}>
+          <StudentTable
+            students={filtered}
+            onSelect={setSelectedStudent}
+            selectedId={selectedStudent?.id}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
+
+          {selectedStudent && (
+            <StudentDetail
+              student={selectedStudent}
+              onClose={() => setSelectedStudent(null)}
+              onUpdate={handleUpdateStudent}
+              onDelete={handleDeleteStudent}
+            />
+          )}
+        </div>
+      </main>
+
+      {showAdd && (
+        <AddStudentModal
+          onAdd={handleAddStudent}
+          onClose={() => setShowAdd(false)}
+        />
+      )}
+    </div>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/App.module.css">>>
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: white;
+  border-bottom: 1px solid var(--gray-200);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.headerInner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  background: var(--primary);
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 0.78rem;
+  color: var(--gray-500);
+  margin-top: 1px;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+
+.addBtn:hover { background: var(--primary-dark); }
+.addBtn:active { transform: scale(.97); }
+
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  flex: 1;
+}
+
+@media (min-width: 1100px) {
+  .content {
+    grid-template-columns: 1fr 380px;
+    align-items: start;
+  }
+}
+<<<END FILE>>>
+<<<FILE path="src/components/Toolbar.jsx">>>
+import React from 'react'
+import { GRADES } from '../data/students'
+import styles from './Toolbar.module.css'
+
+const STATUS_TABS = [
+  { value: 'all', label: 'All' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+  { value: 'probation', label: 'Probation' },
+]
+
+export default function Toolbar({
+  search, onSearch,
+  statusFilter, onStatusFilter,
+  gradeFilter, onGradeFilter,
+  counts, total
+}) {
+  return (
+    <div className={styles.toolbar}>
+      <div className={styles.topRow}>
+        <div className={styles.searchWrap}>
+          <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            className={styles.search}
+            type="text"
+            placeholder="Search by name, email, or grade…"
+            value={search}
+            onChange={e => onSearch(e.target.value)}
+          />
+          {search && (
+            <button className={styles.clearBtn} onClick={() => onSearch('')} aria-label="Clear search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          )}
+        </div>
+
+        <div className={styles.filters}>
+          <select
+            className={styles.select}
+            value={gradeFilter}
+            onChange={e => onGradeFilter(e.target.value)}
+          >
+            <option value="all">All Grades</option>
+            {GRADES.map(g => <option key={g} value={g}>{g} Grade</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div className={styles.bottomRow}>
+        <div className={styles.tabs}>
+          {STATUS_TABS.map(tab => (
+            <button
+              key={tab.value}
+              className={`${styles.tab} ${statusFilter === tab.value ? styles.tabActive : ''}`}
+              onClick={() => onStatusFilter(tab.value)}
+            >
+              {tab.label}
+              <span className={`${styles.badge} ${statusFilter === tab.value ? styles.badgeActive : ''}`}>
+                {counts[tab.value]}
+              </span>
+            </button>
+          ))}
+        </div>
+        <p className={styles.resultCount}>
+          Showing <strong>{total}</strong> student{total !== 1 ? 's' : ''}
+        </p>
+      </div>
+    </div>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/components/Toolbar.module.css">>>
+.toolbar {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.topRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  padding: 10px 36px 10px 38px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: var(--gray-50);
+  color: var(--gray-800);
+  transition: border-color .15s, box-shadow .15s;
+  outline: none;
+}
+
+.search:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+  background: white;
+}
+
+.clearBtn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-400);
+  display: flex;
+  padding: 2px;
+  border-radius: 4px;
+}
+.clearBtn:hover { color: var(--gray-600); }
+
+.filters {
+  display: flex;
+  gap: 10px;
+}
+
+.select {
+  padding: 10px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  background: var(--gray-50);
+  color: var(--gray-700);
+  cursor: pointer;
+  outline: none;
+  transition: border-color .15s;
+}
+.select:focus { border-color: var(--primary); }
+
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--gray-100);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border: none;
+  background: none;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.tab:hover { background: white; color: var(--gray-800); }
+
+.tabActive {
+  background: white;
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+
+.badge {
+  background: var(--gray-200);
+  color: var(--gray-600);
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.badgeActive {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.resultCount {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+.resultCount strong { color: var(--gray-700); }
+<<<END FILE>>>
+<<<FILE path="src/components/StudentTable.jsx">>>
+import React from 'react'
+import StatusBadge from './StatusBadge'
+import styles from './StudentTable.module.css'
+
+const COLUMNS = [
+  { key: 'lastName',  label: 'Name' },
+  { key: 'grade',     label: 'Grade' },
+  { key: 'gpa',       label: 'GPA' },
+  { key: 'status',    label: 'Status' },
+  { key: 'email',     label: 'Email' },
+]
+
+export default function StudentTable({ students, onSelect, selectedId, sortConfig, onSort }) {
+  function SortIcon({ col }) {
+    if (sortConfig.key !== col) return (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" opacity=".3">
+        <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
+      </svg>
+    )
+    return sortConfig.dir === 'asc'
+      ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7 15l5 5 5-5"/></svg>
+      : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7 9l5-5 5 5"/></svg>
+  }
+
+  if (students.length === 0) {
+    return (
+      <div className={styles.empty}>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity=".3">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <p>No students match your search</p>
+        <span>Try adjusting your filters</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.wrapper}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            {COLUMNS.map(col => (
+              <th key={col.key} onClick={() => onSort(col.key)} className={styles.th}>
+                <span className={styles.thInner}>
+                  {col.label}
+                  <SortIcon col={col.key} />
+                </span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {students.map(student => (
+            <tr
+              key={student.id}
+              className={`${styles.row} ${selectedId === student.id ? styles.rowSelected : ''}`}
+              onClick={() => onSelect(student)}
+            >
+              <td className={styles.td}>
+                <div className={styles.nameCell}>
+                  <div className={styles.avatar} data-status={student.status}>
+                    {student.firstName[0]}{student.lastName[0]}
+                  </div>
+                  <div>
+                    <div className={styles.fullName}>{student.firstName} {student.lastName}</div>
+                    <div className={styles.emailSmall}>{student.email}</div>
+                  </div>
+                </div>
+              </td>
+              <td className={styles.td}>
+                <span className={styles.gradeChip}>{student.grade}</span>
+              </td>
+              <td className={styles.td}>
+                <span className={`${styles.gpa} ${student.gpa >= 3.5 ? styles.gpaHigh : student.gpa >= 2.5 ? styles.gpaMid : styles.gpaLow}`}>
+                  {student.gpa.toFixed(1)}
+                </span>
+              </td>
+              <td className={styles.td}>
+                <StatusBadge status={student.status} />
+              </td>
+              <td className={`${styles.td} ${styles.emailCol}`}>{student.email}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/components/StudentTable.module.css">>>
+.wrapper {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th {
+  padding: 13px 16px;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.th:hover { background: var(--gray-100); color: var(--gray-700); }
+
+.thInner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.row {
+  cursor: pointer;
+  transition: background .12s;
+  border-bottom: 1px solid var(--gray-100);
+}
+.row:last-child { border-bottom: none; }
+.row:hover { background: var(--gray-50); }
+.rowSelected { background: var(--primary-light) !important; }
+
+.td {
+  padding: 14px 16px;
+  font-size: 0.88rem;
+  color: var(--gray-700);
+  vertical-align: middle;
+}
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+.avatar[data-status="inactive"] { background: var(--gray-100); color: var(--gray-500); }
+.avatar[data-status="probation"] { background: var(--warning-light); color: var(--warning); }
+
+.fullName {
+  font-weight: 600;
+  color: var(--gray-800);
+  font-size: 0.9rem;
+}
+
+.emailSmall {
+  font-size: 0.78rem;
+  color: var(--gray-400);
+  margin-top: 1px;
+}
+
+.emailCol {
+  color: var(--gray-500);
+  font-size: 0.83rem;
+}
+
+@media (max-width: 700px) {
+  .emailCol { display: none; }
+}
+
+.gradeChip {
+  background: var(--gray-100);
+  color: var(--gray-600);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.gpa {
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.gpaHigh { background: var(--success-light); color: var(--success); }
+.gpaMid  { background: var(--warning-light); color: var(--warning); }
+.gpaLow  { background: var(--danger-light);  color: var(--danger); }
+
+.empty {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 64px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--gray-400);
+}
+.empty p { font-size: 1rem; font-weight: 600; color: var(--gray-500); }
+.empty span { font-size: 0.85rem; }
+<<<END FILE>>>
+<<<FILE path="src/components/StatusBadge.jsx">>>
+import React from 'react'
+import styles from './StatusBadge.module.css'
+
+export default function StatusBadge({ status }) {
+  return (
+    <span className={`${styles.badge} ${styles[status]}`}>
+      <span className={styles.dot} />
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </span>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/components/StatusBadge.module.css">>>
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.active   { background: var(--success-light); color: var(--success); }
+.active .dot { background: var(--success); }
+
+.inactive { background: var(--gray-100); color: var(--gray-500); }
+.inactive .dot { background: var(--gray-400); }
+
+.probation { background: var(--warning-light); color: var(--warning); }
+.probation .dot { background: var(--warning); }
+<<<END FILE>>>
+<<<FILE path="src/components/StudentDetail.jsx">>>
+import React, { useState } from 'react'
+import { GRADES, STATUSES } from '../data/students'
+import StatusBadge from './StatusBadge'
+import styles from './StudentDetail.module.css'
+
+export default function StudentDetail({ student, onClose, onUpdate, onDelete }) {
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState({ ...student })
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  function handleChange(e) {
+    const { name, value } = e.target
+    setForm(prev => ({ ...prev, [name]: name === 'gpa' ? parseFloat(value) || 0 : value }))
+  }
+
+  function handleSave() {
+    onUpdate(form)
+    setEditing(false)
+  }
+
+  function handleCancel() {
+    setForm({ ...student })
+    setEditing(false)
+  }
+
+  const gpaColor = student.gpa >= 3.5 ? 'high' : student.gpa >= 2.5 ? 'mid' : 'low'
+
+  return (
+    <div className={styles.panel}>
+      <div className={styles.panelHeader}>
+        <h2 className={styles.panelTitle}>Student Detail</h2>
+        <div className={styles.headerActions}>
+          {!editing && (
+            <button className={styles.editBtn} onClick={() => setEditing(true)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Edit
+            </button>
+          )}
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.body}>
+        {/* Profile hero */}
+        <div className={styles.hero}>
+          <div className={styles.heroAvatar} data-status={student.status}>
+            {student.firstName[0]}{student.lastName[0]}
+          </div>
+          <div className={styles.heroInfo}>
+            <h3 className={styles.heroName}>{student.firstName} {student.lastName}</h3>
+            <p className={styles.heroEmail}>{student.email}</p>
+            <div className={styles.heroBadges}>
+              <StatusBadge status={student.status} />
+              <span className={styles.gradeChip}>{student.grade} Grade</span>
+            </div>
+          </div>
+          <div className={`${styles.gpaCircle} ${styles[`gpa_${gpaColor}`]}`}>
+            <span className={styles.gpaVal}>{student.gpa.toFixed(1)}</span>
+            <span className={styles.gpaLabel}>GPA</span>
+          </div>
+        </div>
+
+        {editing ? (
+          <div className={styles.editForm}>
+            <div className={styles.formGrid}>
+              <div className={styles.field}>
+                <label>First Name</label>
+                <input name="firstName" value={form.firstName} onChange={handleChange} />
+              </div>
+              <div className={styles.field}>
+                <label>Last Name</label>
+                <input name="lastName" value={form.lastName} onChange={handleChange} />
+              </div>
+              <div className={styles.field}>
+                <label>Email</label>
+                <input name="email" value={form.email} onChange={handleChange} />
+              </div>
+              <div className={styles.field}>
+                <label>Phone</label>
+                <input name="phone" value={form.phone} onChange={handleChange} />
+              </div>
+              <div className={styles.field}>
+                <label>Grade</label>
+                <select name="grade" value={form.grade} onChange={handleChange}>
+                  {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
+              <div className={styles.field}>
+                <label>GPA</label>
+                <input name="gpa" type="number" step="0.1" min="0" max="4" value={form.gpa} onChange={handleChange} />
+              </div>
+              <div className={styles.field}>
+                <label>Status</label>
+                <select name="status" value={form.status} onChange={handleChange}>
+                  {STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                </select>
+              </div>
+              <div className={styles.field}>
+                <label>Address</label>
+                <input name="address" value={form.address} onChange={handleChange} />
+              </div>
+            </div>
+            <div className={styles.field}>
+              <label>Notes</label>
+              <textarea name="notes" value={form.notes} onChange={handleChange} rows={3} />
+            </div>
+            <div className={styles.editActions}>
+              <button className={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
+              <button className={styles.saveBtn} onClick={handleSave}>Save Changes</button>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.details}>
+            <Section title="Contact Information">
+              <InfoRow icon="📧" label="Email" value={student.email} />
+              <InfoRow icon="📞" label="Phone" value={student.phone} />
+              <InfoRow icon="🏠" label="Address" value={student.address} />
+            </Section>
+
+            <Section title="Academic Information">
+              <InfoRow icon="🎓" label="Grade" value={`${student.grade} Grade`} />
+              <InfoRow icon="📊" label="GPA" value={student.gpa.toFixed(2)} />
+              <InfoRow icon="📋" label="Status" value={<StatusBadge status={student.status} />} />
+            </Section>
+
+            {student.notes && (
+              <Section title="Notes">
+                <p className={styles.notes}>{student.notes}</p>
+              </Section>
+            )}
+
+            <div className={styles.dangerZone}>
+              {!confirmDelete ? (
+                <button className={styles.deleteBtn} onClick={() => setConfirmDelete(true)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                    <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                  </svg>
+                  Remove Student
+                </button>
+              ) : (
+                <div className={styles.confirmDelete}>
+                  <p>Remove <strong>{student.firstName} {student.lastName}</strong> from the roster?</p>
+                  <div className={styles.confirmActions}>
+                    <button className={styles.cancelBtn} onClick={() => setConfirmDelete(false)}>Cancel</button>
+                    <button className={styles.confirmBtn} onClick={() => onDelete(student.id)}>Yes, Remove</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Section({ title, children }) {
+  return (
+    <div className={styles.section}>
+      <h4 className={styles.sectionTitle}>{title}</h4>
+      {children}
+    </div>
+  )
+}
+
+function InfoRow({ icon, label, value }) {
+  return (
+    <div className={styles.infoRow}>
+      <span className={styles.infoIcon}>{icon}</span>
+      <span className={styles.infoLabel}>{label}</span>
+      <span className={styles.infoValue}>{value}</span>
+    </div>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/components/StudentDetail.module.css">>>
+.panel {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 92px;
+  max-height: calc(100vh - 112px);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+  flex-shrink: 0;
+}
+
+.panelTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gray-700);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.editBtn:hover { background: #c7d2fe; }
+
+.closeBtn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--gray-400);
+  transition: background .15s, color .15s;
+}
+.closeBtn:hover { background: var(--gray-100); color: var(--gray-700); }
+
+.body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Hero */
+.hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--primary-light) 0%, #f0f4ff 100%);
+  border-radius: 10px;
+}
+
+.heroAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--primary);
+  color: white;
+}
+.heroAvatar[data-status="inactive"] { background: var(--gray-400); }
+.heroAvatar[data-status="probation"] { background: var(--warning); }
+
+.heroInfo { flex: 1; }
+
+.heroName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.heroEmail {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.heroBadges {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.gradeChip {
+  background: white;
+  color: var(--gray-600);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--gray-200);
+}
+
+.gpaCircle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.gpa_high { background: var(--success-light); }
+.gpa_mid  { background: var(--warning-light); }
+.gpa_low  { background: var(--danger-light); }
+
+.gpaVal {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.gpa_high .gpaVal { color: var(--success); }
+.gpa_mid  .gpaVal { color: var(--warning); }
+.gpa_low  .gpaVal { color: var(--danger); }
+
+.gpaLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--gray-500);
+}
+
+/* Sections */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--gray-400);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.infoIcon { font-size: 0.9rem; width: 20px; text-align: center; }
+
+.infoLabel {
+  font-size: 0.82rem;
+  color: var(--gray-500);
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: 0.88rem;
+  color: var(--gray-700);
+  font-weight: 500;
+  flex: 1;
+}
+
+.notes {
+  font-size: 0.88rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+  background: var(--gray-50);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--primary);
+}
+
+/* Edit form */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.field input,
+.field select,
+.field textarea {
+  padding: 9px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: var(--gray-800);
+  background: var(--gray-50);
+  outline: none;
+  transition: border-color .15s;
+  font-family: inherit;
+  resize: vertical;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--primary);
+  background: white;
+}
+
+.editActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+/* Danger zone */
+.dangerZone {
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: 1.5px solid var(--danger);
+  color: var(--danger);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.deleteBtn:hover { background: var(--danger-light); }
+
+.confirmDelete {
+  background: var(--danger-light);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.confirmDelete p { font-size: 0.88rem; color: var(--danger); }
+
+.confirmActions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Shared buttons */
+.cancelBtn {
+  padding: 8px 16px;
+  background: white;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: background .15s;
+}
+.cancelBtn:hover { background: var(--gray-50); }
+
+.saveBtn {
+  padding: 8px 18px;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background .15s;
+}
+.saveBtn:hover { background: var(--primary-dark); }
+
+.confirmBtn {
+  padding: 8px 16px;
+  background: var(--danger);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background .15s;
+}
+.confirmBtn:hover { background: #b91c1c; }
+<<<END FILE>>>
+<<<FILE path="src/components/AddStudentModal.jsx">>>
+import React, { useState } from 'react'
+import { GRADES, STATUSES } from '../data/students'
+import styles from './AddStudentModal.module.css'
+
+const EMPTY = {
+  firstName: '', lastName: '', email: '', phone: '',
+  grade: '9th', gpa: '', status: 'active', address: '', notes: ''
+}
+
+export default function AddStudentModal({ onAdd, onClose }) {
+  const [form, setForm] = useState(EMPTY)
+  const [errors, setErrors] = useState({})
+
+  function handleChange(e) {
+    const { name, value } = e.target
+    setForm(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
+  }
+
+  function validate() {
+    const e = {}
+    if (!form.firstName.trim()) e.firstName = 'Required'
+    if (!form.lastName.trim()) e.lastName = 'Required'
+    if (!form.email.trim()) e.email = 'Required'
+    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Invalid email'
+    if (!form.gpa) e.gpa = 'Required'
+    else if (isNaN(form.gpa) || +form.gpa < 0 || +form.gpa > 4) e.gpa = '0.0 – 4.0'
+    return e
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length) { setErrors(errs); return }
+    onAdd({ ...form, gpa: parseFloat(form.gpa) })
+  }
+
+  return (
+    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal}>
+        <div className={styles.modalHeader}>
+          <div className={styles.modalIcon}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+          </div>
+          <div>
+            <h2 className={styles.modalTitle}>Add New Student</h2>
+            <p className={styles.modalSub}>Fill in the student's information below</p>
+          </div>
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.section}>
+            <h3 className={styles.sectionTitle}>Personal Information</h3>
+            <div className={styles.grid}>
+              <Field label="First Name *" error={errors.firstName}>
+                <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="e.g. Jane" className={errors.firstName ? styles.inputError : ''} />
+              </Field>
+              <Field label="Last Name *" error={errors.lastName}>
+                <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="e.g. Smith" className={errors.lastName ? styles.inputError : ''} />
+              </Field>
+              <Field label="Email Address *" error={errors.email}>
+                <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="jane.smith@school.edu" className={errors.email ? styles.inputError : ''} />
+              </Field>
+              <Field label="Phone Number">
+                <input name="phone" value={form.phone} onChange={handleChange} placeholder="555-0100" />
+              </Field>
+              <Field label="Home Address" className={styles.fullWidth}>
+                <input name="address" value={form.address} onChange={handleChange} placeholder="123 Main St" />
+              </Field>
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <h3 className={styles.sectionTitle}>Academic Information</h3>
+            <div className={styles.grid}>
+              <Field label="Grade Level">
+                <select name="grade" value={form.grade} onChange={handleChange}>
+                  {GRADES.map(g => <option key={g} value={g}>{g} Grade</option>)}
+                </select>
+              </Field>
+              <Field label="GPA *" error={errors.gpa}>
+                <input name="gpa" type="number" step="0.1" min="0" max="4" value={form.gpa} onChange={handleChange} placeholder="0.0 – 4.0" className={errors.gpa ? styles.inputError : ''} />
+              </Field>
+              <Field label="Enrollment Status">
+                <select name="status" value={form.status} onChange={handleChange}>
+                  {STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                </select>
+              </Field>
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <h3 className={styles.sectionTitle}>Notes</h3>
+            <textarea
+              name="notes"
+              value={form.notes}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Any relevant notes about this student…"
+              className={styles.textarea}
+            />
+          </div>
+
+          <div className={styles.actions}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+            <button type="submit" className={styles.submitBtn}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Student
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function Field({ label, error, children, className }) {
+  return (
+    <div className={`${styles.field} ${className || ''}`}>
+      <label className={styles.label}>{label}</label>
+      {children}
+      {error && <span className={styles.error}>{error}</span>}
+    </div>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/components/AddStudentModal.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  animation: fadeIn .15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp .2s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0 }
+  to   { transform: translateY(0);    opacity: 1 }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--gray-200);
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+.modalIcon {
+  width: 44px;
+  height: 44px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.modalSub {
+  font-size: 0.82rem;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.closeBtn {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--gray-400);
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+.closeBtn:hover { background: var(--gray-100); color: var(--gray-700); }
+
+.form {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  
+<<<FILE path="src/components/AddStudentModal.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.header h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.closeBtn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field input,
+.field select {
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  background: #fff;
+}
+
+.field input.error,
+.field select.error {
+  border-color: #ef4444;
+}
+
+.errorMsg {
+  font-size: 0.78rem;
+  color: #ef4444;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.cancelBtn {
+  padding: 0.55rem 1.2rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.cancelBtn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.submitBtn {
+  padding: 0.55rem 1.4rem;
+  border: none;
+  border-radius: 8px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.submitBtn:hover {
+  background: #4f46e5;
+}
+
+.submitBtn:active {
+  transform: scale(0.97);
+}
+<<<END FILE>>>

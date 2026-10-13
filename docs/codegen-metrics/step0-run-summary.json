@@ -1,0 +1,64 @@
+{
+  "apiBase": "http://127.0.0.1:3010",
+  "auth": "Bearer TERRARIUM_TEST_TOKEN (Firebase ID token; no API bypass)",
+  "excludedFromBaseline": [
+    "whatsapp",
+    "pen-testing",
+    "trust-attack-pass"
+  ],
+  "requires": "Run API/worker with CODEGEN_METRICS=1",
+  "runs": [
+    {
+      "clarified": false,
+      "durationSeconds": 97.131,
+      "eventCount": 27,
+      "generationSource": "unknown",
+      "label": "sample-customer-order-tracker",
+      "llmModel": null,
+      "llmProvider": null,
+      "prompt": "Build a customer/order tracker web app. Staff enter customer name, order items, pickup date, and payment status. Show a searchable order list, order detail panel, and a dashboard that displays daily totals. Use Vite React, in-memory mock data, no backend, web UI only. Go ahead and build it.",
+      "scope": "web-flow-only",
+      "sessionId": "16905fa5b32f403187e9930e719b8ede",
+      "terminalEvent": "sandbox.unhealthy",
+      "timeToFirstFileEventAt": "2026-10-10T20:33:28.004694Z"
+    },
+    {
+      "clarified": true,
+      "durationSeconds": 106.54,
+      "eventCount": 31,
+      "generationSource": "model-generated",
+      "label": "sample-ecommerce-catalogue",
+      "llmModel": "anthropic.claude-sonnet-4-6",
+      "llmProvider": "bedrock",
+      "prompt": "Build an ecommerce catalogue web app. Shoppers browse a product grid, filter by category, open product detail, add items to a cart, and see a checkout summary output. Use Vite React, in-memory mock catalogue data, no backend, web UI only. Go ahead and build it.",
+      "scope": "web-flow-only",
+      "sessionId": "af2015a93ddf4a78a19ba19a30d8e5f9",
+      "terminalEvent": "sandbox.unhealthy",
+      "timeToFirstFileEventAt": "2026-10-10T20:35:08.481064Z"
+    },
+    {
+      "clarified": true,
+      "durationSeconds": 280.137,
+      "eventCount": 29,
+      "generationSource": "model-generated",
+      "label": "sample-operations-dashboard",
+      "llmModel": "eu.anthropic.claude-sonnet-4-6",
+      "llmProvider": "bedrock",
+      "prompt": "Build an operations dashboard web app. Supervisors enter jobs/tasks with owners and due dates, update status chips, and the app displays reports plus overdue work. Use Vite React, in-memory mock data, no backend, web UI only. Go ahead and build it.",
+      "scope": "web-flow-only",
+      "sessionId": "fd0f6906ca8f4f3fa09b825352ed1903",
+      "terminalEvent": "sandbox.unhealthy",
+      "timeToFirstFileEventAt": "2026-10-10T20:39:52.346718Z"
+    },
+    {
+      "durationSeconds": 1.041,
+      "eventCount": 27,
+      "filesRegeneratedOrChanged": [],
+      "label": "follow-up-edit-status-filter",
+      "prompt": "Add a status filter to the main list. Go ahead and build it.",
+      "scope": "web-flow-only",
+      "sessionId": "16905fa5b32f403187e9930e719b8ede",
+      "terminalEvent": "sandbox.unhealthy"
+    }
+  ]
+}

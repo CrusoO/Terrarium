@@ -1,0 +1,22 @@
+@import './tokens.css';
+body { margin: 0; font-family: var(--font); background: var(--paper); color: var(--ink); }
+.app-shell { max-width: 960px; margin: 0 auto; padding: 24px; }
+.navbar { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.navbar h1 { font-size: 1.6rem; margin: 0 0 8px; }
+.route-nav, .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.page { display: grid; gap: 12px; }
+.layout-board .page { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.layout-split .split { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; }
+.order-card, .entity-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; color: inherit; text-align: left; }
+.filter-row button, .route-nav button, button { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 6px 12px; }
+.status-paid, .status-yes, .status-ok, .status-present, .status-done, .status-booked { color: var(--ok); }
+.status-unpaid, .status-open, .status-low, .status-waiting { color: var(--warn); }
+.status-partial, .status-overdue, .status-out, .status-no, .status-cancelled { color: var(--bad); }
+input, select { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--card); color: var(--ink); }
+.totals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.hero { padding: 28px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); margin-bottom: 16px; }
+.hero h2 { margin: 0 0 8px; font-size: 2rem; }
+.chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin-bottom: 16px; }
+.chart-bars span { flex: 1; background: var(--accent); border-radius: 8px 8px 0 0; min-height: 8px; }
+.wizard-steps { display: flex; gap: 12px; list-style: none; padding: 0; margin: 0 0 16px; }
+.wizard-steps li { border-bottom: 2px solid var(--accent); padding-bottom: 4px; }

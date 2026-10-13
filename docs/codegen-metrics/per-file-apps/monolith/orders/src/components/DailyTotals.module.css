@@ -1,0 +1,166 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* Summary cards */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.summaryCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.summaryValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.1;
+}
+
+/* Table */
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  background: var(--surface);
+}
+
+.table thead tr {
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+}
+
+.table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.85rem 1rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.row:hover td {
+  background: var(--bg);
+}
+
+.row:last-child td {
+  border-bottom: none;
+}
+
+.footRow td {
+  padding: 0.85rem 1rem;
+  background: var(--bg);
+  border-top: 2px solid var(--border);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+/* Alignment helpers */
+.right {
+  text-align: right !important;
+}
+
+.center {
+  text-align: center !important;
+}
+
+/* Date cell */
+.date {
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Total cell */
+.total {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 0.4rem;
+}
+
+.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.partial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.unpaid {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.zero {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  .summaryValue {
+    font-size: 1.3rem;
+  }
+
+  .table th,
+  .table td,
+  .footRow td {
+    padding: 0.65rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}

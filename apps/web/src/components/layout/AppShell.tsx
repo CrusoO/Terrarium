@@ -3,8 +3,9 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import { Box, Tooltip } from "@mui/material";
 import { useSplitPanes } from "../../hooks/useSplitPanes";
-import { IconRail, type ViewType } from "./IconRail";
+import { type ViewType } from "./IconRail";
 import { SplitControlsContext } from "./SplitControls";
+import { Rail } from "../workspace/Rail";
 
 export function AppShell({
   chat,
@@ -12,16 +13,12 @@ export function AppShell({
   view = "chat",
   onViewChange,
   onLogout,
-  pendingApprovals = 0,
-  userName,
 }: {
   chat: ReactNode;
   canvas: ReactNode;
   view?: ViewType;
   onViewChange?: (view: ViewType) => void;
   onLogout?: () => Promise<void>;
-  pendingApprovals?: number;
-  userName?: string;
 }) {
   const split = useSplitPanes();
   const chatSize = split.desktop ? split.chatWidth : split.chatHeight;
@@ -37,8 +34,12 @@ export function AppShell({
         collapseChat: split.collapseChat,
       }}
     >
-      <div ref={split.shellRef} className="flex h-full min-h-0 flex-col bg-white text-ink md:flex-row">
-        <IconRail view={view} onViewChange={onViewChange} onLogout={onLogout} pendingApprovals={pendingApprovals} userName={userName} />
+      <div ref={split.shellRef} className="flex h-full min-h-0 flex-col md:flex-row" style={{ background: "var(--tt-bg)", color: "var(--tt-ink)" }}>
+        <Rail
+          view={view}
+          onViewChange={onViewChange}
+          onLogout={onLogout}
+        />
         {showChat && split.collapsed ? (
           <CollapsedChatStrip desktop={split.desktop} onRestore={split.restoreChat} />
         ) : showChat ? (
@@ -74,14 +75,14 @@ export function AppShell({
               flexShrink: 0,
               width: { xs: "100%", md: 8 },
               height: { xs: 8, md: "100%" },
-              bgcolor: split.dragging ? "#f4e8ec" : "background.paper",
+              bgcolor: split.dragging ? "var(--tt-tint)" : "background.paper",
               borderRight: { md: 1 },
               borderBottom: { xs: 1, md: 0 },
               borderColor: "divider",
               cursor: split.desktop ? "col-resize" : "row-resize",
               touchAction: "none",
               zIndex: 2,
-              "&:hover": { bgcolor: "#f4e8ec" },
+              "&:hover": { bgcolor: "var(--tt-tint)" },
               "&:hover .split-grip": { opacity: 1 },
             }}
           >
@@ -141,7 +142,7 @@ function CollapsedChatStrip({
           cursor: "pointer",
           width: { xs: "100%", md: 40 },
           height: { xs: 40, md: "100%" },
-          "&:hover": { bgcolor: "#f4e8ec" },
+          "&:hover": { bgcolor: "var(--tt-tint)" },
         }}
       >
         {desktop ? <ChevronRightRoundedIcon /> : <KeyboardArrowDownRoundedIcon />}

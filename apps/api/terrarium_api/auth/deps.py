@@ -15,6 +15,8 @@ _CERTS_URL = (
     "securetoken@system.gserviceaccount.com"
 )
 _cache: dict[str, object] = {}
+# Fresh Firebase tokens carry Google's iat; a container clock a few seconds behind rejects them.
+_CLOCK_SKEW_SECONDS = 60
 
 
 def _get_public_keys() -> dict[str, str]:
@@ -60,6 +62,7 @@ def _verify(token: str) -> dict[str, str]:
             algorithms=["RS256"],
             audience=FIREBASE_PROJECT_ID,
             issuer=f"https://securetoken.google.com/{FIREBASE_PROJECT_ID}",
+            leeway=_CLOCK_SKEW_SECONDS,
         )
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")

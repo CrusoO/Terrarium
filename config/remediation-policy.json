@@ -1,0 +1,12 @@
+{
+  "suppress": {
+    "low": { "auto": true, "ttlDays": 90 },
+    "medium_unreachable": { "auto": true, "ttlDays": 30, "requiresEvidence": true },
+    "high": { "auto": false, "ttlDays": 14, "requiresOwnerApproval": true },
+    "critical": { "auto": false, "neverSuppress": true, "containInstead": true }
+  },
+  "replacePackage": {
+    "minWeeklyDownloads": 5000,
+    "minAgeDays": 90
+  }
+}

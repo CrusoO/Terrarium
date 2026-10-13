@@ -1,0 +1,112 @@
+.container { display: flex; flex-direction: column; }
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px 0;
+}
+
+.heading { font-size: 16px; font-weight: 700; }
+
+.total {
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.searchWrap {
+  position: relative;
+  margin: 12px 18px 0;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  padding: 8px 32px 8px 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s;
+}
+.search:focus { border-color: var(--primary); background: #fff; }
+
+.clearBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 2px 4px;
+}
+.clearBtn:hover { color: var(--text); }
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 12px 18px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+.tab:hover { background: var(--bg); color: var(--text); }
+.tabActive { background: var(--primary) !important; color: #fff !important; }
+
+.tabCount {
+  background: rgba(255,255,255,.25);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 11px;
+}
+.tab:not(.tabActive) .tabCount {
+  background: var(--bg);
+  color: var(--muted);
+}
+
+.list {
+  margin-top: 10px;
+  overflow-y: auto;
+  max-height: calc(100vh - 260px);
+}
+
+.noResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.noResults span { font-size: 28px; }

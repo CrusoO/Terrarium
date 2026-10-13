@@ -7,6 +7,7 @@ from terrarium_agents.codegen import (
     draft_files,
     generate,
     load_template,
+    session_plan_from_payload,
 )
 from terrarium_agents.editor import EditorAgentError, run_editor
 from terrarium_agents.heal import (
@@ -35,4 +36,5 @@ __all__ = [
     "next_heal_attempt",
     "run_editor",
     "run_heal",
+    "session_plan_from_payload",
 ]

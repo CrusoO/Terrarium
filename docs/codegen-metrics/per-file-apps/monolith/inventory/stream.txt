@@ -1,0 +1,2131 @@
+<<<FILE path="index.html">>>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory Counter</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+<<<END FILE>>>
+
+<<<FILE path="package.json">>>
+{
+  "name": "inventory-counter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
+}
+<<<END FILE>>>
+
+<<<FILE path="vite.config.js">>>
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+<<<END FILE>>>
+
+<<<FILE path="src/main.jsx">>>
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+<<<END FILE>>>
+
+<<<FILE path="src/index.css">>>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #22263a;
+  --border: #2e3350;
+  --accent: #6c63ff;
+  --accent2: #a78bfa;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --red: #ef4444;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --radius: 12px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+<<<END FILE>>>
+
+<<<FILE path="src/data/initialItems.js">>>
+export const CATEGORIES = ['Electronics', 'Clothing', 'Food & Beverage', 'Tools', 'Office Supplies', 'Health & Beauty'];
+
+export const initialItems = [
+  { id: 1, name: 'Wireless Headphones', sku: 'EL-001', category: 'Electronics', stock: 42, minStock: 10, price: 89.99, location: 'Aisle A1', description: 'Bluetooth 5.0 over-ear headphones with noise cancellation.', history: [{ date: '2024-01-10', change: +20, note: 'Restock' }, { date: '2024-01-15', change: -5, note: 'Sale' }] },
+  { id: 2, name: 'USB-C Cable 2m', sku: 'EL-002', category: 'Electronics', stock: 7, minStock: 15, price: 12.99, location: 'Aisle A2', description: 'Braided USB-C to USB-C cable, 2 meters, 60W charging.', history: [{ date: '2024-01-08', change: +30, note: 'Restock' }, { date: '2024-01-20', change: -23, note: 'Bulk sale' }] },
+  { id: 3, name: 'Mechanical Keyboard', sku: 'EL-003', category: 'Electronics', stock: 18, minStock: 5, price: 149.99, location: 'Aisle A3', description: 'TKL mechanical keyboard with Cherry MX Brown switches.', history: [{ date: '2024-01-05', change: +18, note: 'Initial stock' }] },
+  { id: 4, name: 'Cotton T-Shirt (M)', sku: 'CL-001', category: 'Clothing', stock: 3, minStock: 20, price: 19.99, location: 'Aisle B1', description: '100% organic cotton crew-neck t-shirt, medium.', history: [{ date: '2024-01-01', change: +50, note: 'Season stock' }, { date: '2024-01-18', change: -47, note: 'Sales' }] },
+  { id: 5, name: 'Denim Jeans (32x30)', sku: 'CL-002', category: 'Clothing', stock: 11, minStock: 10, price: 59.99, location: 'Aisle B2', description: 'Slim-fit denim jeans, 32 waist 30 inseam.', history: [{ date: '2024-01-03', change: +25, note: 'Restock' }, { date: '2024-01-22', change: -14, note: 'Sales' }] },
+  { id: 6, name: 'Sparkling Water 24pk', sku: 'FB-001', category: 'Food & Beverage', stock: 60, minStock: 24, price: 14.99, location: 'Aisle C1', description: 'Natural sparkling mineral water, 500ml bottles, 24-pack.', history: [{ date: '2024-01-12', change: +120, note: 'Delivery' }, { date: '2024-01-25', change: -60, note: 'Sales' }] },
+  { id: 7, name: 'Protein Bar Box', sku: 'FB-002', category: 'Food & Beverage', stock: 4, minStock: 12, price: 29.99, location: 'Aisle C2', description: 'Chocolate peanut butter protein bars, 12 per box.', history: [{ date: '2024-01-10', change: +24, note: 'Restock' }, { date: '2024-01-28', change: -20, note: 'Sales' }] },
+  { id: 8, name: 'Cordless Drill', sku: 'TL-001', category: 'Tools', stock: 9, minStock: 5, price: 79.99, location: 'Aisle D1', description: '18V cordless drill with 2 batteries and charger.', history: [{ date: '2024-01-07', change: +15, note: 'Restock' }, { date: '2024-01-30', change: -6, note: 'Sales' }] },
+  { id: 9, name: 'Measuring Tape 5m', sku: 'TL-002', category: 'Tools', stock: 2, minStock: 8, price: 8.99, location: 'Aisle D2', description: 'Heavy-duty retractable measuring tape, 5 meters.', history: [{ date: '2024-01-06', change: +20, note: 'Restock' }, { date: '2024-01-29', change: -18, note: 'Sales' }] },
+  { id: 10, name: 'Ballpoint Pens 10pk', sku: 'OS-001', category: 'Office Supplies', stock: 55, minStock: 20, price: 4.99, location: 'Aisle E1', description: 'Blue ink ballpoint pens, medium tip, 10-pack.', history: [{ date: '2024-01-04', change: +100, note: 'Bulk order' }, { date: '2024-01-20', change: -45, note: 'Sales' }] },
+  { id: 11, name: 'Sticky Notes 5pk', sku: 'OS-002', category: 'Office Supplies', stock: 6, minStock: 15, price: 6.99, location: 'Aisle E2', description: 'Assorted color sticky notes, 3x3 inch, 5 pads.', history: [{ date: '2024-01-09', change: +40, note: 'Restock' }, { date: '2024-01-27', change: -34, note: 'Sales' }] },
+  { id: 12, name: 'Hand Sanitizer 500ml', sku: 'HB-001', category: 'Health & Beauty', stock: 28, minStock: 10, price: 7.99, location: 'Aisle F1', description: '70% alcohol hand sanitizer with aloe vera, 500ml pump.', history: [{ date: '2024-01-11', change: +50, note: 'Restock' }, { date: '2024-01-26', change: -22, note: 'Sales' }] },
+  { id: 13, name: 'Vitamin C 60 Tablets', sku: 'HB-002', category: 'Health & Beauty', stock: 1, minStock: 10, price: 12.99, location: 'Aisle F2', description: '1000mg Vitamin C tablets with rose hip, 60 count.', history: [{ date: '2024-01-08', change: +30, note: 'Restock' }, { date: '2024-01-31', change: -29, note: 'Sales' }] },
+];
+<<<END FILE>>>
+
+<<<FILE path="src/App.jsx">>>
+import React, { useState, useMemo } from 'react'
+import styles from './App.module.css'
+import Sidebar from './components/Sidebar'
+import Header from './components/Header'
+import Dashboard from './components/Dashboard'
+import ItemList from './components/ItemList'
+import ItemDetail from './components/ItemDetail'
+import AddItemModal from './components/AddItemModal'
+import { initialItems } from './data/initialItems'
+
+export default function App() {
+  const [items, setItems] = useState(initialItems)
+  const [search, setSearch] = useState('')
+  const [filterCategory, setFilterCategory] = useState('All')
+  const [filterLowStock, setFilterLowStock] = useState(false)
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [view, setView] = useState('inventory') // 'dashboard' | 'inventory'
+
+  const filtered = useMemo(() => {
+    return items.filter(item => {
+      const matchSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
+        item.sku.toLowerCase().includes(search.toLowerCase())
+      const matchCat = filterCategory === 'All' || item.category === filterCategory
+      const matchLow = !filterLowStock || item.stock <= item.minStock
+      return matchSearch && matchCat && matchLow
+    })
+  }, [items, search, filterCategory, filterLowStock])
+
+  const handleUpdateStock = (id, delta, note) => {
+    setItems(prev => prev.map(item => {
+      if (item.id !== id) return item
+      const newStock = Math.max(0, item.stock + delta)
+      const today = new Date().toISOString().split('T')[0]
+      return {
+        ...item,
+        stock: newStock,
+        history: [...item.history, { date: today, change: delta, note: note || (delta > 0 ? 'Restock' : 'Adjustment') }]
+      }
+    }))
+    setSelectedItem(prev => {
+      if (!prev || prev.id !== id) return prev
+      const updated = items.find(i => i.id === id)
+      if (!updated) return prev
+      const newStock = Math.max(0, updated.stock + delta)
+      const today = new Date().toISOString().split('T')[0]
+      return { ...updated, stock: newStock, history: [...updated.history, { date: today, change: delta, note: note || (delta > 0 ? 'Restock' : 'Adjustment') }] }
+    })
+  }
+
+  const handleAddItem = (newItem) => {
+    const id = Math.max(...items.map(i => i.id)) + 1
+    setItems(prev => [...prev, { ...newItem, id, history: [{ date: new Date().toISOString().split('T')[0], change: newItem.stock, note: 'Initial stock' }] }])
+    setShowAddModal(false)
+  }
+
+  const handleSelectItem = (item) => {
+    const fresh = items.find(i => i.id === item.id) || item
+    setSelectedItem(fresh)
+  }
+
+  // Keep selectedItem in sync with items
+  const freshSelected = selectedItem ? items.find(i => i.id === selectedItem.id) || selectedItem : null
+
+  return (
+    <div className={styles.app}>
+      <Sidebar view={view} setView={setView} items={items} />
+      <div className={styles.main}>
+        <Header
+          search={search}
+          setSearch={setSearch}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          filterLowStock={filterLowStock}
+          setFilterLowStock={setFilterLowStock}
+          onAdd={() => setShowAddModal(true)}
+          view={view}
+        />
+        <div className={styles.content}>
+          {view === 'dashboard' ? (
+            <Dashboard items={items} onSelectItem={(item) => { handleSelectItem(item); setView('inventory') }} />
+          ) : (
+            <ItemList
+              items={filtered}
+              onSelect={handleSelectItem}
+              selectedId={freshSelected?.id}
+            />
+          )}
+        </div>
+      </div>
+
+      {freshSelected && (
+        <ItemDetail
+          item={freshSelected}
+          onClose={() => setSelectedItem(null)}
+          onUpdateStock={handleUpdateStock}
+        />
+      )}
+
+      {showAddModal && (
+        <AddItemModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAddItem}
+        />
+      )}
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/App.module.css">>>
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Sidebar.jsx">>>
+import React from 'react'
+import styles from './Sidebar.module.css'
+
+const lowStockCount = (items) => items.filter(i => i.stock <= i.minStock).length
+const totalItems = (items) => items.reduce((s, i) => s + i.stock, 0)
+
+export default function Sidebar({ view, setView, items }) {
+  return (
+    <aside className={styles.sidebar}>
+      <div className={styles.logo}>
+        <span className={styles.logoIcon}>📦</span>
+        <span className={styles.logoText}>InvCount</span>
+      </div>
+
+      <nav className={styles.nav}>
+        <button
+          className={`${styles.navItem} ${view === 'dashboard' ? styles.active : ''}`}
+          onClick={() => setView('dashboard')}
+        >
+          <span className={styles.navIcon}>▦</span>
+          Dashboard
+        </button>
+        <button
+          className={`${styles.navItem} ${view === 'inventory' ? styles.active : ''}`}
+          onClick={() => setView('inventory')}
+        >
+          <span className={styles.navIcon}>☰</span>
+          Inventory
+        </button>
+      </nav>
+
+      <div className={styles.stats}>
+        <div className={styles.statCard}>
+          <div className={styles.statValue}>{items.length}</div>
+          <div className={styles.statLabel}>Total SKUs</div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statValue}>{totalItems(items).toLocaleString()}</div>
+          <div className={styles.statLabel}>Total Units</div>
+        </div>
+        <div className={`${styles.statCard} ${lowStockCount(items) > 0 ? styles.danger : ''}`}>
+          <div className={styles.statValue}>{lowStockCount(items)}</div>
+          <div className={styles.statLabel}>Low Stock</div>
+        </div>
+      </div>
+
+      <div className={styles.footer}>
+        <div className={styles.user}>
+          <div className={styles.avatar}>S</div>
+          <div>
+            <div className={styles.userName}>Staff User</div>
+            <div className={styles.userRole}>Inventory Manager</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Sidebar.module.css">>>
+.sidebar {
+  width: 220px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logoIcon { font-size: 24px; }
+
+.logoText {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  width: 100%;
+}
+
+.navItem:hover { background: var(--surface2); color: var(--text); }
+.navItem.active { background: rgba(108, 99, 255, 0.15); color: var(--accent2); }
+
+.navIcon { font-size: 16px; }
+
+.stats {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.statCard {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.statCard.danger { border-color: var(--red); background: rgba(239, 68, 68, 0.08); }
+
+.statValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.statCard.danger .statValue { color: var(--red); }
+
+.statLabel {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.footer {
+  padding: 16px 12px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+.user { display: flex; align-items: center; gap: 10px; }
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.userName { font-size: 13px; font-weight: 600; }
+.userRole { font-size: 11px; color: var(--muted); }
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.jsx">>>
+import React from 'react'
+import styles from './Header.module.css'
+import { CATEGORIES } from '../data/initialItems'
+
+export default function Header({ search, setSearch, filterCategory, setFilterCategory, filterLowStock, setFilterLowStock, onAdd, view }) {
+  return (
+    <header className={styles.header}>
+      <div className={styles.left}>
+        <h1 className={styles.title}>{view === 'dashboard' ? 'Dashboard' : 'Inventory'}</h1>
+      </div>
+      {view === 'inventory' && (
+        <div className={styles.controls}>
+          <div className={styles.searchWrap}>
+            <span className={styles.searchIcon}>🔍</span>
+            <input
+              className={styles.search}
+              type="text"
+              placeholder="Search by name or SKU…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            {search && (
+              <button className={styles.clearBtn} onClick={() => setSearch('')}>✕</button>
+            )}
+          </div>
+          <select
+            className={styles.select}
+            value={filterCategory}
+            onChange={e => setFilterCategory(e.target.value)}
+          >
+            <option value="All">All Categories</option>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <button
+            className={`${styles.filterBtn} ${filterLowStock ? styles.active : ''}`}
+            onClick={() => setFilterLowStock(v => !v)}
+          >
+            ⚠ Low Stock
+          </button>
+          <button className={styles.addBtn} onClick={onAdd}>
+            + Add Item
+          </button>
+        </div>
+      )}
+    </header>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.module.css">>>
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.search {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 32px 8px 32px;
+  font-size: 14px;
+  width: 220px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search:focus { border-color: var(--accent); }
+.search::placeholder { color: var(--muted); }
+
+.clearBtn {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px;
+}
+
+.select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.filterBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.filterBtn:hover { border-color: var(--yellow); color: var(--yellow); }
+.filterBtn.active { background: rgba(234, 179, 8, 0.12); border-color: var(--yellow); color: var(--yellow); }
+
+.addBtn {
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.addBtn:hover { opacity: 0.85; }
+<<<END FILE>>>
+
+<<<FILE path="src/components/Dashboard.jsx">>>
+import React from 'react'
+import styles from './Dashboard.module.css'
+import { CATEGORIES } from '../data/initialItems'
+
+export default function Dashboard({ items, onSelectItem }) {
+  const totalUnits = items.reduce((s, i) => s + i.stock, 0)
+  const totalValue = items.reduce((s, i) => s + i.stock * i.price, 0)
+  const lowStock = items.filter(i => i.stock <= i.minStock)
+  const outOfStock = items.filter(i => i.stock === 0)
+
+  const byCategory = CATEGORIES.map(cat => {
+    const catItems = items.filter(i => i.category === cat)
+    return {
+      name: cat,
+      count: catItems.length,
+      units: catItems.reduce((s, i) => s + i.stock, 0),
+      value: catItems.reduce((s, i) => s + i.stock * i.price, 0),
+    }
+  }).filter(c => c.count > 0)
+
+  const maxUnits = Math.max(...byCategory.map(c => c.units), 1)
+
+  return (
+    <div className={styles.dashboard}>
+      <div className={styles.kpiRow}>
+        <div className={styles.kpi}>
+          <div className={styles.kpiIcon}>📦</div>
+          <div>
+            <div className={styles.kpiValue}>{items.length}</div>
+            <div className={styles.kpiLabel}>Total SKUs</div>
+          </div>
+        </div>
+        <div className={styles.kpi}>
+          <div className={styles.kpiIcon}>🔢</div>
+          <div>
+            <div className={styles.kpiValue}>{totalUnits.toLocaleString()}</div>
+            <div className={styles.kpiLabel}>Total Units</div>
+          </div>
+        </div>
+        <div className={styles.kpi}>
+          <div className={styles.kpiIcon}>💰</div>
+          <div>
+            <div className={styles.kpiValue}>${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <div className={styles.kpiLabel}>Stock Value</div>
+          </div>
+        </div>
+        <div className={`${styles.kpi} ${lowStock.length > 0 ? styles.warn : ''}`}>
+          <div className={styles.kpiIcon}>⚠️</div>
+          <div>
+            <div className={styles.kpiValue}>{lowStock.length}</div>
+            <div className={styles.kpiLabel}>Low Stock Items</div>
+          </div>
+        </div>
+        <div className={`${styles.kpi} ${outOfStock.length > 0 ? styles.danger : ''}`}>
+          <div className={styles.kpiIcon}>🚫</div>
+          <div>
+            <div className={styles.kpiValue}>{outOfStock.length}</div>
+            <div className={styles.kpiLabel}>Out of Stock</div>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.row2}>
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>Stock by Category</h2>
+          <div className={styles.barChart}>
+            {byCategory.map(cat => (
+              <div key={cat.name} className={styles.barRow}>
+                <div className={styles.barLabel}>{cat.name}</div>
+                <div className={styles.barTrack}>
+                  <div
+                    className={styles.barFill}
+                    style={{ width: `${(cat.units / maxUnits) * 100}%` }}
+                  />
+                </div>
+                <div className={styles.barValue}>{cat.units}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>⚠ Low Stock Alerts</h2>
+          {lowStock.length === 0 ? (
+            <div className={styles.empty}>All items are well stocked ✓</div>
+          ) : (
+            <div className={styles.alertList}>
+              {lowStock.map(item => (
+                <button key={item.id} className={styles.alertItem} onClick={() => onSelectItem(item)}>
+                  <div className={styles.alertLeft}>
+                    <div className={styles.alertName}>{item.name}</div>
+                    <div className={styles.alertSku}>{item.sku} · {item.category}</div>
+                  </div>
+                  <div className={styles.alertRight}>
+                    <span className={`${styles.badge} ${item.stock === 0 ? styles.badgeRed : styles.badgeYellow}`}>
+                      {item.stock === 0 ? 'OUT' : item.stock}
+                    </span>
+                    <div className={styles.alertMin}>min {item.minStock}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>Category Summary</h2>
+        <div className={styles.catTable}>
+          <div className={styles.catHeader}>
+            <span>Category</span>
+            <span>SKUs</span>
+            <span>Units</span>
+            <span>Value</span>
+          </div>
+          {byCategory.map(cat => (
+            <div key={cat.name} className={styles.catRow}>
+              <span>{cat.name}</span>
+              <span>{cat.count}</span>
+              <span>{cat.units.toLocaleString()}</span>
+              <span>${cat.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Dashboard.module.css">>>
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.kpi.warn { border-color: var(--yellow); background: rgba(234, 179, 8, 0.06); }
+.kpi.danger { border-color: var(--red); background: rgba(239, 68, 68, 0.06); }
+
+.kpiIcon { font-size: 28px; }
+.kpiValue { font-size: 22px; font-weight: 700; }
+.kpiLabel { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 700px) { .row2 { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.barChart { display: flex; flex-direction: column; gap: 10px; }
+
+.barRow { display: flex; align-items: center; gap: 10px; }
+
+.barLabel { font-size: 12px; color: var(--muted); width: 120px; flex-shrink: 0; }
+
+.barTrack {
+  flex: 1;
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  min-width: 4px;
+}
+
+.barValue { font-size: 12px; color: var(--text); width: 36px; text-align: right; }
+
+.empty { color: var(--muted); font-size: 14px; padding: 12px 0; }
+
+.alertList { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+
+.alertItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  text-align: left;
+  width: 100%;
+}
+
+.alertItem:hover { border-color: var(--accent); }
+
+.alertName { font-size: 13px; font-weight: 500; color: var(--text); }
+.alertSku { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.alertRight { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.badgeYellow { background: rgba(234, 179, 8, 0.15); color: var(--yellow); }
+.badgeRed { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+
+.alertMin { font-size: 10px; color: var(--muted); }
+
+.catTable { display: flex; flex-direction: column; gap: 0; }
+
+.catHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+}
+
+.catRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  padding: 10px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+.catRow:last-child { border-bottom: none; }
+.catRow:hover { background: var(--surface2); }
+<<<END FILE>>>
+
+<<<FILE path="src/components/ItemList.jsx">>>
+import React from 'react'
+import styles from './ItemList.module.css'
+
+function stockStatus(item) {
+  if (item.stock === 0) return 'out'
+  if (item.stock <= item.minStock) return 'low'
+  return 'ok'
+}
+
+export default function ItemList({ items, onSelect, selectedId }) {
+  if (items.length === 0) {
+    return (
+      <div className={styles.empty}>
+        <div className={styles.emptyIcon}>🔍</div>
+        <div className={styles.emptyText}>No items match your search</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.grid}>
+      {items.map(item => {
+        const status = stockStatus(item)
+        const pct = Math.min(100, (item.stock / Math.max(item.minStock * 2, 1)) * 100)
+        return (
+          <button
+            key={item.id}
+            className={`${styles.card} ${selectedId === item.id ? styles.selected : ''}`}
+            onClick={() => onSelect(item)}
+          >
+            <div className={styles.cardTop}>
+              <div className={styles.cardLeft}>
+                <div className={styles.name}>{item.name}</div>
+                <div className={styles.meta}>{item.sku} · {item.category}</div>
+              </div>
+              <div className={`${styles.statusDot} ${styles[status]}`} title={status} />
+            </div>
+
+            <div className={styles.stockRow}>
+              <div className={styles.stockNum}>
+                <span className={`${styles.stockVal} ${status === 'out' ? styles.red : status === 'low' ? styles.yellow : styles.green}`}>
+                  {item.stock}
+                </span>
+                <span className={styles.stockUnit}> units</span>
+              </div>
+              <div className={styles.minStock}>min {item.minStock}</div>
+            </div>
+
+            <div className={styles.barTrack}>
+              <div
+                className={`${styles.barFill} ${styles[status]}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+
+            <div className={styles.cardBottom}>
+              <span className={styles.price}>${item.price.toFixed(2)}</span>
+              <span className={styles.location}>📍 {item.location}</span>
+            </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/ItemList.module.css">>>
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.card.selected { border-color: var(--accent); background: rgba(108, 99, 255, 0.06); }
+
+.cardTop { display: flex; justify-content: space-between; align-items: flex-start; }
+.cardLeft { flex: 1; }
+
+.name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.statusDot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.statusDot.low { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+.statusDot.out { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+.stockRow { display: flex; justify-content: space-between; align-items: baseline; }
+.stockNum { display: flex; align-items: baseline; }
+.stockVal { font-size: 26px; font-weight: 700; }
+.stockVal.green { color: var(--green); }
+.stockVal.yellow { color: var(--yellow); }
+.stockVal.red { color: var(--red); }
+.stockUnit { font-size: 12px; color: var(--muted); }
+.minStock { font-size: 11px; color: var(--muted); }
+
+.barTrack {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.barFill.ok { background: var(--green); }
+.barFill.low { background: var(--yellow); }
+.barFill.out { background: var(--red); width: 100% !important; }
+
+.cardBottom { display: flex; justify-content: space-between; align-items: center; }
+.price { font-size: 13px; font-weight: 600; color: var(--accent2); }
+.location { font-size: 11px; color: var(--muted); }
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 12px;
+}
+
+.emptyIcon { font-size: 48px; }
+.emptyText { font-size: 16px; color: var(--muted); }
+<<<END FILE>>>
+
+<<<FILE path="src/components/ItemDetail.jsx">>>
+import React, { useState } from 'react'
+import styles from './ItemDetail.module.css'
+
+function stockStatus(item) {
+  if (item.stock === 0) return 'out'
+  if (item.stock <= item.minStock) return 'low'
+  return 'ok'
+}
+
+const statusLabel = { ok: 'In Stock', low: 'Low Stock', out: 'Out of Stock' }
+const statusColor = { ok: 'green', low: 'yellow', out: 'red' }
+
+export default function ItemDetail({ item, onClose, onUpdateStock }) {
+  const [delta, setDelta] = useState('')
+  const [note, setNote] = useState('')
+  const [mode, setMode] = useState('add') // 'add' | 'remove'
+
+  const status = stockStatus(item)
+
+  const handleApply = () => {
+    const num = parseInt(delta)
+    if (!num || num <= 0) return
+    const change = mode === 'add' ? num : -num
+    onUpdateStock(item.id, change, note)
+    setDelta('')
+    setNote('')
+  }
+
+  return (
+    <div className={styles.overlay}>
+      <div className={styles.panel}>
+        <div className={styles.panelHeader}>
+          <div>
+            <h2 className={styles.panelTitle}>{item.name}</h2>
+            <div className={styles.panelSku}>{item.sku}</div>
+          </div>
+          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        </div>
+
+        <div className={styles.body}>
+          <div className={styles.stockHero}>
+            <div className={`${styles.stockBig} ${styles[statusColor[status]]}`}>{item.stock}</div>
+            <div className={styles.stockSub}>units in stock</div>
+            <span className={`${styles.statusBadge} ${styles[status]}`}>{statusLabel[status]}</span>
+          </div>
+
+          <div className={styles.infoGrid}>
+            <div className={styles.infoItem}>
+              <div className={styles.infoLabel}>Category</div>
+              <div className={styles.infoValue}>{item.category}</div>
+            </div>
+            <div className={styles.infoItem}>
+              <div className={styles.infoLabel}>Price</div>
+              <div className={styles.infoValue}>${item.price.toFixed(2)}</div>
+            </div>
+            <div className={styles.infoItem}>
+              <div className={styles.infoLabel}>Min Stock</div>
+              <div className={styles.infoValue}>{item.minStock}</div>
+            </div>
+            <div className={styles.infoItem}>
+              <div className={styles.infoLabel}>Location</div>
+              <div className={styles.infoValue}>{item.location}</div>
+            </div>
+            <div className={styles.infoItem} style={{ gridColumn: '1 / -1' }}>
+              <div className={styles.infoLabel}>Stock Value</div>
+              <div className={styles.infoValue}>${(item.stock * item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            </div>
+          </div>
+
+          {item.description && (
+            <div className={styles.desc}>{item.description}</div>
+          )}
+
+          <div className={styles.adjustSection}>
+            <h3 className={styles.sectionTitle}>Adjust Stock</h3>
+            <div className={styles.modeToggle}>
+              <button
+                className={`${styles.modeBtn} ${mode === 'add' ? styles.modeActive : ''}`}
+                onClick={() => setMode('add')}
+              >+ Add</button>
+              <button
+                className={`${styles.modeBtn} ${mode === 'remove' ? styles.modeActiveRed : ''}`}
+                onClick={() => setMode('remove')}
+              >− Remove</button>
+            </div>
+            <div className={styles.adjustRow}>
+              <input
+                className={styles.deltaInput}
+                type="number"
+                min="1"
+                placeholder="Quantity"
+                value={delta}
+                onChange={e => setDelta(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleApply()}
+              />
+              <input
+                className={styles.noteInput}
+                type="text"
+                placeholder="Note (optional)"
+                value={note}
+                onChange={e => setNote(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleApply()}
+              />
+              <button
+                className={`${styles.applyBtn} ${mode === 'remove' ? styles.applyRed : ''}`}
+                onClick={handleApply}
+                disabled={!delta || parseInt(delta) <= 0}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.historySection}>
+            <h3 className={styles.sectionTitle}>History</h3>
+            <div className={styles.historyList}>
+              {[...item.history].reverse().map((h, i) => (
+                <div key={i} className={styles.historyRow}>
+                  <div className={styles.historyDate}>{h.date}</div>
+                  <div className={styles.historyNote}>{h.note}</div>
+                  <div className={`${styles.historyChange} ${h.change > 0 ? styles.pos : styles.neg}`}>
+                    {h.change > 0 ? '+' : ''}{h.change}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/ItemDetail.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.panel {
+  width: 400px;
+  max-width: 100vw;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panelTitle { font-size: 17px; font-weight: 700; }
+.panelSku { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+.closeBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.closeBtn:hover { color: var(--text); }
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stockHero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  gap: 4px;
+}
+
+.stockBig { font-size: 56px; font-weight: 800; line-height: 1; }
+.stockBig.green { color: var(--green); }
+.stockBig.yellow { color: var(--yellow); }
+.stockBig.red { color: var(--red); }
+.stockSub { font-size: 13px; color: var(--muted); }
+
+.statusBadge {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+
+.statusBadge.ok { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+.statusBadge.low { background: rgba(234, 179, 8, 0.15); color: var(--yellow); }
+.statusBadge.out { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.infoItem {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.infoLabel { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.infoValue { font-size: 14px; font-weight: 600; margin-top: 3px; }
+
+.desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+}
+
+.adjustSection, .historySection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionTitle { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.modeToggle { display: flex; gap: 8px; }
+
+.modeBtn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.modeBtn:hover { color: var(--text); }
+.modeActive { background: rgba(34, 197, 94, 0.12) !important; border-color: var(--green) !important; color: var(--green) !important; }
+.modeActiveRed { background: rgba(239, 68, 68, 0.12) !important; border-color: var(--red) !important; color: var(--red) !important; }
+
+.adjustRow { display: flex; gap: 8px; }
+
+.deltaInput {
+  width: 90px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 14px;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.deltaInput:focus { border-color: var(--accent); }
+
+.noteInput {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  outline: none;
+}
+
+.noteInput:focus { border-color: var(--accent); }
+.noteInput::placeholder { color: var(--muted); }
+
+.applyBtn {
+  background: var(--green);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.applyBtn:hover { opacity: 0.85; }
+.applyBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.applyBtn.applyRed { background: var(--red); }
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.historyRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.historyDate { font-size: 11px; color: var(--muted); width: 80px; flex-shrink: 0; }
+.historyNote { flex: 1; font-size: 12px; color: var(--text); }
+.historyChange { font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.historyChange.pos { color: var(--green); }
+.historyChange.neg { color: var(--red); }
+<<<END FILE>>>
+
+<<<FILE path="src/components/AddItemModal.jsx">>>
+import React, { useState } from 'react'
+import styles from './AddItemModal.module.css'
+import { CATEGORIES } from '../data/initialItems'
+
+const empty = { name: '', sku: '', category: CATEGORIES[0], stock: '', minStock: '', price: '', location: '', description: '' }
+
+export default function AddItemModal({ onClose, onAdd }) {
+  const [form, setForm] = useState(empty)
+  const [errors, setErrors] = useState({})
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const validate = () => {
+    const e = {}
+    if (!form.name.trim()) e.name = 'Required'
+    if (!form.sku.trim()) e.sku = 'Required'
+    if (form.stock === '' || isNaN(form.stock) || Number(form.stock) < 0) e.stock = 'Valid number required'
+    if (form.minStock === '' || isNaN(form.minStock) || Number(form.minStock) < 0) e.minStock = 'Valid number required'
+    if (form.price === '' || isNaN(form.price) || Number(form.price) < 0) e.price = 'Valid price required'
+    return e
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length) { setErrors(errs); return }
+    onAdd({
+      name: form.name.trim(),
+      sku: form.sku.trim().toUpperCase(),
+      category: form.category,
+      stock: parseInt(form.stock),
+      minStock: parseInt(form.minStock),
+      price: parseFloat(form.price),
+      location: form.location.trim() || 'Unassigned',
+      description: form.description.trim(),
+    })
+  }
+
+  return (
+    <div className={styles.backdrop} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Add New Item</h2>
+          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label}>Item Name *</label>
+              <input className={`${styles.input} ${errors.name ? styles.err : ''}`} value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Wireless Mouse" />
+              {errors.name && <span className={styles.errMsg}>{errors.name}</span>}
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>SKU *</label>
+              <input className={`${styles.input} ${errors.sku ? styles.err : ''}`} value={form.sku} onChange={e => set('sku', e.target.value)} placeholder="e.g. EL-004" />
+              {errors.sku && <span className={styles.errMsg}>{errors.sku}</span>}
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label}>Category</label>
+              <select className={styles.input} value={form.category} onChange={e => set('category', e.target.value)}>
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Location</label>
+              <input className={styles.input} value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Aisle A4" />
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label}>Initial Stock *</label>
+              <input className={`${styles.input} ${errors.stock ? styles.err : ''}`} type="number" min="0" value={form.stock} onChange={e => set('stock', e.target.value)} placeholder="0" />
+              {errors.stock && <span className={styles.errMsg}>{errors.stock}</span>}
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Min Stock *</label>
+              <input className={`${styles.input} ${errors.minStock ? styles.err : ''}`} type="number" min="0" value={form.minStock} onChange={e => set('minStock', e.target.value)} placeholder="0" />
+              {errors.minStock && <span className={styles.errMsg}
+<<<FILE path="src/components/AddItemModal.jsx">>>
+import { useState } from 'react';
+import styles from './AddItemModal.module.css';
+
+const CATEGORIES = ['Electronics', 'Clothing', 'Food', 'Tools', 'Office', 'Other'];
+
+export default function AddItemModal({ onClose, onAdd }) {
+  const [form, setForm] = useState({
+    name: '',
+    sku: '',
+    category: 'Electronics',
+    quantity: '',
+    minStock: '',
+    price: '',
+    location: '',
+    description: '',
+  });
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const e = {};
+    if (!form.name.trim()) e.name = 'Name is required';
+    if (!form.sku.trim()) e.sku = 'SKU is required';
+    if (form.quantity === '' || isNaN(form.quantity) || Number(form.quantity) < 0)
+      e.quantity = 'Valid quantity required';
+    if (form.minStock === '' || isNaN(form.minStock) || Number(form.minStock) < 0)
+      e.minStock = 'Valid min stock required';
+    if (form.price === '' || isNaN(form.price) || Number(form.price) < 0)
+      e.price = 'Valid price required';
+    return e;
+  };
+
+  const handleChange = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    onAdd({
+      id: Date.now(),
+      name: form.name.trim(),
+      sku: form.sku.trim().toUpperCase(),
+      category: form.category,
+      quantity: Number(form.quantity),
+      minStock: Number(form.minStock),
+      price: parseFloat(form.price),
+      location: form.location.trim() || 'Unassigned',
+      description: form.description.trim() || 'No description provided.',
+      lastUpdated: new Date().toISOString().split('T')[0],
+      history: [
+        {
+          date: new Date().toISOString().split('T')[0],
+          change: Number(form.quantity),
+          reason: 'Initial stock',
+          user: 'Staff',
+        },
+      ],
+    });
+    onClose();
+  };
+
+  return (
+    <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Add New Item</h2>
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.grid}>
+            <div className={styles.field}>
+              <label className={styles.label}>Item Name *</label>
+              <input
+                className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
+                value={form.name}
+                onChange={e => handleChange('name', e.target.value)}
+                placeholder="e.g. Wireless Mouse"
+              />
+              {errors.name && <span className={styles.error}>{errors.name}</span>}
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>SKU *</label>
+              <input
+                className={`${styles.input} ${errors.sku ? styles.inputError : ''}`}
+                value={form.sku}
+                onChange={e => handleChange('sku', e.target.value)}
+                placeholder="e.g. WM-001"
+              />
+              {errors.sku && <span className={styles.error}>{errors.sku}</span>}
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>Category</label>
+              <select
+                className={styles.select}
+                value={form.category}
+                onChange={e => handleChange('category', e.target.value)}
+              >
+                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>Location</label>
+              <input
+                className={styles.input}
+                value={form.location}
+                onChange={e => handleChange('location', e.target.value)}
+                placeholder="e.g. Warehouse A"
+              />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>Quantity *</label>
+              <input
+                className={`${styles.input} ${errors.quantity ? styles.inputError : ''}`}
+                type="number"
+                min="0"
+                value={form.quantity}
+                onChange={e => handleChange('quantity', e.target.value)}
+                placeholder="0"
+              />
+              {errors.quantity && <span className={styles.error}>{errors.quantity}</span>}
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>Min Stock *</label>
+              <input
+                className={`${styles.input} ${errors.minStock ? styles.inputError : ''}`}
+                type="number"
+                min="0"
+                value={form.minStock}
+                onChange={e => handleChange('minStock', e.target.value)}
+                placeholder="0"
+              />
+              {errors.minStock && <span className={styles.error}>{errors.minStock}</span>}
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>Unit Price ($) *</label>
+              <input
+                className={`${styles.input} ${errors.price ? styles.inputError : ''}`}
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.price}
+                onChange={e => handleChange('price', e.target.value)}
+                placeholder="0.00"
+              />
+              {errors.price && <span className={styles.error}>{errors.price}</span>}
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Description</label>
+            <textarea
+              className={styles.textarea}
+              value={form.description}
+              onChange={e => handleChange('description', e.target.value)}
+              placeholder="Optional item description..."
+              rows={3}
+            />
+          </div>
+
+          <div className={styles.actions}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+            <button type="submit" className={styles.submitBtn}>Add Item</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/AddItemModal.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 0;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.closeBtn {
+  background: var(--surface-hover);
+  border: none;
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.closeBtn:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 500px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.input,
+.select,
+.textarea {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.625rem 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.inputError {
+  border-color: var(--danger) !important;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+
+.error {
+  font-size: 0.75rem;
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.5rem;
+}
+
+.cancelBtn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cancelBtn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.submitBtn {
+  padding: 0.625rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.submitBtn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/StockBadge.jsx">>>
+import styles from './StockBadge.module.css';
+
+export default function StockBadge({ quantity, minStock }) {
+  const ratio = minStock > 0 ? quantity / minStock : 1;
+
+  let level, label;
+  if (quantity === 0) {
+    level = 'out';
+    label = 'Out of Stock';
+  } else if (ratio <= 1) {
+    level = 'low';
+    label = 'Low Stock';
+  } else if (ratio <= 2) {
+    level = 'medium';
+    label = 'Medium';
+  } else {
+    level = 'good';
+    label = 'In Stock';
+  }
+
+  return (
+    <span className={`${styles.badge} ${styles[level]}`}>
+      <span className={styles.dot} />
+      {label}
+    </span>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/StockBadge.module.css">>>
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.out {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+.out .dot { background: #ef4444; }
+
+.low {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+}
+.low .dot { background: #f59e0b; }
+
+.medium {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+.medium .dot { background: #3b82f6; }
+
+.good {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+.good .dot { background: #10b981; }
+<<<END FILE>>>
+
+<<<FILE path="src/components/SearchBar.jsx">>>
+import styles from './SearchBar.module.css';
+
+export default function SearchBar({ value, onChange, placeholder = 'Search items…' }) {
+  return (
+    <div className={styles.wrapper}>
+      <span className={styles.icon}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </span>
+      <input
+        className={styles.input}
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-label="Search items"
+      />
+      {value && (
+        <button className={styles.clear} onClick={() => onChange('')} aria-label="Clear search">
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/SearchBar.module.css">>>
+.wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  padding: 0.625rem 2.5rem 0.625rem 2.5rem;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.clear {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.25rem;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.clear:hover {
+  color: var(--text-primary);
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/StatCard.jsx">>>
+import styles from './StatCard.module.css';
+
+export default function StatCard({ label, value, sub, icon, accent }) {
+  return (
+    <div className={styles.card} style={accent ? { '--card-accent': accent } : {}}>
+      <div className={styles.top}>
+        <span className={styles.icon}>{icon}</span>
+        <span className={styles.label}>{label}</span>
+      </div>
+      <div className={styles.value}>{value}</div>
+      {sub && <div className={styles.sub}>{sub}</div>}
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/StatCard.module.css">>>
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border-top: 3px solid var(--card-accent, var(--accent));
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.sub {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+<<<END FILE>>>
+
+<<<FILE path="src/store/inventoryStore.js">>>
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import initialItems from '../data/initialItems';
+
+const useInventoryStore = create(
+  persist(
+    (set, get) => ({
+      items: initialItems,
+      searchQuery: '',
+      filterCategory: 'All',
+      filterLowStock: false,
+      selectedItemId: null,
+      view: 'dashboard', // 'dashboard' | 'inventory' | 'detail'
+
+      setSearchQuery: (q) => set({ searchQuery: q }),
+      setFilterCategory: (c) => set({ filterCategory: c }),
+      setFilterLowStock: (v) => set({ filterLowStock: v }),
+      setSelectedItemId: (id) => set({ selectedItemId: id }),
+      setView: (v) => set({ view: v }),
+
+      openDetail: (id) => set({ selectedItemId: id, view: 'detail' }),
+      goBack: () => set({ view: 'inventory', selectedItemId: null }),
+
+      addItem: (item) =>
+        set((state) => ({ items: [item, ...state.items] })),
+
+      updateQuantity: (id, delta, reason) =>
+        set((state) => ({
+          items: state.items.map((item) => {
+            if (item.id !== id) return item;
+            const newQty = Math.max(0, item.quantity + delta);
+            return {
+              ...item,
+              quantity: newQty,
+              lastUpdated: new Date().toISOString().split('T')[0],
+              history: [
+                {
+                  date: new Date().toISOString().split('T')[0],
+                  change: delta,
+                  reason: reason || (delta > 0 ? 'Restock' : 'Adjustment'),
+                  user: 'Staff',
+                },
+                ...(item.history || []),
+              ],
+            };
+          }),
+        })),
+
+      deleteItem: (id) =>
+        set((state) => ({
+          items: state.items.filter((item) => item.id !== id),
+          selectedItemId: null,
+          view: 'inventory',
+        })),
+
+      getFilteredItems: () => {
+        const { items, searchQuery, filterCategory, filterLowStock } = get();
+        return items.filter((item) => {
+          const q = searchQuery.toLowerCase();
+          const matchSearch =
+            !q ||
+            item.name.toLowerCase().includes(q) ||
+            item.sku.toLowerCase().includes(q) ||
+            item.category.toLowerCase().includes(q) ||
+            item.location.toLowerCase().includes(q);
+          const matchCategory =
+            filterCategory === 'All' || item.category === filterCategory;
+          const matchLow = !filterLowStock || item.quantity <= item.minStock;
+          return matchSearch && matchCategory && matchLow;
+        });
+      },
+
+      getStats: () => {
+        const { items } = get();
+        const totalItems = items.length;
+        const totalUnits = items.reduce((s, i) => s + i.quantity, 0);
+        const totalValue = items.reduce((s, i) => s + i.quantity * i.price, 0);
+        const lowStock = items.filter((i) => i.quantity <= i.minStock && i.quantity > 0).length;
+        const outOfStock = items.filter((i) => i.quantity === 0).length;
+        return { totalItems, totalUnits, totalValue, lowStock, outOfStock };
+      },
+
+      getCategories: () => {
+        const { items } = get();
+        const cats = [...new Set(items.map((i) => i.category))].sort();
+        return ['All', ...cats];
+      },
+    }),
+    {
+      name: 'inventory-store',
+      partialize: (state) => ({ items: state.items }),
+    }
+  )
+);
+
+export default useInventoryStore;
+<<<END FILE>>>

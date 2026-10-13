@@ -1,0 +1,787 @@
+{
+  "preflight": {
+    "initialCodeHash": "1217b02aa197638ae826506ce00594af5ba05591c2ff27a2c63b5c081322a109",
+    "continuationCodeHash": "cc82f88e05b111ae5309952a8d36532fce53855473610f8f3529ec15c638f4b0",
+    "scaffoldVersion": "3",
+    "staleHashAbortVerified": true
+  },
+  "supportedBlind": {
+    "rates": {
+      "humanRelevance": {
+        "successes": 10,
+        "total": 17,
+        "rate": 0.5882,
+        "wilson95": [
+          0.3601,
+          0.7839
+        ]
+      },
+      "interaction": {
+        "successes": 14,
+        "total": 17,
+        "rate": 0.8235,
+        "wilson95": [
+          0.5897,
+          0.9381
+        ]
+      },
+      "buildTsc": {
+        "successes": 15,
+        "total": 17,
+        "rate": 0.8824,
+        "wilson95": [
+          0.6566,
+          0.9671
+        ]
+      },
+      "consoleClean": {
+        "successes": 15,
+        "total": 17,
+        "rate": 0.8824,
+        "wilson95": [
+          0.6566,
+          0.9671
+        ]
+      },
+      "validated": {
+        "successes": 8,
+        "total": 17,
+        "rate": 0.4706,
+        "wilson95": [
+          0.2617,
+          0.6904
+        ]
+      },
+      "appsWithDegradedFiles": {
+        "successes": 1,
+        "total": 17,
+        "rate": 0.0588,
+        "wilson95": [
+          0.0105,
+          0.2698
+        ]
+      }
+    },
+    "rows": [
+      {
+        "id": "p01",
+        "prompt": "Build a small app for a neighborhood bakery to keep track of custom cake orders, with the customer name, pickup day, flavor, and whether the balance has been paid.",
+        "expectedArchetype": "crud",
+        "messyKind": null,
+        "slug": "bakery",
+        "route": "per-file",
+        "mapper": {
+          "source": "deterministic",
+          "confidence": 0.99,
+          "archetype": "unknown",
+          "supported": true,
+          "entity": "Batch",
+          "title": "Bakery board"
+        },
+        "humanRelevance": false,
+        "humanRelevanceReason": "Bakery batches replaced requested custom cake orders/customer/flavor/payment fields.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": false,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3492,
+          "output": 3043,
+          "cacheRead": 10938
+        },
+        "costUsd": 0.019801,
+        "generationSecondsLinux": 31.451,
+        "gateInteractiveSecondsWindows": 9.147,
+        "gateValidatedSecondsWindows": 21.383,
+        "timeToInteractiveMixedHosts": 40.598,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": []
+      },
+      {
+        "id": "p02",
+        "prompt": "appointments",
+        "expectedArchetype": "booking",
+        "messyKind": "one-word",
+        "slug": "appointment-manager",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "booking",
+          "supported": true,
+          "entity": "Appointment",
+          "title": "Appointment Manager"
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Appointment manager matches the one-word request.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": true,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3019,
+          "output": 2885,
+          "cacheRead": 10886
+        },
+        "costUsd": 0.018533,
+        "generationSecondsLinux": 30.349,
+        "gateInteractiveSecondsWindows": 7.817,
+        "gateValidatedSecondsWindows": 18.309,
+        "timeToInteractiveMixedHosts": 38.166,
+        "timeToValidatedMixedHosts": 48.658,
+        "consoleErrors": []
+      },
+      {
+        "id": "p03",
+        "prompt": "Create a dashboard for a corner coffee cart that shows how many drinks were sold today by type, which hour was busiest, and the running total for the shift.",
+        "expectedArchetype": "dashboard",
+        "messyKind": null,
+        "slug": "coffee-cart-daily-sales",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "dashboard",
+          "supported": true,
+          "entity": "Sale",
+          "title": "Coffee Cart Daily Sales"
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Coffee-cart sales fields and totals are visible.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": true,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3737,
+          "output": 3487,
+          "cacheRead": 10986
+        },
+        "costUsd": 0.022271,
+        "generationSecondsLinux": 29.25,
+        "gateInteractiveSecondsWindows": 8.869,
+        "gateValidatedSecondsWindows": 22.813,
+        "timeToInteractiveMixedHosts": 38.119,
+        "timeToValidatedMixedHosts": 52.063,
+        "consoleErrors": []
+      },
+      {
+        "id": "p04",
+        "prompt": "buld an app to trak tailoring jobs, the garment, the due dte, and wether the hem is finnished.",
+        "expectedArchetype": "crud",
+        "messyKind": "typos",
+        "slug": "tailoring-job-tracker",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "crud",
+          "supported": true,
+          "entity": "TailoringJob",
+          "title": "Tailoring Job Tracker"
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Tailoring job, garment, due date, and finish status are visible.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": true,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3103,
+          "output": 3293,
+          "cacheRead": 10901
+        },
+        "costUsd": 0.020658,
+        "generationSecondsLinux": 28.249,
+        "gateInteractiveSecondsWindows": 7.75,
+        "gateValidatedSecondsWindows": 22.688,
+        "timeToInteractiveMixedHosts": 35.999,
+        "timeToValidatedMixedHosts": 50.937,
+        "consoleErrors": []
+      },
+      {
+        "id": "p05",
+        "prompt": "Make a booking page for a small yoga studio so members can reserve a spot in a class, see how many mats are left, and cancel if they cannot attend.",
+        "expectedArchetype": "booking",
+        "messyKind": null,
+        "slug": "yoga-studio-class-booking",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "booking",
+          "supported": true,
+          "entity": "ClassBooking",
+          "title": "Yoga Studio Class Booking"
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Yoga class reservations and capacity fields are visible.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": true,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3072,
+          "output": 3876,
+          "cacheRead": 10901
+        },
+        "costUsd": 0.023542,
+        "generationSecondsLinux": 34.729,
+        "gateInteractiveSecondsWindows": 9.88,
+        "gateValidatedSecondsWindows": 21.159,
+        "timeToInteractiveMixedHosts": 44.609,
+        "timeToValidatedMixedHosts": 55.888,
+        "consoleErrors": []
+      },
+      {
+        "id": "p06",
+        "prompt": "I need a landing page for my dog-walking service and also a simple booking calendar so neighbors can reserve a walk.",
+        "expectedArchetype": "booking",
+        "messyKind": "two-intents",
+        "slug": "dog-walking-booking",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.92,
+          "archetype": "booking",
+          "supported": true,
+          "entity": "Walk",
+          "title": "Dog Walking Booking"
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Dog-walk booking is represented; the booking intent was selected.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": true,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 2997,
+          "output": 2662,
+          "cacheRead": 10865
+        },
+        "costUsd": 0.017393,
+        "generationSecondsLinux": 30.53,
+        "gateInteractiveSecondsWindows": 6.916,
+        "gateValidatedSecondsWindows": 17.643,
+        "timeToInteractiveMixedHosts": 37.446,
+        "timeToValidatedMixedHosts": 48.173,
+        "consoleErrors": []
+      },
+      {
+        "id": "p07",
+        "prompt": "Show a chart of my household electricity use for each month of the last year and mark the month with the highest bill.",
+        "expectedArchetype": "charts",
+        "messyKind": null,
+        "slug": "yearly-electricity-usage",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "charts",
+          "supported": true,
+          "entity": "ElectricityReading",
+          "title": "Yearly Electricity Usage"
+        },
+        "humanRelevance": false,
+        "humanRelevanceReason": "Monthly readings are cards; the requested chart is absent.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": false,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3782,
+          "output": 2957,
+          "cacheRead": 10988
+        },
+        "costUsd": 0.019666,
+        "generationSecondsLinux": 31.812,
+        "gateInteractiveSecondsWindows": 8.956,
+        "gateValidatedSecondsWindows": 19.834,
+        "timeToInteractiveMixedHosts": 40.768,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": []
+      },
+      {
+        "id": "p08",
+        "prompt": "Design a one-page site for a freelance food photographer with a short introduction, three example shoots, and a way to ask for a quote.",
+        "expectedArchetype": "landing",
+        "messyKind": null,
+        "slug": "unsupported-08-unknown",
+        "route": "monolith",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.7,
+          "archetype": "landing",
+          "supported": false,
+          "entity": "Inquiry",
+          "title": "Food Photography Portfolio"
+        },
+        "humanRelevance": false,
+        "humanRelevanceReason": "Supported landing prompt was routed to monolith and produced no gradeable screenshot.",
+        "interaction": false,
+        "buildTsc": true,
+        "consoleClean": false,
+        "validated": false,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": null,
+        "costUsd": 0.238115,
+        "generationSecondsLinux": 108.588,
+        "gateInteractiveSecondsWindows": 6.021,
+        "gateValidatedSecondsWindows": null,
+        "timeToInteractiveMixedHosts": 114.609,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": null
+      },
+      {
+        "id": "p09",
+        "prompt": "Walk couples through a few steps to request a weekend wedding venue: preferred date, guest count, catering style, then their contact details.",
+        "expectedArchetype": "multi-step-form",
+        "messyKind": null,
+        "slug": "wedding-venue-request",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "multi-step-form",
+          "supported": true,
+          "entity": "VenueRequest",
+          "title": "Wedding Venue Request"
+        },
+        "humanRelevance": false,
+        "humanRelevanceReason": "Venue request is a CRUD list; the requested guided steps are absent.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": false,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3154,
+          "output": 2393,
+          "cacheRead": 10935
+        },
+        "costUsd": 0.016213,
+        "generationSecondsLinux": 26.563,
+        "gateInteractiveSecondsWindows": 7.644,
+        "gateValidatedSecondsWindows": 22.961,
+        "timeToInteractiveMixedHosts": 34.207,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": []
+      },
+      {
+        "id": "p10",
+        "prompt": "Quiero una aplicaci\u00f3n para anotar los pedidos para llevar de mi taquer\u00eda: nombre del cliente, qu\u00e9 tacos pidi\u00f3 y si ya pag\u00f3.",
+        "expectedArchetype": "crud",
+        "messyKind": "non-english",
+        "slug": "taquer-a-takeout-orders",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "crud",
+          "supported": true,
+          "entity": "Order",
+          "title": "Taquer\u00eda Takeout Orders"
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Spanish taqueria order fields and paid state are visible.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": true,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3078,
+          "output": 2807,
+          "cacheRead": 10881
+        },
+        "costUsd": 0.031802,
+        "generationSecondsLinux": 27.584,
+        "gateInteractiveSecondsWindows": 8.752,
+        "gateValidatedSecondsWindows": 18.891,
+        "timeToInteractiveMixedHosts": 36.336,
+        "timeToValidatedMixedHosts": 46.475,
+        "consoleErrors": []
+      },
+      {
+        "id": "p11",
+        "prompt": "haircut slots pls. stylist, time, phone. thx",
+        "expectedArchetype": "booking",
+        "messyKind": "shorthand",
+        "slug": "haircut-booking",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.92,
+          "archetype": "booking",
+          "supported": true,
+          "entity": "Appointment",
+          "title": "Haircut Booking"
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Stylist/time/phone haircut booking fields are visible.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": true,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 2973,
+          "output": 3287,
+          "cacheRead": 10837
+        },
+        "costUsd": 0.020492,
+        "generationSecondsLinux": 30.081,
+        "gateInteractiveSecondsWindows": 8.616,
+        "gateValidatedSecondsWindows": 19.651,
+        "timeToInteractiveMixedHosts": 38.697,
+        "timeToValidatedMixedHosts": 49.732,
+        "consoleErrors": []
+      },
+      {
+        "id": "p12",
+        "prompt": "Give the manager of a three-bay car wash a board that shows which bay is free, which car is being washed, and how many washes finished this afternoon.",
+        "expectedArchetype": "dashboard",
+        "messyKind": null,
+        "slug": "car-wash-bay-monitor",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.92,
+          "archetype": "dashboard",
+          "supported": true,
+          "entity": "Bay",
+          "title": "Car Wash Bay Monitor"
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Car-wash bay state and completed-wash totals are visible.",
+        "interaction": true,
+        "buildTsc": false,
+        "consoleClean": true,
+        "validated": false,
+        "repairs": 1,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 11492,
+          "output": 3232,
+          "cacheRead": 10988
+        },
+        "costUsd": 0.028751,
+        "generationSecondsLinux": 45.7,
+        "gateInteractiveSecondsWindows": 8.666,
+        "gateValidatedSecondsWindows": null,
+        "timeToInteractiveMixedHosts": 54.366,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": []
+      },
+      {
+        "id": "p13",
+        "prompt": "Plot the monthly sales totals for an independent bookstore over the past year so the owner can see which months were strongest.",
+        "expectedArchetype": "charts",
+        "messyKind": null,
+        "slug": "monthly-sales-dashboard",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "charts",
+          "supported": true,
+          "entity": "Sale",
+          "title": "Monthly Sales Dashboard"
+        },
+        "humanRelevance": false,
+        "humanRelevanceReason": "Monthly sales cards replace the requested bookstore chart.",
+        "interaction": false,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": false,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3714,
+          "output": 2711,
+          "cacheRead": 10961
+        },
+        "costUsd": 0.018365,
+        "generationSecondsLinux": 29.267,
+        "gateInteractiveSecondsWindows": 10.627,
+        "gateValidatedSecondsWindows": null,
+        "timeToInteractiveMixedHosts": 39.894,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": []
+      },
+      {
+        "id": "p14",
+        "prompt": "A climbing gym wants a guided signup that collects personal details, membership length, and an emergency contact before the person submits.",
+        "expectedArchetype": "multi-step-form",
+        "messyKind": null,
+        "slug": "climbing-gym-member-signup",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "multi-step-form",
+          "supported": true,
+          "entity": "Member",
+          "title": "Climbing Gym Member Signup"
+        },
+        "humanRelevance": false,
+        "humanRelevanceReason": "Member records replace the requested guided signup steps.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": false,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 3114,
+          "output": 3048,
+          "cacheRead": 10923
+        },
+        "costUsd": 0.019446,
+        "generationSecondsLinux": 28.601,
+        "gateInteractiveSecondsWindows": 8.447,
+        "gateValidatedSecondsWindows": 20.22,
+        "timeToInteractiveMixedHosts": 37.048,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": []
+      },
+      {
+        "id": "p15",
+        "prompt": "Keep a log of recipe tests in my kitchen: the dish name, the date I tried it, a score from 1 to 5, and a short note about what to change next time.",
+        "expectedArchetype": "crud",
+        "messyKind": null,
+        "slug": "recipe-test-log",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "crud",
+          "supported": true,
+          "entity": "RecipeTest",
+          "title": "Recipe Test Log"
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Recipe-test dish/date/score/change-note fields are visible.",
+        "interaction": true,
+        "buildTsc": false,
+        "consoleClean": true,
+        "validated": false,
+        "repairs": 2,
+        "degradedFiles": [
+          "src/components/RecipeTestCard.tsx"
+        ],
+        "tokens": {
+          "input": 18635,
+          "output": 3525,
+          "cacheRead": 10878
+        },
+        "costUsd": 0.037348,
+        "generationSecondsLinux": 59.138,
+        "gateInteractiveSecondsWindows": 7.681,
+        "gateValidatedSecondsWindows": null,
+        "timeToInteractiveMixedHosts": 66.819,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": []
+      },
+      {
+        "id": "p16",
+        "prompt": "Put together a simple announcement page for a weekend ceramics open studio, with the address, the hours, and a note about what visitors can try.",
+        "expectedArchetype": "landing",
+        "messyKind": null,
+        "slug": "ceramics-open-studio",
+        "route": "monolith",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.7,
+          "archetype": "landing",
+          "supported": false
+        },
+        "humanRelevance": false,
+        "humanRelevanceReason": "Supported ceramics landing prompt was routed to monolith and produced no gradeable screenshot.",
+        "interaction": false,
+        "buildTsc": true,
+        "consoleClean": false,
+        "validated": false,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 1630,
+          "output": 6082,
+          "cacheRead": 0
+        },
+        "costUsd": 0.097027,
+        "generationSecondsLinux": null,
+        "gateInteractiveSecondsWindows": 6.699,
+        "gateValidatedSecondsWindows": null,
+        "timeToInteractiveMixedHosts": null,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": null
+      },
+      {
+        "id": "p17",
+        "prompt": "Let neighbors reserve an hour on the public tennis courts, pick a court and a start time, and see which hours are already taken.",
+        "expectedArchetype": "booking",
+        "messyKind": null,
+        "slug": "tennis-court-reservations",
+        "route": "per-file",
+        "mapper": {
+          "source": "fast-model",
+          "confidence": 0.95,
+          "archetype": "booking",
+          "supported": true
+        },
+        "humanRelevance": true,
+        "humanRelevanceReason": "Tennis court/date/start-time reservations are visible.",
+        "interaction": true,
+        "buildTsc": true,
+        "consoleClean": true,
+        "validated": true,
+        "repairs": 0,
+        "degradedFiles": [],
+        "tokens": {
+          "input": 2995,
+          "output": 2472,
+          "cacheRead": 10849
+        },
+        "costUsd": 0.01644,
+        "generationSecondsLinux": null,
+        "gateInteractiveSecondsWindows": 10.828,
+        "gateValidatedSecondsWindows": 23.51,
+        "timeToInteractiveMixedHosts": null,
+        "timeToValidatedMixedHosts": null,
+        "consoleErrors": []
+      }
+    ]
+  },
+  "unsupportedBlind": [
+    {
+      "id": "p18",
+      "route": "monolith",
+      "mapperConfidence": 0.92,
+      "costUsd": 0.495522,
+      "result": "failed",
+      "error": "Unclosed peer-lobby file, then missing ./styles/global.css import."
+    },
+    {
+      "id": "p19",
+      "route": "monolith",
+      "mapperConfidence": 0.95,
+      "costUsd": 0.496847,
+      "result": "failed",
+      "error": "Missing ../../styles/appshell.css import."
+    },
+    {
+      "id": "p20",
+      "route": "monolith",
+      "mapperConfidence": 0.05,
+      "costUsd": 0.249312,
+      "result": "spend-guard",
+      "error": "SpendExceeded before the next call."
+    }
+  ],
+  "edits": {
+    "planned": 10,
+    "recorded": {
+      "successes": 3,
+      "total": 10,
+      "rate": 0.3,
+      "wilson95": [
+        0.1078,
+        0.6032
+      ]
+    },
+    "interaction": {
+      "successes": 2,
+      "total": 10,
+      "rate": 0.2,
+      "wilson95": [
+        0.0567,
+        0.5098
+      ]
+    },
+    "validated": {
+      "successes": 1,
+      "total": 10,
+      "rate": 0.1,
+      "wilson95": [
+        0.0179,
+        0.4042
+      ]
+    },
+    "rows": [
+      {
+        "edit": "add field",
+        "modelOutputRecorded": true,
+        "interaction": false,
+        "buildTsc": true,
+        "validated": false,
+        "costUsd": 0.021767,
+        "consoleErrors": null
+      },
+      {
+        "edit": "change label",
+        "modelOutputRecorded": true,
+        "interaction": true,
+        "buildTsc": true,
+        "validated": true,
+        "costUsd": 0.019893,
+        "consoleErrors": []
+      },
+      {
+        "edit": "rename",
+        "modelOutputRecorded": true,
+        "interaction": true,
+        "buildTsc": false,
+        "validated": false,
+        "costUsd": 0.019329,
+        "consoleErrors": []
+      }
+    ],
+    "notRun": 7,
+    "stopReason": "$2 aggregate cap"
+  },
+  "variety": {
+    "generatedPerFileApps": 15,
+    "themes": 6,
+    "layouts": 3,
+    "icons": 12,
+    "verdict": "Palette and icon variety improved, but composition remains the same shell/cards/forms in three scaffold layouts.",
+    "screenshot": "canary-shots/stage2-blind-side-by-side.png"
+  },
+  "timing": {
+    "generationHost": "Linux infra-api-1 container",
+    "browserHost": "Windows host",
+    "buildHost": "Linux Docker sandbox orchestrated from Windows",
+    "p95ValidatedMixedHostsSeconds": 55.888,
+    "linuxStagingP95": null,
+    "note": "This run cannot establish the Linux-staging latency bar."
+  },
+  "cost": {
+    "estimatedAppsUsd": 0.4278,
+    "reservedEditsUsd": 0.075,
+    "estimatedTotalUsd": 0.5028,
+    "actualAppsUsd": 1.907543,
+    "actualEditsUsd": 0.060989,
+    "actualTotalUsd": 1.968532,
+    "capUsd": 2.0
+  },
+  "greenhouseRepairAnalysis": "greenhouse-repair-analysis.json"
+}

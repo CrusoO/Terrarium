@@ -1,0 +1,341 @@
+.panel {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 92px;
+  max-height: calc(100vh - 112px);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+  flex-shrink: 0;
+}
+
+.panelTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gray-700);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.editBtn:hover { background: #c7d2fe; }
+
+.closeBtn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--gray-400);
+  transition: background .15s, color .15s;
+}
+.closeBtn:hover { background: var(--gray-100); color: var(--gray-700); }
+
+.body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Hero */
+.hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--primary-light) 0%, #f0f4ff 100%);
+  border-radius: 10px;
+}
+
+.heroAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--primary);
+  color: white;
+}
+.heroAvatar[data-status="inactive"] { background: var(--gray-400); }
+.heroAvatar[data-status="probation"] { background: var(--warning); }
+
+.heroInfo { flex: 1; }
+
+.heroName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.heroEmail {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.heroBadges {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.gradeChip {
+  background: white;
+  color: var(--gray-600);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--gray-200);
+}
+
+.gpaCircle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.gpa_high { background: var(--success-light); }
+.gpa_mid  { background: var(--warning-light); }
+.gpa_low  { background: var(--danger-light); }
+
+.gpaVal {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.gpa_high .gpaVal { color: var(--success); }
+.gpa_mid  .gpaVal { color: var(--warning); }
+.gpa_low  .gpaVal { color: var(--danger); }
+
+.gpaLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--gray-500);
+}
+
+/* Sections */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--gray-400);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.infoIcon { font-size: 0.9rem; width: 20px; text-align: center; }
+
+.infoLabel {
+  font-size: 0.82rem;
+  color: var(--gray-500);
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: 0.88rem;
+  color: var(--gray-700);
+  font-weight: 500;
+  flex: 1;
+}
+
+.notes {
+  font-size: 0.88rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+  background: var(--gray-50);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--primary);
+}
+
+/* Edit form */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.field input,
+.field select,
+.field textarea {
+  padding: 9px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: var(--gray-800);
+  background: var(--gray-50);
+  outline: none;
+  transition: border-color .15s;
+  font-family: inherit;
+  resize: vertical;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--primary);
+  background: white;
+}
+
+.editActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+/* Danger zone */
+.dangerZone {
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: 1.5px solid var(--danger);
+  color: var(--danger);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.deleteBtn:hover { background: var(--danger-light); }
+
+.confirmDelete {
+  background: var(--danger-light);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.confirmDelete p { font-size: 0.88rem; color: var(--danger); }
+
+.confirmActions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Shared buttons */
+.cancelBtn {
+  padding: 8px 16px;
+  background: white;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: background .15s;
+}
+.cancelBtn:hover { background: var(--gray-50); }
+
+.saveBtn {
+  padding: 8px 18px;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background .15s;
+}
+.saveBtn:hover { background: var(--primary-dark); }
+
+.confirmBtn {
+  padding: 8px 16px;
+  background: var(--danger);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background .15s;
+}
+.confirmBtn:hover { background: #b91c1c; }

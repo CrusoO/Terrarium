@@ -1,0 +1,195 @@
+{
+  "apps": 3,
+  "loaded": 3,
+  "interactionValidated": 3,
+  "cold": {
+    "coldWallSeconds": 6.444,
+    "exit": 0,
+    "marks": [
+      "MARK docker-ready 1791716788800",
+      "MARK symlink 1791716788881",
+      "MARK build 1791716793155"
+    ],
+    "tail": "dist/assets/index-DFE_0LOh.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-Bw_2Lgsy.js   227.56 kB \u00e2\u201d\u201a gzip: 70.98 kB\n\u00e2\u0153\u201c built in 3.35s\nMARK build 1791716793155"
+  },
+  "poolSeconds": 2.036,
+  "rows": [
+    {
+      "slug": "expenses",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\expenses",
+      "copySeconds": 0.22,
+      "serverReadySeconds": 8.89,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 3161,
+      "timing": {
+        "browserLaunchMs": 1252,
+        "firstPaintMs": 3161,
+        "routesMs": 426,
+        "interactionMs": 1321
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Travel",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 8.738,
+      "poolSeconds": 2.036,
+      "buildTail": "dist/assets/index-DFE_0LOh.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-rlrqQJyE.js   228.10 kB \u00e2\u201d\u201a gzip: 71.11 kB\n\u00e2\u0153\u201c built in 5.92s"
+    },
+    {
+      "slug": "crud-2",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-holdout\\crud-2",
+      "copySeconds": 0.312,
+      "serverReadySeconds": 8.461,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 695,
+      "timing": {
+        "browserLaunchMs": 1114,
+        "firstPaintMs": 695,
+        "routesMs": 429,
+        "interactionMs": 1190
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Present",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 5.147,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DFE_0LOh.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-BCs6KJMS.js   227.43 kB \u00e2\u201d\u201a gzip: 70.90 kB\n\u00e2\u0153\u201c built in 5.05s"
+    },
+    {
+      "slug": "booking-new-filter",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-edit-five\\booking-new-filter",
+      "copySeconds": 0.154,
+      "serverReadySeconds": 6.924,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 1326,
+      "timing": {
+        "browserLaunchMs": 1222,
+        "firstPaintMs": 1326,
+        "routesMs": 303,
+        "interactionMs": 1895
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Booked",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 7.705,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-Cnd1uCxR.css    1.93 kB \u00e2\u201d\u201a gzip:  0.79 kB\ndist/assets/index-pv-2i6mV.js   226.86 kB \u00e2\u201d\u201a gzip: 70.76 kB\n\u00e2\u0153\u201c built in 4.95s"
+    }
+  ]
+}
