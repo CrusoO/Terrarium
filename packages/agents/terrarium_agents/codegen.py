@@ -1156,7 +1156,7 @@ def _heuristic_plan(job: AgentJob, complexity: Complexity, stack: Stack) -> Sess
 
 
 def _maybe_llm_plan(job: AgentJob, fallback: SessionPlan) -> dict | None:
-    from terrarium_agents.llm import complete_json
+    from terrarium_agents import llm
 
     system = (
         "You are Terrarium's architecture step. Do not write application files yet. "
@@ -1176,7 +1176,7 @@ def _maybe_llm_plan(job: AgentJob, fallback: SessionPlan) -> dict | None:
         "Use the fallback files when they match the stack. "
         f"Layout hint is {fallback.layout}; keep website pages as real HTML files if layout is split."
     )
-    return complete_json(
+    return llm.complete_json(
         system=system,
         user=(
             f"requirements={job.prompt}\n"
@@ -1372,7 +1372,8 @@ def _maybe_llm_overlay(
     *,
     on_file: Callable[[str, str], None] | None = None,
 ) -> FileMap:
-    from terrarium_agents.llm import complete_json, llm_provider_order, model_for_provider, record_llm_call
+    from terrarium_agents import llm
+    from terrarium_agents.llm import llm_provider_order, model_for_provider, record_llm_call
     from terrarium_agents.llm_stream import stream_gemini_text, stream_with_one_continuation
     from terrarium_agents.tagged_files import TaggedFileParser, codegen_format
 
@@ -1487,7 +1488,7 @@ def _maybe_llm_overlay(
             return {}
         logger.warning("Codegen overlay %s replay miss; trying the JSON fallback", job.sessionId)
 
-    payload = complete_json(system, user, purpose="codegen")
+    payload = llm.complete_json(system, user, purpose="codegen")
     if not payload:
         logger.warning("Codegen overlay %s returned no parseable JSON payload", job.sessionId)
         return {}

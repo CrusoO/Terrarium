@@ -770,6 +770,8 @@ def _tsc_command(folder: Path, command: list[str]) -> list[str] | None:
     lowered = combined.lower()
     if "not found" in lowered or "could not determine executable" in lowered or "is not recognized" in lowered:
         return None
+    if "cannot find module 'react'" in lowered or "react/jsx-runtime" in lowered:
+        return None
     if proc.returncode == 0:
         return []
     lines = [line for line in combined.splitlines() if "error TS" in line]
