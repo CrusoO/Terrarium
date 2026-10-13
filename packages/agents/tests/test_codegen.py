@@ -10,6 +10,13 @@ from terrarium_contracts import AgentJob, Intent
 
 class CodeGeneratorTests(unittest.TestCase):
     def setUp(self) -> None:
+        # These tests stub complete_json, which is the JSON FileMap path. Pin the format so
+        # the result never depends on which provider credentials the machine happens to have.
+        from unittest.mock import patch
+
+        env_patch = patch.dict(os.environ, {"TERRARIUM_CODEGEN_FORMAT": "json"})
+        env_patch.start()
+        self.addCleanup(env_patch.stop)
         os.environ["TERRARIUM_AGENTS"] = "stub"
         os.environ.pop("GROQ_API_KEY", None)
         os.environ.pop("TERRARIUM_LLM_API_KEY", None)

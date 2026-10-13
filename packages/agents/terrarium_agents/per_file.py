@@ -775,7 +775,11 @@ def _tsc_command(folder: Path, command: list[str]) -> list[str] | None:
     if proc.returncode == 0:
         return []
     lines = [line for line in combined.splitlines() if "error TS" in line]
-    return lines[:40] or [combined.strip()[:240] or "tsc-failed"]
+    if not lines:
+        # The compiler never ran (npx refused to fetch it, a launcher crashed, and so on).
+        # That is not a type error in the app, so let the sandbox image decide.
+        return None
+    return lines[:40]
 
 
 def _docker_host_path(folder: Path) -> str:
