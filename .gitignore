@@ -10,6 +10,7 @@ dist/
 Thumbs.db
 pnpm-debug.log*
 package-lock.json
+!docs/codegen-metrics/browser-cache/package-lock.json
 .venv/
 __pycache__/
 *.py[cod]

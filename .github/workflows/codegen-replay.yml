@@ -32,7 +32,7 @@ jobs:
         run: uv sync --dev
       - name: Install replay browser dependencies
         working-directory: docs/codegen-metrics/browser-cache
-        run: npm ci
+        run: npm ci --no-audit --no-fund
       - name: Build sandbox test image
         run: docker build -t terrarium-node-sandbox:p1-s3 packages/sandbox/terrarium_sandbox/node_fixture
       - name: Replay tests at $0
