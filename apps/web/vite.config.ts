@@ -5,6 +5,28 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   envDir: "../../", // load .env from monorepo root
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const moduleId = id.replaceAll("\\", "/");
+          if (!moduleId.includes("/node_modules/")) return undefined;
+          if (moduleId.includes("/firebase/") || moduleId.includes("/@firebase/")) return "firebase";
+          if (moduleId.includes("/@mui/icons-material/")) return "mui-icons";
+          if (moduleId.includes("/@mui/") || moduleId.includes("/@emotion/")) return "mui";
+          if (
+            moduleId.includes("/react/") ||
+            moduleId.includes("/react-dom/") ||
+            moduleId.includes("/scheduler/")
+          ) {
+            return "react";
+          }
+          if (moduleId.includes("/gsap/")) return "animation";
+          return "vendor";
+        },
+      },
+    },
+  },
   server: {
     host: true,
     port: 5173,
