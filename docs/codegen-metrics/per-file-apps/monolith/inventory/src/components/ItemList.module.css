@@ -1,0 +1,82 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.card.selected { border-color: var(--accent); background: rgba(108, 99, 255, 0.06); }
+
+.cardTop { display: flex; justify-content: space-between; align-items: flex-start; }
+.cardLeft { flex: 1; }
+
+.name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.statusDot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.statusDot.low { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+.statusDot.out { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+.stockRow { display: flex; justify-content: space-between; align-items: baseline; }
+.stockNum { display: flex; align-items: baseline; }
+.stockVal { font-size: 26px; font-weight: 700; }
+.stockVal.green { color: var(--green); }
+.stockVal.yellow { color: var(--yellow); }
+.stockVal.red { color: var(--red); }
+.stockUnit { font-size: 12px; color: var(--muted); }
+.minStock { font-size: 11px; color: var(--muted); }
+
+.barTrack {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.barFill.ok { background: var(--green); }
+.barFill.low { background: var(--yellow); }
+.barFill.out { background: var(--red); width: 100% !important; }
+
+.cardBottom { display: flex; justify-content: space-between; align-items: center; }
+.price { font-size: 13px; font-weight: 600; color: var(--accent2); }
+.location { font-size: 11px; color: var(--muted); }
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 12px;
+}
+
+.emptyIcon { font-size: 48px; }
+.emptyText { font-size: 16px; color: var(--muted); }

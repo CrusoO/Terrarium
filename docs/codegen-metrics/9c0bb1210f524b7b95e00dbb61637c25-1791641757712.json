@@ -1,0 +1,187 @@
+{
+  "durationMs": 283662,
+  "events": [],
+  "fileMap": {
+    "boilerplate": {
+      "estimatedBoilerplateShare": 0.492,
+      "estimatedBoilerplateTokens": 1404,
+      "estimatedTokensByCategory": {
+        "business-logic": 33,
+        "config": 232,
+        "layout": 1015,
+        "ui": 1418,
+        "ui-primitives": 157
+      }
+    },
+    "fileCount": 15,
+    "jsonOverheadEstimatedTokens": 179,
+    "jsonWrappedBytes": 12150,
+    "jsonWrappedEstimatedTokens": 3038,
+    "rawCodeBytes": 11435,
+    "rawCodeEstimatedTokens": 2859,
+    "tokensPerFileEstimated": {
+      "README.md": {
+        "bytes": 133,
+        "category": "business-logic",
+        "estimatedTokens": 33
+      },
+      "index.html": {
+        "bytes": 349,
+        "category": "config",
+        "estimatedTokens": 87
+      },
+      "package.json": {
+        "bytes": 385,
+        "category": "config",
+        "estimatedTokens": 96
+      },
+      "src/App.jsx": {
+        "bytes": 1092,
+        "category": "ui",
+        "estimatedTokens": 273
+      },
+      "src/components/AppShell.jsx": {
+        "bytes": 1684,
+        "category": "ui",
+        "estimatedTokens": 421
+      },
+      "src/components/ContactForm.jsx": {
+        "bytes": 882,
+        "category": "ui",
+        "estimatedTokens": 220
+      },
+      "src/components/DetailPanel.jsx": {
+        "bytes": 472,
+        "category": "ui",
+        "estimatedTokens": 118
+      },
+      "src/components/FeatureGrid.jsx": {
+        "bytes": 471,
+        "category": "ui",
+        "estimatedTokens": 118
+      },
+      "src/components/Hero.jsx": {
+        "bytes": 583,
+        "category": "ui",
+        "estimatedTokens": 146
+      },
+      "src/components/Toolbar.jsx": {
+        "bytes": 486,
+        "category": "ui",
+        "estimatedTokens": 122
+      },
+      "src/hooks/useLocalState.js": {
+        "bytes": 541,
+        "category": "ui-primitives",
+        "estimatedTokens": 135
+      },
+      "src/main.jsx": {
+        "bytes": 195,
+        "category": "config",
+        "estimatedTokens": 49
+      },
+      "src/styles/global.css": {
+        "bytes": 3966,
+        "category": "layout",
+        "estimatedTokens": 992
+      },
+      "src/utils/helpers.js": {
+        "bytes": 90,
+        "category": "ui-primitives",
+        "estimatedTokens": 22
+      },
+      "styles.css": {
+        "bytes": 92,
+        "category": "layout",
+        "estimatedTokens": 23
+      }
+    }
+  },
+  "finishedAtMs": 1791642041374,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 14932,
+      "inputTokens": 671,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1160,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 1831,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 263503,
+      "model": "gemini-3.8-flash",
+      "ok": false,
+      "provider": "gemini",
+      "purpose": "codegen",
+      "stage": "codegen"
+    }
+  ],
+  "prompt": "Use a clean modern UI, Vite + React, in-memory mock data (no backend), desktop-first layout, English labels, and ship a working MVP preview now.\n\nAnswers:\n1. What types of products are you selling in this store? \u2014 yes / use sensible MVP defaults.\n2. Who is your typical shopper or customer? \u2014 yes / use sensible MVP defaults.\n3. How do customers usually browse or search for items? \u2014 yes / use sensible MVP defaults.\n4. What key details do shoppers need to see on a product? \u2014 yes / use sensible MVP defaults.\n5. Who on your team will manage or update the catalogue? \u2014 yes / use sensible MVP defaults.\n6. What should visitors see first when they open the page? \u2014 yes / use sensible MVP defaults.",
+  "runId": "9c0bb1210f524b7b95e00dbb61637c25-1791641757712",
+  "runType": "new",
+  "sessionId": "9c0bb1210f524b7b95e00dbb61637c25",
+  "stages": [
+    {
+      "durationMs": 1763,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791641757714
+    },
+    {
+      "durationMs": 14935,
+      "kind": "model",
+      "name": "plan",
+      "startedAtMs": 1791641759481
+    },
+    {
+      "durationMs": 3457,
+      "kind": "infrastructure",
+      "name": "preview_skeleton_stream",
+      "startedAtMs": 1791641774416
+    },
+    {
+      "durationMs": 263506,
+      "kind": "model",
+      "name": "codegen",
+      "startedAtMs": 1791641777873
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "save_filemap",
+      "startedAtMs": 1791642041364
+    },
+    {
+      "durationMs": 5,
+      "kind": "infrastructure",
+      "name": "preview_file_replay",
+      "startedAtMs": 1791642041365
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791642041371
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791642041372
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "sandbox_boot_and_health",
+      "startedAtMs": 1791642041371
+    }
+  ],
+  "startedAtMs": 1791641757712,
+  "status": "preview-unhealthy"
+}

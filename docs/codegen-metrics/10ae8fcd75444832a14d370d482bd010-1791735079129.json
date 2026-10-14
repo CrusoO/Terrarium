@@ -1,0 +1,315 @@
+{
+  "durationMs": 183813,
+  "events": [
+    {
+      "atMs": 1791735116726,
+      "name": "codegen.first_file",
+      "payload": {
+        "path": "package.json",
+        "secondsSinceCodegenStage": 19.88
+      }
+    },
+    {
+      "atMs": 1791735262902,
+      "name": "codegen.streamed_files",
+      "payload": {
+        "count": 23,
+        "paths": [
+          "package.json",
+          "index.html",
+          "src/main.jsx",
+          "src/App.jsx",
+          "src/context/PipelineContext.jsx",
+          "src/hooks/usePipeline.js",
+          "src/hooks/useLocalState.js",
+          "src/utils/helpers.js",
+          "src/utils/seedData.js",
+          "src/styles/global.css",
+          "src/components/AppShell.jsx",
+          "src/components/Sidebar.jsx",
+          "src/components/Topbar.jsx",
+          "src/components/CandidateModal.jsx",
+          "src/components/KanbanColumn.jsx",
+          "src/pages/Dashboard.jsx",
+          "src/pages/Pipeline.jsx",
+          "src/pages/Candidates.jsx",
+          "src/pages/CandidateDetail.jsx",
+          "src/styles/dashboard.css",
+          "src/styles/pipeline.css",
+          "src/styles/candidates.css",
+          "src/styles/candidateDetail.css"
+        ]
+      }
+    }
+  ],
+  "fileMap": {
+    "boilerplate": {
+      "estimatedBoilerplateShare": 0.44,
+      "estimatedBoilerplateTokens": 9682,
+      "estimatedTokensByCategory": {
+        "business-logic": 7019,
+        "config": 301,
+        "layout": 5897,
+        "mock-data": 765,
+        "ui": 5317,
+        "ui-primitives": 2719
+      }
+    },
+    "fileCount": 24,
+    "jsonOverheadEstimatedTokens": 1141,
+    "jsonWrappedBytes": 92662,
+    "jsonWrappedEstimatedTokens": 23166,
+    "rawCodeBytes": 88224,
+    "rawCodeEstimatedTokens": 22025,
+    "tokensPerFileEstimated": {
+      "index.html": {
+        "bytes": 504,
+        "category": "config",
+        "estimatedTokens": 125
+      },
+      "package.json": {
+        "bytes": 458,
+        "category": "config",
+        "estimatedTokens": 114
+      },
+      "src/App.jsx": {
+        "bytes": 1003,
+        "category": "ui",
+        "estimatedTokens": 251
+      },
+      "src/components/AppShell.jsx": {
+        "bytes": 1472,
+        "category": "ui",
+        "estimatedTokens": 368
+      },
+      "src/components/CandidateModal.jsx": {
+        "bytes": 5763,
+        "category": "ui",
+        "estimatedTokens": 1441
+      },
+      "src/components/KanbanColumn.jsx": {
+        "bytes": 9221,
+        "category": "ui",
+        "estimatedTokens": 2305
+      },
+      "src/components/Sidebar.jsx": {
+        "bytes": 2999,
+        "category": "ui",
+        "estimatedTokens": 750
+      },
+      "src/components/Topbar.jsx": {
+        "bytes": 808,
+        "category": "ui",
+        "estimatedTokens": 202
+      },
+      "src/context/PipelineContext.jsx": {
+        "bytes": 3061,
+        "category": "mock-data",
+        "estimatedTokens": 765
+      },
+      "src/hooks/useLocalState.js": {
+        "bytes": 472,
+        "category": "ui-primitives",
+        "estimatedTokens": 118
+      },
+      "src/hooks/usePipeline.js": {
+        "bytes": 1066,
+        "category": "ui-primitives",
+        "estimatedTokens": 266
+      },
+      "src/main.jsx": {
+        "bytes": 247,
+        "category": "config",
+        "estimatedTokens": 62
+      },
+      "src/pages/CandidateDetail.jsx": {
+        "bytes": 8714,
+        "category": "business-logic",
+        "estimatedTokens": 2178
+      },
+      "src/pages/Candidates.jsx": {
+        "bytes": 8263,
+        "category": "business-logic",
+        "estimatedTokens": 2065
+      },
+      "src/pages/Dashboard.jsx": {
+        "bytes": 7946,
+        "category": "business-logic",
+        "estimatedTokens": 1986
+      },
+      "src/pages/Pipeline.jsx": {
+        "bytes": 3160,
+        "category": "business-logic",
+        "estimatedTokens": 790
+      },
+      "src/styles/candidateDetail.css": {
+        "bytes": 5434,
+        "category": "layout",
+        "estimatedTokens": 1358
+      },
+      "src/styles/candidates.css": {
+        "bytes": 4645,
+        "category": "layout",
+        "estimatedTokens": 1161
+      },
+      "src/styles/dashboard.css": {
+        "bytes": 6006,
+        "category": "layout",
+        "estimatedTokens": 1502
+      },
+      "src/styles/global.css": {
+        "bytes": 5997,
+        "category": "layout",
+        "estimatedTokens": 1473
+      },
+      "src/styles/pipeline.css": {
+        "bytes": 1520,
+        "category": "layout",
+        "estimatedTokens": 380
+      },
+      "src/utils/helpers.js": {
+        "bytes": 1914,
+        "category": "ui-primitives",
+        "estimatedTokens": 478
+      },
+      "src/utils/seedData.js": {
+        "bytes": 7436,
+        "category": "ui-primitives",
+        "estimatedTokens": 1857
+      },
+      "styles.css": {
+        "bytes": 92,
+        "category": "layout",
+        "estimatedTokens": 23
+      }
+    }
+  },
+  "finishedAtMs": 1791735262942,
+  "headline": {
+    "generationSource": "model-generated",
+    "healAttempts": 0,
+    "infrastructureStageSeconds": 3.504,
+    "modelStageSeconds": 180.322,
+    "timeToFirstFileSeconds": 37.597,
+    "timeToHealthyPreviewSeconds": null
+  },
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 2895,
+      "inputTokens": 1312,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 140,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 11347,
+      "inputTokens": 554,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1147,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 1701,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "chunkCount": 2655,
+      "continued": true,
+      "durationMs": 79638,
+      "inputTokens": 2488,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 16000,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "codegen",
+      "timeToFirstTokenSeconds": 19.71195425299811,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "chunkCount": 2868,
+      "continued": true,
+      "durationMs": 86331,
+      "inputTokens": 2329,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 16000,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "codegen",
+      "timeToFirstTokenSeconds": 19.809221802977845,
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "1. What does your business sell?\nI just want to hire candidates , I just want a platform to maintain pipelines of candidates\n\n2. Who are your main customers?\nSmall business owners\n\n3. How do customers usually buy from you?\nOn our website\n\n4. What do you want to keep track of?\nCustomers and orders\n\n5. Who on your team will use this?\nJust me, Sales team\n\n6. What would you like to see first?\nToday's orders",
+  "runId": "10ae8fcd75444832a14d370d482bd010-1791735079129",
+  "runType": "new",
+  "sessionId": "10ae8fcd75444832a14d370d482bd010",
+  "stages": [
+    {
+      "durationMs": 2902,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791735079129
+    },
+    {
+      "durationMs": 11352,
+      "kind": "model",
+      "name": "plan",
+      "startedAtMs": 1791735082035
+    },
+    {
+      "durationMs": 3458,
+      "kind": "infrastructure",
+      "name": "preview_skeleton_stream",
+      "startedAtMs": 1791735093387
+    },
+    {
+      "durationMs": 166068,
+      "kind": "model",
+      "name": "codegen",
+      "startedAtMs": 1791735096846
+    },
+    {
+      "durationMs": 6,
+      "kind": "infrastructure",
+      "name": "save_filemap",
+      "startedAtMs": 1791735262902
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "preview_file_replay",
+      "startedAtMs": 1791735262909
+    },
+    {
+      "durationMs": 5,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791735262912
+    },
+    {
+      "durationMs": 13,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791735262918
+    },
+    {
+      "durationMs": 21,
+      "kind": "infrastructure",
+      "name": "sandbox_boot_and_health",
+      "startedAtMs": 1791735262912
+    }
+  ],
+  "startedAtMs": 1791735079129,
+  "status": "security-gate"
+}

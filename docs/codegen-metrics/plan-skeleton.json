@@ -1,0 +1,21 @@
+{
+  "fastModel": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+  "planSeconds": 6.182,
+  "planOk": true,
+  "planModel": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+  "planInputTokens": 201,
+  "planOutputTokens": 667,
+  "planFailReason": null,
+  "planTargetSeconds": 5,
+  "planMetTarget": false,
+  "skeletonSeconds": 4.037,
+  "timeToFirstVisibleUiSeconds": 4.037,
+  "visible": true,
+  "health": "running",
+  "previewUrl": "http://127.0.0.1:61685/",
+  "htmlHasOrders": true,
+  "errorOverlay": false,
+  "overlappedWallSeconds": 6.182,
+  "skeletonError": null,
+  "probeError": null
+}

@@ -1,0 +1,435 @@
+{
+  "rows": [
+    {
+      "slug": "appointments",
+      "viteOk": true,
+      "viteSeconds": 11.245,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.28 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-CLLc0jQf.css    1.44 kB \u00e2\u201d\u201a gzip:  0.65 kB\ndist/assets/index-BF70eea3.js   228.00 kB \u00e2\u201d\u201a gzip: 71.02 kB\n\u00e2\u0153\u201c built in 4.88s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\appointments",
+        "firstPaintMs": 4627,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Appointments\nList\nDetail\nNew\nBooked\nDone\nCancelled\nNoah Patel 1\nConsult 1\n2024-06-11 09:00 1\nBooked\nNoah Patel 4\nConsult 4\n2024-06-11 09:00 4\nBooked"
+          },
+          {
+            "route": "detail",
+            "overlay": false,
+            "text": "Detail\nList\nDetail\nNew\n\nNo visit selected"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nDetail\nNew\nClient\nService\nStatus\nBooked\nDone\nCancelled\nWhen\nCreate Visit"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "before": 2,
+          "filtered": 1,
+          "filterNarrowed": true,
+          "added": true,
+          "detailHasText": true,
+          "totalsChanged": null
+        },
+        "ok": false,
+        "browserSeconds": 10.487,
+        "browserExit": 1
+      }
+    },
+    {
+      "slug": "catalogue",
+      "viteOk": true,
+      "viteSeconds": 14.957,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.27 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-DMaPfuru.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-DVxyOPE6.js   227.60 kB \u00e2\u201d\u201a gzip: 70.94 kB\n\u00e2\u0153\u201c built in 3.91s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\catalogue",
+        "firstPaintMs": 4831,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Catalogue\nList\nDetail\nNew\nKitchen\nGarden\nDesk\nCeramic Bowl 1\n\nKitchen\n\n$24\n\nStock: 12\n\nCeramic Bowl 4\n\nKitchen\n\n$24\n\nStock: 12\n\nNo product selected"
+          },
+          {
+            "route": "detail",
+            "overlay": false,
+            "text": "Detail\nList\nDetail\nNew"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nDetail\nNew\nName\nCategory\nKitchen\nGarden\nDesk\nPrice\nStock\nCreate Product"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "before": 3,
+          "filtered": 2,
+          "filterNarrowed": true,
+          "added": true,
+          "detailHasText": true,
+          "totalsChanged": null
+        },
+        "ok": false,
+        "browserSeconds": 12.257,
+        "browserExit": 1
+      }
+    },
+    {
+      "slug": "expenses",
+      "viteOk": true,
+      "viteSeconds": 9.836,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.27 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-DFE_0LOh.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-Bw_2Lgsy.js   227.56 kB \u00e2\u201d\u201a gzip: 70.98 kB\n\u00e2\u0153\u201c built in 3.75s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\expenses",
+        "firstPaintMs": 3855,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Expenses\nList\nNew\nTotals\nTravel\nMeals\nSupplies\nTram 1Travel18.002024-06-08 1Tram 4Travel18.002024-06-08 4"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nNew\nTotals\nMerchant:\nCategory:\nTravel\nMeals\nSupplies\nAmount:\nSpent On:\nAdd Expense"
+          },
+          {
+            "route": "dashboard",
+            "overlay": false,
+            "text": "Totals\nList\nNew\nTotals\n2024-06-08 118\n2024-06-08 218\n2024-06-08 318\n2024-06-08 418"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "before": 2,
+          "filtered": 1,
+          "filterNarrowed": true,
+          "added": false,
+          "detailHasText": true,
+          "totalsChanged": true
+        },
+        "ok": false,
+        "browserSeconds": 8.866,
+        "browserExit": 1
+      }
+    },
+    {
+      "slug": "guests",
+      "viteOk": true,
+      "viteSeconds": 7.281,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.27 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-CLLc0jQf.css    1.44 kB \u00e2\u201d\u201a gzip:  0.65 kB\ndist/assets/index-C5ImBxgU.js   227.92 kB \u00e2\u201d\u201a gzip: 71.02 kB\n\u00e2\u0153\u201c built in 3.20s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\guests",
+        "firstPaintMs": 3023,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Guests\nList\nDetail\nNew\nAll\nYes\nNo\nMaybe\nImani Cole 1\nCole 1\nSeats: 2\nYes\nImani Cole 2\nCole 2\nSeats: 2\nNo\nImani Cole 3\nCole 3\nSeats: 2\nMaybe\nImani Cole 4\nCole 4\nSeats: 2\nYes"
+          },
+          {
+            "route": "detail",
+            "overlay": false,
+            "text": "Detail\nList\nDetail\nNew\n\nNo guest selected"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nDetail\nNew\nName\nParty\nStatus\nYes\nNo\nMaybe\nSeats\nAdd Guest"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "before": 4,
+          "filtered": 2,
+          "filterNarrowed": true,
+          "added": true,
+          "detailHasText": true,
+          "totalsChanged": null
+        },
+        "ok": false,
+        "browserSeconds": 11.738,
+        "browserExit": 1
+      }
+    },
+    {
+      "slug": "inventory",
+      "viteOk": true,
+      "viteSeconds": 9.066,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.27 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-DMaPfuru.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-Cf7q6mWU.js   229.66 kB \u00e2\u201d\u201a gzip: 71.48 kB\n\u00e2\u0153\u201c built in 4.03s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\inventory",
+        "firstPaintMs": 2295,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Inventory\nList\nDetail\nNew\nTotals\nAll\nOk\nLow\nOut\nFlour 1Dry goods 1On hand: 4OkFlour 2Dry goods 2On hand: 4LowFlour 3Dry goods 3On hand: 4OutFlour 4Dry goods 4On hand: 4Ok\n\nNo SKU selected"
+          },
+          {
+            "route": "detail",
+            "overlay": false,
+            "text": "Detail\nList\nDetail\nNew\nTotals"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nDetail\nNew\nTotals\nName\nAisle\nStatus\nOk\nLow\nOut\nOn Hand\nAdd Item"
+          },
+          {
+            "route": "dashboard",
+            "overlay": false,
+            "text": "Totals\nList\nDetail\nNew\nTotals\n\ndate: 4\n\ncount: 4\n\ntotal: 16"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "before": 4,
+          "filtered": 2,
+          "filterNarrowed": true,
+          "added": true,
+          "detailHasText": true,
+          "totalsChanged": true
+        },
+        "ok": false,
+        "browserSeconds": 7.876,
+        "browserExit": 1
+      }
+    },
+    {
+      "slug": "ops",
+      "viteOk": true,
+      "viteSeconds": 11.678,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.28 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-DFE_0LOh.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-B9zP6vsZ.js   228.38 kB \u00e2\u201d\u201a gzip: 71.18 kB\n\u00e2\u0153\u201c built in 4.43s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\ops",
+        "firstPaintMs": 3910,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Operations\nList\nDetail\nNew\nTotals\nAll\nOpen\nDone\nOverdue\nPacking 1Mina 12024-06-12 1OpenPacking 2Mina 22024-06-12 2DonePacking 3Mina 32024-06-12 3OverduePacking 4Mina 42024-06-12 4Open"
+          },
+          {
+            "route": "detail",
+            "overlay": false,
+            "text": "Detail\nList\nDetail\nNew\nTotals\n\nNo job selected"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nDetail\nNew\nTotals\nTitle\nOwner\nStatus\nOpen\nDone\nOverdue\nDue Date\nCreate Job"
+          },
+          {
+            "route": "dashboard",
+            "overlay": false,
+            "text": "Totals\nList\nDetail\nNew\nTotals\ndate: 2024-06-12 1\ncount: 1\ntotal: 1\ndate: 2024-06-12 2\ncount: 1\ntotal: 1\ndate: 2024-06-12 3\ncount: 1\ntotal: 1\ndate: 2024-06-12 4\ncount: 1\ntotal: 1"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "before": 4,
+          "filtered": 2,
+          "filterNarrowed": true,
+          "added": false,
+          "detailHasText": true,
+          "totalsChanged": true
+        },
+        "ok": false,
+        "browserSeconds": 10.121,
+        "browserExit": 1
+      }
+    },
+    {
+      "slug": "orders",
+      "viteOk": true,
+      "viteSeconds": 11.04,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.27 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-CLLc0jQf.css    1.44 kB \u00e2\u201d\u201a gzip:  0.65 kB\ndist/assets/index-CouW8FhE.js   228.95 kB \u00e2\u201d\u201a gzip: 71.33 kB\n\u00e2\u0153\u201c built in 2.56s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\orders",
+        "firstPaintMs": 5105,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Orders\nList\nDetail\nNew\nTotals\nAll\nPaid\nUnpaid\nPartial\nORD-1001\nAlice Marsh 1\nPortland 1\n2024-06-10 1\nPaid\nORD-1002\nAlice Marsh 2\nPortland 2\n2024-06-10 2\nUnpaid\nORD-1003\nAlice Marsh 3\nPortland 3\n2024-06-10 3\nPartial\nORD-1004\nAlice Marsh 4\nPo"
+          },
+          {
+            "route": "detail",
+            "overlay": false,
+            "text": "Detail\nList\nDetail\nNew\nTotals\n\nNo order selected"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nDetail\nNew\nTotals\nCustomer:\nCity:\nPayment Status:\nPaid\nUnpaid\nPartial\nPickup Date:\nCreate Order"
+          },
+          {
+            "route": "dashboard",
+            "overlay": false,
+            "text": "Totals\nList\nDetail\nNew\nTotals\n2024-06-10 11\n2024-06-10 21\n2024-06-10 31\n2024-06-10 41"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "before": 4,
+          "filtered": 2,
+          "filterNarrowed": true,
+          "added": false,
+          "detailHasText": true,
+          "totalsChanged": true
+        },
+        "ok": false,
+        "browserSeconds": 13.564,
+        "browserExit": 1
+      }
+    },
+    {
+      "slug": "recipes",
+      "viteOk": true,
+      "viteSeconds": 12.341,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.27 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-CLLc0jQf.css    1.44 kB \u00e2\u201d\u201a gzip:  0.65 kB\ndist/assets/index-GKVCAq3Z.js   228.26 kB \u00e2\u201d\u201a gzip: 71.02 kB\n\u00e2\u0153\u201c built in 2.65s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\recipes",
+        "firstPaintMs": 3104,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Recipes\nList\nDetail\nNew\nAll\nBreakfast\nDinner\nSnack\nLemon pasta 1Breakfast25 minServes 2Lemon pasta 2Dinner25 minServes 2Lemon pasta 3Snack25 minServes 2Lemon pasta 4Breakfast25 minServes 2"
+          },
+          {
+            "route": "detail",
+            "overlay": false,
+            "text": "Detail\nList\nDetail\nNew\n\nNo recipe selected"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nDetail\nNew\nName\nCourse\nBreakfast\nDinner\nSnack\nMinutes\nServes\nAdd Recipe"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "before": 5,
+          "filtered": 3,
+          "filterNarrowed": true,
+          "added": true,
+          "detailHasText": true,
+          "totalsChanged": null
+        },
+        "ok": false,
+        "browserSeconds": 9.411,
+        "browserExit": 1
+      }
+    },
+    {
+      "slug": "roster",
+      "viteOk": true,
+      "viteSeconds": 9.682,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.27 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-DFE_0LOh.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-v_vzd1Uf.js   228.93 kB \u00e2\u201d\u201a gzip: 71.11 kB\n\u00e2\u0153\u201c built in 2.73s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\roster",
+        "firstPaintMs": 4163,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Roster\nList\nDetail\nNew\nAll\nPresent\nAbsent\nLate\nPriya Shah 1Homeroom 4B 1Guardian: Anil Shah 1PresentPriya Shah 2Homeroom 4B 2Guardian: Anil Shah 2AbsentPriya Shah 3Homeroom 4B 3Guardian: Anil Shah 3LatePriya Shah 4Homeroom 4B 4Guardian: Ani"
+          },
+          {
+            "route": "detail",
+            "overlay": false,
+            "text": "Detail\nList\nDetail\nNew\n\nNo student selected"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nDetail\nNew\nName\nHomeroom\nStatus\nPresent\nAbsent\nLate\nGuardian\nAdd Student"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "TypeError: Cannot read properties of undefined (reading 'toLowerCase')"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "error": "Error: No element found for selector: [data-route=\"detail\"]"
+        },
+        "ok": false,
+        "browserSeconds": 10.616,
+        "browserExit": 1
+      }
+    },
+    {
+      "slug": "tickets",
+      "viteOk": true,
+      "viteSeconds": 9.596,
+      "tail": "rendering chunks...\ncomputing gzip size...\ndist/index.html                   0.27 kB \u00e2\u201d\u201a gzip:  0.21 kB\ndist/assets/index-DMaPfuru.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-CZ7E-w3T.js   227.90 kB \u00e2\u201d\u201a gzip: 70.95 kB\n\u00e2\u0153\u201c built in 3.28s",
+      "browser": {
+        "folder": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\tickets",
+        "firstPaintMs": 4875,
+        "routes": [
+          {
+            "route": "list",
+            "overlay": false,
+            "text": "Tickets\nList\nDetail\nNew\nOpen\nWaiting\nClosed\nLogin loop 1\nSam Lee 1\n2024-06-09 1\nOpen\nLogin loop 4\nSam Lee 4\n2024-06-09 4\nOpen\n\nNo ticket selected"
+          },
+          {
+            "route": "detail",
+            "overlay": false,
+            "text": "Detail\nList\nDetail\nNew"
+          },
+          {
+            "route": "form",
+            "overlay": false,
+            "text": "New\nList\nDetail\nNew\nSubject\nRequester\nStatus\nOpen\nWaiting\nClosed\nOpened On\nCreate Ticket"
+          }
+        ],
+        "errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "overlay": false,
+        "behaviour": {
+          "before": 2,
+          "filtered": 1,
+          "filterNarrowed": true,
+          "added": false,
+          "detailHasText": true,
+          "totalsChanged": null
+        },
+        "ok": false,
+        "browserSeconds": 11.74,
+        "browserExit": 1
+      }
+    }
+  ]
+}

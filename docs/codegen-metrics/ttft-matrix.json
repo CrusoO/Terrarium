@@ -1,0 +1,77 @@
+{
+  "firstTokenDefinition": "First content_block_delta with non-empty delta.text. message_start and content_block_start do not count.",
+  "rows": [
+    {
+      "modelId": "anthropic.claude-sonnet-4-6",
+      "maxTokens": 4096,
+      "ok": false,
+      "failReason": "ValidationException: An error occurred (ValidationException) when calling the InvokeModelWithResponseStream operation: Invocation of model ID anthropic.claude-sonnet-4-6 with on-demand throughput isn\u2019t supported. Retry your request with the ID or ARN of an inference profile that contains this model.",
+      "timeToFirstTokenSeconds": null,
+      "seconds": 2.405,
+      "region": "eu-central-1",
+      "profile": "in-region"
+    },
+    {
+      "modelId": "anthropic.claude-sonnet-4-6",
+      "maxTokens": 8192,
+      "ok": false,
+      "failReason": "ValidationException: An error occurred (ValidationException) when calling the InvokeModelWithResponseStream operation: Invocation of model ID anthropic.claude-sonnet-4-6 with on-demand throughput isn\u2019t supported. Retry your request with the ID or ARN of an inference profile that contains this model.",
+      "timeToFirstTokenSeconds": null,
+      "seconds": 0.539,
+      "region": "eu-central-1",
+      "profile": "in-region"
+    },
+    {
+      "modelId": "anthropic.claude-sonnet-4-6",
+      "maxTokens": 16000,
+      "ok": false,
+      "failReason": "ValidationException: An error occurred (ValidationException) when calling the InvokeModelWithResponseStream operation: Invocation of model ID anthropic.claude-sonnet-4-6 with on-demand throughput isn\u2019t supported. Retry your request with the ID or ARN of an inference profile that contains this model.",
+      "timeToFirstTokenSeconds": null,
+      "seconds": 0.343,
+      "region": "eu-central-1",
+      "profile": "in-region"
+    },
+    {
+      "modelId": "eu.anthropic.claude-sonnet-4-6",
+      "maxTokens": 4096,
+      "ok": true,
+      "timeToFirstTokenSeconds": 19.262,
+      "firstTokenEvent": "content_block_delta.text",
+      "eventsBeforeFirstToken": [
+        "message_start",
+        "content_block_start"
+      ],
+      "firstTokenChars": 17,
+      "region": "eu-central-1",
+      "profile": "eu-cross-region"
+    },
+    {
+      "modelId": "eu.anthropic.claude-sonnet-4-6",
+      "maxTokens": 8192,
+      "ok": true,
+      "timeToFirstTokenSeconds": 19.707,
+      "firstTokenEvent": "content_block_delta.text",
+      "eventsBeforeFirstToken": [
+        "message_start",
+        "content_block_start"
+      ],
+      "firstTokenChars": 17,
+      "region": "eu-central-1",
+      "profile": "eu-cross-region"
+    },
+    {
+      "modelId": "eu.anthropic.claude-sonnet-4-6",
+      "maxTokens": 16000,
+      "ok": true,
+      "timeToFirstTokenSeconds": 19.646,
+      "firstTokenEvent": "content_block_delta.text",
+      "eventsBeforeFirstToken": [
+        "message_start",
+        "content_block_start"
+      ],
+      "firstTokenChars": 17,
+      "region": "eu-central-1",
+      "profile": "eu-cross-region"
+    }
+  ]
+}

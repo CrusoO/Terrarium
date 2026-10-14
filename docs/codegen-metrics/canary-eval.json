@@ -1,0 +1,1779 @@
+{
+  "security": {
+    "seconds": 0.0006,
+    "findings": 0,
+    "secrets": 0,
+    "issues": 0,
+    "blocks": false,
+    "packageFromScaffold": true
+  },
+  "stream": {
+    "model": "eu.anthropic.claude-haiku-5-5",
+    "ok": true,
+    "failReason": null,
+    "chunkCount": 28,
+    "firstTokenSeconds": 3.1048587480036076,
+    "durationSeconds": 3.106,
+    "firstChunkSeconds": 3.1049,
+    "lastChunkSeconds": 3.1062,
+    "firstEqualsDuration": true,
+    "chunkTimes": [
+      3.1049,
+      3.105,
+      3.1051,
+      3.1051,
+      3.1052,
+      3.1052,
+      3.1052,
+      3.1053,
+      3.1053,
+      3.1054,
+      3.1054,
+      3.1054
+    ],
+    "wallSeconds": 3.786
+  },
+  "firstpass": {
+    "rows": [
+      {
+        "slug": "orders",
+        "language": "jsdoc",
+        "files": 21,
+        "llmCalls": 9,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.095818,
+        "cacheReadTokens": 30112,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 8.409,
+          "checkSeconds": 0.003,
+          "repairSeconds": 0.0,
+          "staticTotalSeconds": 8.413
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "detail": true,
+          "totals": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 5.286,
+        "firstModelFilePath": "src/views/DashboardPage.jsx",
+        "theme": "ledger",
+        "layout": "page",
+        "wallSeconds": 8.413
+      },
+      {
+        "slug": "catalogue",
+        "language": "jsdoc",
+        "files": 19,
+        "llmCalls": 7,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.074313,
+        "cacheReadTokens": 22245,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 8.366,
+          "checkSeconds": 0.003,
+          "repairSeconds": 0.0,
+          "staticTotalSeconds": 8.369
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "detail": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 5.776,
+        "firstModelFilePath": "src/views/DetailPage.jsx",
+        "theme": "harbor",
+        "layout": "split",
+        "wallSeconds": 8.37
+      },
+      {
+        "slug": "ops",
+        "language": "jsdoc",
+        "files": 21,
+        "llmCalls": 9,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.094002,
+        "cacheReadTokens": 30084,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 7.491,
+          "checkSeconds": 0.015,
+          "repairSeconds": 0.001,
+          "staticTotalSeconds": 7.507
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "detail": true,
+          "totals": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 4.713,
+        "firstModelFilePath": "src/views/DashboardPage.jsx",
+        "theme": "ink",
+        "layout": "board",
+        "wallSeconds": 7.507
+      },
+      {
+        "slug": "appointments",
+        "language": "jsdoc",
+        "files": 19,
+        "llmCalls": 7,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.075059,
+        "cacheReadTokens": 22320,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 7.434,
+          "checkSeconds": 0.001,
+          "repairSeconds": 0.0,
+          "staticTotalSeconds": 7.435
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "detail": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 5.429,
+        "firstModelFilePath": "src/views/DetailPage.jsx",
+        "theme": "ledger",
+        "layout": "page",
+        "wallSeconds": 7.436
+      },
+      {
+        "slug": "inventory",
+        "language": "jsdoc",
+        "files": 21,
+        "llmCalls": 9,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.098118,
+        "cacheReadTokens": 30136,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 7.835,
+          "checkSeconds": 0.001,
+          "repairSeconds": 0.0,
+          "staticTotalSeconds": 7.836
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "detail": true,
+          "totals": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 4.169,
+        "firstModelFilePath": "src/views/DashboardPage.jsx",
+        "theme": "harbor",
+        "layout": "split",
+        "wallSeconds": 7.837
+      },
+      {
+        "slug": "roster",
+        "language": "jsdoc",
+        "files": 19,
+        "llmCalls": 7,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.077669,
+        "cacheReadTokens": 22272,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 8.54,
+          "checkSeconds": 0.001,
+          "repairSeconds": 0.0,
+          "staticTotalSeconds": 8.542
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "detail": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 5.907,
+        "firstModelFilePath": "src/views/DetailPage.jsx",
+        "theme": "ink",
+        "layout": "board",
+        "wallSeconds": 8.542
+      },
+      {
+        "slug": "recipes",
+        "language": "jsdoc",
+        "files": 19,
+        "llmCalls": 7,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.072814,
+        "cacheReadTokens": 22278,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 6.75,
+          "checkSeconds": 0.002,
+          "repairSeconds": 0.0,
+          "staticTotalSeconds": 6.752
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "detail": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 5.839,
+        "firstModelFilePath": "src/views/ListPage.jsx",
+        "theme": "ledger",
+        "layout": "page",
+        "wallSeconds": 6.753
+      },
+      {
+        "slug": "tickets",
+        "language": "jsdoc",
+        "files": 19,
+        "llmCalls": 7,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.074487,
+        "cacheReadTokens": 22323,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 8.77,
+          "checkSeconds": 0.001,
+          "repairSeconds": 0.0,
+          "staticTotalSeconds": 8.771
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "detail": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 5.623,
+        "firstModelFilePath": "src/views/DetailPage.jsx",
+        "theme": "harbor",
+        "layout": "split",
+        "wallSeconds": 8.772
+      },
+      {
+        "slug": "expenses",
+        "language": "jsdoc",
+        "files": 20,
+        "llmCalls": 8,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.091897,
+        "cacheReadTokens": 22515,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 8.448,
+          "checkSeconds": 0.001,
+          "repairSeconds": 0.0,
+          "staticTotalSeconds": 8.45
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "totals": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 4.386,
+        "firstModelFilePath": "src/views/DashboardPage.jsx",
+        "theme": "ink",
+        "layout": "board",
+        "wallSeconds": 8.45
+      },
+      {
+        "slug": "guests",
+        "language": "jsdoc",
+        "files": 19,
+        "llmCalls": 7,
+        "repairs": 0,
+        "waves": 0,
+        "mismatchCount": 0,
+        "mismatchRate": 0.0,
+        "implicated": [],
+        "stubFallbacks": [],
+        "staticOk": true,
+        "cssErrors": [],
+        "parseErrors": [],
+        "costUsd": 0.076001,
+        "cacheReadTokens": 22266,
+        "stages": {
+          "deterministicSeconds": 0.0,
+          "generateSeconds": 8.237,
+          "checkSeconds": 0.001,
+          "repairSeconds": 0.0,
+          "staticTotalSeconds": 8.239
+        },
+        "features": {
+          "title": true,
+          "search": true,
+          "status-filter": true,
+          "create": true,
+          "detail": true
+        },
+        "firstPassMissing": 0,
+        "rewriteCount": 0,
+        "firstModelFileSeconds": 5.908,
+        "firstModelFilePath": "src/views/ListPage.jsx",
+        "theme": "ledger",
+        "layout": "page",
+        "wallSeconds": 8.239
+      }
+    ]
+  },
+  "edits": {
+    "rows": [
+      {
+        "kind": "add-field",
+        "detail": {
+          "name": "note",
+          "type_name": "string",
+          "sample": "Leave at door"
+        },
+        "wallSeconds": 8.227,
+        "filesChanged": 6,
+        "changed": [
+          "src/types.js",
+          "src/data/seed.js",
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx"
+        ],
+        "modelCalls": 4,
+        "packageUntouched": true
+      },
+      {
+        "kind": "rename",
+        "detail": {
+          "old": "city",
+          "new": "town"
+        },
+        "wallSeconds": 5.358,
+        "filesChanged": 6,
+        "changed": [
+          "src/types.js",
+          "src/data/seed.js",
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx"
+        ],
+        "modelCalls": 4,
+        "packageUntouched": true
+      },
+      {
+        "kind": "new-filter",
+        "detail": {
+          "status": "Refunded"
+        },
+        "wallSeconds": 5.513,
+        "filesChanged": 5,
+        "changed": [
+          "src/data/seed.js",
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx"
+        ],
+        "modelCalls": 4,
+        "packageUntouched": true
+      },
+      {
+        "kind": "new-page",
+        "detail": {
+          "name": "Archive"
+        },
+        "wallSeconds": 5.018,
+        "filesChanged": 6,
+        "changed": [
+          "src/App.jsx",
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx",
+          "src/views/ArchivePage.jsx"
+        ],
+        "modelCalls": 5,
+        "packageUntouched": true
+      },
+      {
+        "kind": "add-field",
+        "detail": {
+          "name": "phone",
+          "type_name": "string",
+          "sample": "555-0100"
+        },
+        "wallSeconds": 5.834,
+        "filesChanged": 7,
+        "changed": [
+          "src/types.js",
+          "src/data/seed.js",
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx",
+          "src/views/ArchivePage.jsx"
+        ],
+        "modelCalls": 5,
+        "packageUntouched": true
+      },
+      {
+        "kind": "rename",
+        "detail": {
+          "old": "customer",
+          "new": "buyer"
+        },
+        "wallSeconds": 5.79,
+        "filesChanged": 7,
+        "changed": [
+          "src/types.js",
+          "src/data/seed.js",
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx",
+          "src/views/ArchivePage.jsx"
+        ],
+        "modelCalls": 5,
+        "packageUntouched": true
+      },
+      {
+        "kind": "new-filter",
+        "detail": {
+          "status": "Held"
+        },
+        "wallSeconds": 7.239,
+        "filesChanged": 5,
+        "changed": [
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx",
+          "src/views/ArchivePage.jsx"
+        ],
+        "modelCalls": 5,
+        "packageUntouched": true
+      },
+      {
+        "kind": "add-field",
+        "detail": {
+          "name": "window",
+          "type_name": "string",
+          "sample": "Morning"
+        },
+        "wallSeconds": 6.245,
+        "filesChanged": 7,
+        "changed": [
+          "src/types.js",
+          "src/data/seed.js",
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx",
+          "src/views/ArchivePage.jsx"
+        ],
+        "modelCalls": 5,
+        "packageUntouched": true
+      },
+      {
+        "kind": "new-page",
+        "detail": {
+          "name": "Pickup"
+        },
+        "wallSeconds": 7.431,
+        "filesChanged": 7,
+        "changed": [
+          "src/App.jsx",
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx",
+          "src/views/ArchivePage.jsx",
+          "src/views/PickupPage.jsx"
+        ],
+        "modelCalls": 6,
+        "packageUntouched": true
+      },
+      {
+        "kind": "new-filter",
+        "detail": {
+          "status": "Packed"
+        },
+        "wallSeconds": 7.898,
+        "filesChanged": 6,
+        "changed": [
+          "src/views/ListPage.jsx",
+          "src/views/DetailPage.jsx",
+          "src/views/FormPage.jsx",
+          "src/views/DashboardPage.jsx",
+          "src/views/ArchivePage.jsx",
+          "src/views/PickupPage.jsx"
+        ],
+        "modelCalls": 6,
+        "packageUntouched": true
+      }
+    ]
+  },
+  "holdout": {
+    "groups": {
+      "crud": [
+        {
+          "prompt": "Build a library checkout desk. Librarians search books, filter by status, add a book, and open its detail.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 8.912,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "crud-1"
+        },
+        {
+          "prompt": "Build a kennel roster. Staff search dogs, filter by status, add a dog, and open its detail.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 8.892,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "crud-2"
+        },
+        {
+          "prompt": "Build a parts bin. Mechanics search parts, filter by condition, add a part, and open its detail.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.305,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "crud-3"
+        },
+        {
+          "prompt": "Build a volunteer list. Coordinators search volunteers, filter by status, add a volunteer, and open a detail.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 8.1,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "crud-4"
+        },
+        {
+          "prompt": "Build a farm stand price list. Staff search produce, filter by status, add an item, and open its detail.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.542,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "crud-5"
+        },
+        {
+          "prompt": "Build a clinic supply list. Nurses search supplies, filter by status, add a supply, and open its detail.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 8.163,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "crud-6"
+        },
+        {
+          "prompt": "Build a tool crib. Supervisors search tools, filter by status, add a tool, and open its detail.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 8.852,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "crud-7"
+        }
+      ],
+      "dashboard": [
+        {
+          "prompt": "Build a bakery dashboard. Bakers search orders, filter by status, and see overdue totals.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.983,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "dashboard-1"
+        },
+        {
+          "prompt": "Build a fleet dashboard. Dispatchers search vans, filter by status, and see mileage totals.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.468,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "dashboard-2"
+        },
+        {
+          "prompt": "Build a studio dashboard. Producers search sessions, filter by status, and see hour totals.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.941,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "dashboard-3"
+        },
+        {
+          "prompt": "Build a warehouse dashboard. Leads search pallets, filter by status, and see weight totals.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.662,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "dashboard-4"
+        },
+        {
+          "prompt": "Build a cafe dashboard. Managers search shifts, filter by status, and see tip totals.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 8.645,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "dashboard-5"
+        },
+        {
+          "prompt": "Build a clinic dashboard. Leads search visits, filter by status, and see wait-time totals as a kpi list.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 8.202,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "dashboard-6"
+        }
+      ],
+      "booking": [
+        {
+          "prompt": "Build a desk booking board. People book a desk, search reservations, filter by status, and open a reservation.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.005,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "booking-1"
+        },
+        {
+          "prompt": "Build a studio booking board. Musicians book a room, search appointments, and open a reservation.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 8.122,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "booking-2"
+        },
+        {
+          "prompt": "Build a court booking board. Players book a court, filter reservations, and open a booking.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.238,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "booking-3"
+        },
+        {
+          "prompt": "Build a tour booking board. Guides book a tour, search reservations, and open a booking.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.063,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "booking-4"
+        },
+        {
+          "prompt": "Build a table booking board. Hosts book a table, search reservations, and open a booking.",
+          "routed": "per-file",
+          "generated": true,
+          "wallSeconds": 7.715,
+          "staticOk": true,
+          "firstPassMissing": 0,
+          "slug": "booking-5"
+        }
+      ],
+      "landing": [
+        {
+          "prompt": "Build a landing page for a pottery studio with a hero section, a pricing section, and a short about blurb.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a marketing page for a bike co-op with a hero section and a pricing section.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a landing page for a neighborhood bakery with a hero section and a menu teaser.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a marketing page for a dog walker with a hero section and testimonials.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a landing page for a plant shop with a hero section and a pricing section.",
+          "routed": "monolith",
+          "generated": false
+        }
+      ],
+      "multi-step-form": [
+        {
+          "prompt": "Build a permit wizard. Step 1 of 3 collects the address, the next step collects the work type, and the last step reviews it.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build an onboarding wizard. Step 1 of 3 asks for a name, the next step asks for a team, and the last step confirms.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a claim wizard. Step 1 of 3 collects the date, the next step collects the amount, and the last step reviews.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a registration wizard. Step 1 of 4 collects contact info, then a course, then a waiver, then a review.",
+          "routed": "monolith",
+          "generated": false
+        }
+      ],
+      "charts": [
+        {
+          "prompt": "Build a sales chart page with a bar graph of monthly revenue and a line graph of orders.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a weather chart page with a line graph of temperature and a bar graph of rainfall.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a fitness chart page with a sparkline of steps and a bar graph of workouts.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a budget chart page with a bar graph of spending and a line graph of savings.",
+          "routed": "monolith",
+          "generated": false
+        }
+      ],
+      "auth": [
+        {
+          "prompt": "Build a sign in screen with email, password, and a create an account link.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a login page with password reset and a register form.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a member sign in page that asks for a password and shows an error on failure.",
+          "routed": "monolith",
+          "generated": false
+        }
+      ],
+      "file-upload": [
+        {
+          "prompt": "Build a receipt drop box where staff upload a photo of a receipt.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a homework drop box where students attach a file.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a gallery where editors drop a file onto the page.",
+          "routed": "monolith",
+          "generated": false
+        }
+      ],
+      "game": [
+        {
+          "prompt": "Build a memory puzzle game. The player flips cards and matches pairs.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a trivia quiz bowl. The player answers questions and sees a score.",
+          "routed": "monolith",
+          "generated": false
+        },
+        {
+          "prompt": "Build a reaction game. The player taps when the square turns green.",
+          "routed": "monolith",
+          "generated": false
+        }
+      ]
+    }
+  },
+  "load20": {
+    "apps": 20,
+    "calls": 172,
+    "throttled": 0,
+    "throttleRate": 0.0,
+    "wallSeconds": 72.939,
+    "appP95": 71.705,
+    "queueP95": 56.665,
+    "gateLimit": 12,
+    "rows": [
+      {
+        "index": 8,
+        "wallSeconds": 32.335,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 14.886
+      },
+      {
+        "index": 1,
+        "wallSeconds": 33.408,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 23.732
+      },
+      {
+        "index": 12,
+        "wallSeconds": 35.519,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 19.391
+      },
+      {
+        "index": 11,
+        "wallSeconds": 39.127,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 19.404
+      },
+      {
+        "index": 7,
+        "wallSeconds": 40.513,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 32.17
+      },
+      {
+        "index": 18,
+        "wallSeconds": 45.39,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 24.07
+      },
+      {
+        "index": 15,
+        "wallSeconds": 50.04,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 39.757
+      },
+      {
+        "index": 3,
+        "wallSeconds": 50.984,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 42.125
+      },
+      {
+        "index": 14,
+        "wallSeconds": 56.419,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 39.645
+      },
+      {
+        "index": 4,
+        "wallSeconds": 56.694,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 48.367
+      },
+      {
+        "index": 13,
+        "wallSeconds": 58.229,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 44.969
+      },
+      {
+        "index": 19,
+        "wallSeconds": 58.702,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 41.919
+      },
+      {
+        "index": 10,
+        "wallSeconds": 58.901,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 36.596
+      },
+      {
+        "index": 5,
+        "wallSeconds": 59.124,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 48.589
+      },
+      {
+        "index": 2,
+        "wallSeconds": 63.126,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 51.387
+      },
+      {
+        "index": 0,
+        "wallSeconds": 64.758,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 54.115
+      },
+      {
+        "index": 6,
+        "wallSeconds": 67.003,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 55.005
+      },
+      {
+        "index": 9,
+        "wallSeconds": 68.01,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 52.647
+      },
+      {
+        "index": 17,
+        "wallSeconds": 71.705,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 56.665
+      },
+      {
+        "index": 16,
+        "wallSeconds": 72.913,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 60.994
+      }
+    ]
+  },
+  "load50": {
+    "apps": 50,
+    "calls": 434,
+    "throttled": 0,
+    "throttleRate": 0.0,
+    "wallSeconds": 300.113,
+    "appP95": 8.516,
+    "queueP95": 0,
+    "gateLimit": 12,
+    "rows": [
+      {
+        "index": 0,
+        "wallSeconds": 8.516,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 1,
+        "wallSeconds": 7.951,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 0.078
+      },
+      {
+        "index": 2,
+        "wallSeconds": 7.681,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0.26
+      },
+      {
+        "index": 3,
+        "wallSeconds": 7.18,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 4,
+        "wallSeconds": 7.366,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 5,
+        "wallSeconds": 6.73,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 6,
+        "wallSeconds": 7.603,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 7,
+        "wallSeconds": 6.313,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 8,
+        "wallSeconds": 7.195,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 9,
+        "wallSeconds": 7.776,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 10,
+        "wallSeconds": 7.971,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 11,
+        "wallSeconds": 7.106,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 12,
+        "wallSeconds": 7.372,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 13,
+        "wallSeconds": 8.219,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 14,
+        "wallSeconds": 7.91,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 15,
+        "wallSeconds": 6.63,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 16,
+        "wallSeconds": 7.207,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 17,
+        "wallSeconds": 5.953,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 18,
+        "wallSeconds": 7.121,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 19,
+        "wallSeconds": 7.18,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 20,
+        "wallSeconds": 6.688,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 21,
+        "wallSeconds": 7.508,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 22,
+        "wallSeconds": 6.709,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 23,
+        "wallSeconds": 7.406,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 24,
+        "wallSeconds": 6.57,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 25,
+        "wallSeconds": 8.713,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 26,
+        "wallSeconds": 8.254,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 27,
+        "wallSeconds": 7.19,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 28,
+        "wallSeconds": 6.207,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 29,
+        "wallSeconds": 6.709,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 30,
+        "wallSeconds": 8.348,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 31,
+        "wallSeconds": 6.073,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 32,
+        "wallSeconds": 7.289,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 33,
+        "wallSeconds": 6.503,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 34,
+        "wallSeconds": 7.554,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 35,
+        "wallSeconds": 6.507,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 36,
+        "wallSeconds": 7.023,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 37,
+        "wallSeconds": 7.007,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 38,
+        "wallSeconds": 7.649,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 39,
+        "wallSeconds": 8.712,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 40,
+        "wallSeconds": 7.269,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 41,
+        "wallSeconds": 6.956,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 42,
+        "wallSeconds": 8.377,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 43,
+        "wallSeconds": 7.205,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 44,
+        "wallSeconds": 7.277,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 45,
+        "wallSeconds": 7.36,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 46,
+        "wallSeconds": 7.069,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 47,
+        "wallSeconds": 6.868,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 48,
+        "wallSeconds": 7.256,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 7,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 49,
+        "wallSeconds": 6.082,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      }
+    ]
+  },
+  "load20b": {
+    "apps": 20,
+    "calls": 110,
+    "throttled": 0,
+    "throttleRate": 0.0,
+    "wallSeconds": 58.544,
+    "appP95": 25.394,
+    "queueP95": 0,
+    "appQueueP95": 38.754,
+    "gateLimit": 32,
+    "appSlots": 8,
+    "rows": [
+      {
+        "index": 5,
+        "wallSeconds": 20.788,
+        "queueWait": 0.0,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 2,
+        "wallSeconds": 23.003,
+        "queueWait": 0.0,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 3,
+        "wallSeconds": 23.104,
+        "queueWait": 0.0,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 1,
+        "wallSeconds": 23.19,
+        "queueWait": 0.0,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 0,
+        "wallSeconds": 23.304,
+        "queueWait": 0.0,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 6,
+        "wallSeconds": 25.104,
+        "queueWait": 0.0,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 6,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 4,
+        "wallSeconds": 25.394,
+        "queueWait": 0.0,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 6,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 8,
+        "wallSeconds": 14.893,
+        "queueWait": 20.782,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 6,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 7,
+        "wallSeconds": 38.32,
+        "queueWait": 0.0,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 9,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 11,
+        "wallSeconds": 15.394,
+        "queueWait": 23.179,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 12,
+        "wallSeconds": 15.466,
+        "queueWait": 23.291,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 9,
+        "wallSeconds": 17.132,
+        "queueWait": 22.994,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 6,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 13,
+        "wallSeconds": 16.023,
+        "queueWait": 25.098,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 14,
+        "wallSeconds": 16.67,
+        "queueWait": 25.385,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 10,
+        "wallSeconds": 19.485,
+        "queueWait": 23.095,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 6,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 15,
+        "wallSeconds": 16.396,
+        "queueWait": 35.672,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 18,
+        "wallSeconds": 14.426,
+        "queueWait": 38.754,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 17,
+        "wallSeconds": 15.029,
+        "queueWait": 38.569,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 16,
+        "wallSeconds": 15.53,
+        "queueWait": 38.312,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 6,
+        "throttled": 0,
+        "queueMax": 0
+      },
+      {
+        "index": 19,
+        "wallSeconds": 18.405,
+        "queueWait": 40.121,
+        "staticOk": true,
+        "queueP95": null,
+        "calls": 5,
+        "throttled": 0,
+        "queueMax": 0
+      }
+    ]
+  }
+}

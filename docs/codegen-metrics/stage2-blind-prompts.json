@@ -1,0 +1,22 @@
+[
+  {"id":"p01","prompt":"Build a small app for a neighborhood bakery to keep track of custom cake orders, with the customer name, pickup day, flavor, and whether the balance has been paid.","expectedArchetype":"crud","supportedExpected":true,"messyKind":null},
+  {"id":"p02","prompt":"appointments","expectedArchetype":"booking","supportedExpected":true,"messyKind":"one-word"},
+  {"id":"p03","prompt":"Create a dashboard for a corner coffee cart that shows how many drinks were sold today by type, which hour was busiest, and the running total for the shift.","expectedArchetype":"dashboard","supportedExpected":true,"messyKind":null},
+  {"id":"p04","prompt":"buld an app to trak tailoring jobs, the garment, the due dte, and wether the hem is finnished.","expectedArchetype":"crud","supportedExpected":true,"messyKind":"typos"},
+  {"id":"p05","prompt":"Make a booking page for a small yoga studio so members can reserve a spot in a class, see how many mats are left, and cancel if they cannot attend.","expectedArchetype":"booking","supportedExpected":true,"messyKind":null},
+  {"id":"p06","prompt":"I need a landing page for my dog-walking service and also a simple booking calendar so neighbors can reserve a walk.","expectedArchetype":"booking","supportedExpected":true,"messyKind":"two-intents"},
+  {"id":"p07","prompt":"Show a chart of my household electricity use for each month of the last year and mark the month with the highest bill.","expectedArchetype":"charts","supportedExpected":true,"messyKind":null},
+  {"id":"p08","prompt":"Design a one-page site for a freelance food photographer with a short introduction, three example shoots, and a way to ask for a quote.","expectedArchetype":"landing","supportedExpected":true,"messyKind":null},
+  {"id":"p09","prompt":"Walk couples through a few steps to request a weekend wedding venue: preferred date, guest count, catering style, then their contact details.","expectedArchetype":"multi-step-form","supportedExpected":true,"messyKind":null},
+  {"id":"p10","prompt":"Quiero una aplicación para anotar los pedidos para llevar de mi taquería: nombre del cliente, qué tacos pidió y si ya pagó.","expectedArchetype":"crud","supportedExpected":true,"messyKind":"non-english"},
+  {"id":"p11","prompt":"haircut slots pls. stylist, time, phone. thx","expectedArchetype":"booking","supportedExpected":true,"messyKind":"shorthand"},
+  {"id":"p12","prompt":"Give the manager of a three-bay car wash a board that shows which bay is free, which car is being washed, and how many washes finished this afternoon.","expectedArchetype":"dashboard","supportedExpected":true,"messyKind":null},
+  {"id":"p13","prompt":"Plot the monthly sales totals for an independent bookstore over the past year so the owner can see which months were strongest.","expectedArchetype":"charts","supportedExpected":true,"messyKind":null},
+  {"id":"p14","prompt":"A climbing gym wants a guided signup that collects personal details, membership length, and an emergency contact before the person submits.","expectedArchetype":"multi-step-form","supportedExpected":true,"messyKind":null},
+  {"id":"p15","prompt":"Keep a log of recipe tests in my kitchen: the dish name, the date I tried it, a score from 1 to 5, and a short note about what to change next time.","expectedArchetype":"crud","supportedExpected":true,"messyKind":null},
+  {"id":"p16","prompt":"Put together a simple announcement page for a weekend ceramics open studio, with the address, the hours, and a note about what visitors can try.","expectedArchetype":"landing","supportedExpected":true,"messyKind":null},
+  {"id":"p17","prompt":"Let neighbors reserve an hour on the public tennis courts, pick a court and a start time, and see which hours are already taken.","expectedArchetype":"booking","supportedExpected":true,"messyKind":null},
+  {"id":"p18","prompt":"Build a multiplayer 3D racing game with vehicle physics, online lobbies, and voice chat.","expectedArchetype":"unsupported","supportedExpected":false,"messyKind":null},
+  {"id":"p19","prompt":"Make a desktop video editor that trims clips, mixes several audio tracks, and exports a 4K timeline.","expectedArchetype":"unsupported","supportedExpected":false,"messyKind":null},
+  {"id":"p20","prompt":"Create a compiler for a new programming language, including a debugger and a WebAssembly backend.","expectedArchetype":"unsupported","supportedExpected":false,"messyKind":null}
+]

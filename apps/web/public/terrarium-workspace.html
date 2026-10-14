@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terrarium Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#F6F3F0; --rail:#FBF9F7; --surface:#FFFFFF; --ink:#1D1A1B;
+      --muted:#5E585A; --line:#E6E0DC; --line-strong:#DDD5D1;
+      --tint:#F3E4E9; --tint-selected:#FBF4F6;
+      --maroon:#7A1F3D; --flash:#E2456F; --ok:#2F6B4F; --dot:#D9D1CC;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;overflow:hidden}
+    body{background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+    button,input,textarea{font:inherit}
+    button{border:0;background:none;color:inherit;cursor:pointer}
+    button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--tint);outline-offset:2px}
+    .app{height:100%;display:grid;grid-template-columns:64px 440px 1fr;background:var(--bg)}
+    .rail{background:var(--rail);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center}
+    .rail-top{height:76px;width:64px;display:grid;place-items:center;flex:0 0 76px}
+    .logo-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:14px}
+    .logo-btn:hover{background:var(--tint)}
+    .rail-nav,.rail-bottom{display:flex;flex-direction:column;align-items:center;gap:8px}
+    .rail-bottom{margin-top:auto;padding-bottom:14px}
+    .icon-btn{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:var(--muted)}
+    .icon-btn.active{background:var(--tint);color:var(--maroon)}
+    .icon-btn:hover{background:var(--tint)}
+    .icon{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .chat{background:var(--bg);border-right:1px solid var(--line);min-width:0;display:flex;flex-direction:column}
+    .chat-head,.preview-head{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex:0 0 76px}
+    .chat-head{background:var(--bg)}
+    .preview-head{background:var(--surface);border-bottom:1px solid var(--line);padding:0 28px}
+    .wm{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:27px;letter-spacing:-0.03em;line-height:1;color:var(--ink);display:inline-flex;overflow:visible;padding:6px 0;opacity:1}
+    .wm-letter{display:inline-block;opacity:1}.wm-accent{color:var(--maroon)}
+    .user{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted)}
+    .green-dot{width:9px;height:9px;border-radius:50%;background:var(--ok)}
+    .chat-body{position:relative;flex:1;min-height:0;padding:22px 24px 118px;overflow:hidden}
+    .terra-row{display:flex;gap:12px;align-items:flex-start}
+    .terra-avatar{width:40px;height:40px;border-radius:50%;background:var(--line);display:grid;place-items:center;color:var(--ink);flex:0 0 40px}
+    .terra-name{font-size:14px;font-weight:700;margin:0 0 3px}
+    .terra-question{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:18px;font-weight:500;line-height:1.22;margin:0 0 8px;color:var(--ink)}
+    .helper{font-size:14px;color:var(--muted);margin:0}
+    .ideas-head{margin:34px 0 12px;display:flex;align-items:center;justify-content:space-between}
+    .mono{font-family:"DM Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .more{height:44px;padding:0 10px;color:var(--maroon);font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+    .chips{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+    .chip{min-height:44px;border:1.5px solid var(--line-strong);border-radius:999px;background:var(--surface);display:inline-flex;align-items:center;gap:9px;padding:0 16px;color:var(--ink);font-size:14px;font-weight:500;white-space:nowrap}
+    .chip .plus,.chip .check{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:13px;line-height:1}
+    .chip .plus{border:1.5px solid var(--line-strong);color:var(--maroon)}
+    .chip .check{display:none;background:var(--maroon);color:var(--surface);font-size:11px}
+    .chip.selected{border-color:var(--maroon);background:var(--tint-selected)}
+    .chip.selected .plus{display:none}.chip.selected .check{display:grid}
+    .composer{position:absolute;left:24px;right:24px;bottom:14px}
+    .composer-pill{height:56px;border:1.5px solid var(--line-strong);border-radius:28px;background:var(--surface);display:flex;align-items:center;gap:8px;padding:0 8px 0 18px;box-shadow:0 10px 26px rgba(29,26,27,.08)}
+    .composer input{flex:1;border:0;outline:0;background:transparent;color:var(--ink);min-width:0}
+    .image-btn,.send-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:0 0 44px}
+    .image-btn{color:var(--muted)}.send-btn{background:var(--maroon);color:#fff}
+    .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:8px;font-weight:500}
+    .preview{min-width:0;display:flex;flex-direction:column;background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.2px,transparent 1.2px);background-size:22px 22px}
+    .preview-left,.preview-actions{display:flex;align-items:center;gap:10px}
+    .preview-title{font-family:"DM Mono",monospace;font-size:12px;letter-spacing:.08em;font-weight:500;color:var(--muted)}
+    .status{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+    .tool{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:var(--muted)}
+    .tool.active{background:var(--tint);color:var(--ink)}
+    .stale{height:36px;border:1px solid var(--line-strong);border-radius:999px;padding:0 12px;display:flex;align-items:center;gap:6px;background:var(--surface);font-size:13px;font-weight:600;white-space:nowrap}
+    .rocket{width:44px;height:44px;border-radius:13px;background:var(--maroon);color:#fff;display:grid;place-items:center}
+    .preview-body{overflow:auto;padding:28px 32px;display:flex;flex-direction:column;gap:22px}
+    .intro{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:32px;box-shadow:0 12px 34px rgba(29,26,27,.07)}
+    .tag{font-family:"DM Mono",monospace;font-size:12px;letter-spacing:.08em;color:var(--maroon);font-weight:500;margin:0 0 12px}
+    .intro h1{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:38px;line-height:1.05;letter-spacing:-.04em;margin:0 0 12px;font-weight:800;max-width:740px}
+    .intro p{margin:0 0 24px;color:var(--muted);font-size:15px}
+    .biz-label{display:block;font-size:13px;font-weight:700;margin:0 0 8px}
+    .biz-input{width:min(560px,100%);height:52px;border:1.5px solid var(--line-strong);border-radius:14px;background:var(--surface);padding:0 16px;color:var(--ink)}
+    .browse{background:transparent}
+    .browse h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:24px;letter-spacing:-.03em;margin:0 0 14px}
+    .filters{display:flex;gap:10px;flex-wrap:wrap}
+    .filter{height:40px;border:1.5px solid var(--line-strong);border-radius:999px;background:var(--surface);padding:0 16px;font-weight:600;color:var(--ink)}
+    .filter.active{background:var(--maroon);border-color:var(--maroon);color:#fff}
+    .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .app-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;grid-template-columns:1fr 172px;gap:18px;min-height:190px;box-shadow:0 8px 24px rgba(29,26,27,.05)}
+    .app-card h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:22px;letter-spacing:-.03em;margin:0 0 4px}
+    .by{font-size:13px;color:var(--muted);margin:0 0 10px}.path{font-size:13px;font-weight:700;color:var(--maroon);margin:0 0 16px}
+    .use{height:44px;border:1.5px solid var(--maroon);border-radius:999px;padding:0 18px;color:var(--maroon);font-weight:700;background:var(--surface)}
+    .includes{grid-column:1/-1;color:var(--muted);font-size:14px;margin:0}
+    .mini{border-radius:12px;background:linear-gradient(180deg,var(--tint-selected),var(--surface));border:1px solid var(--line);padding:12px;display:grid;gap:8px;align-content:start}
+    .mini-line{height:10px;border-radius:999px;background:var(--line)}.mini-line.w{width:70%}.mini-box{height:52px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+    @media(max-width:1050px){.app{grid-template-columns:64px 380px 1fr}.cards{grid-template-columns:1fr}.preview-actions{gap:4px}.app-card{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <nav class="rail" aria-label="Main">
+      <div class="rail-top">
+        <button class="logo-btn" aria-label="Replay logo animation">
+          <svg class="logo-mark" viewBox="0 0 64 64" width="44" height="44" fill="none" style="overflow:visible" aria-hidden="true">
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8F2447"/><stop offset="1" stop-color="#C23A66"/></linearGradient>
+              <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D6345F"/><stop offset="1" stop-color="#FF6B8A"/></linearGradient>
+              <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5C"/><stop offset="1" stop-color="#FFB38A"/></linearGradient>
+              <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F7B6C8"/><stop offset="1" stop-color="#E88AA6"/></linearGradient>
+            </defs>
+            <g class="ring">
+              <path class="pt" d="M30.5 30.5V2.5A28 28 0 0 0 2.5 30.5Z" fill="url(#g1)"/>
+              <path class="pt" d="M33.5 30.5V2.5A28 28 0 0 1 61.5 30.5Z" fill="url(#g2)"/>
+              <path class="pt" d="M33.5 33.5H61.5A28 28 0 0 1 33.5 61.5Z" fill="url(#g3)"/>
+              <path class="pt" d="M30.5 33.5V61.5A28 28 0 0 1 2.5 33.5Z" fill="url(#g4)"/>
+            </g>
+            <g class="badge">
+              <circle class="badge-circle" cx="32" cy="32" r="17.5" fill="#7A1F3D" stroke="#FBF9F7" stroke-width="3"/>
+              <rect class="tt-bar" x="23.4" y="24.2" width="17.2" height="4.4" rx="1.4" fill="#FFFBE6"/>
+              <rect class="tt-stem" x="29.8" y="24.2" width="4.4" height="15.6" rx="1.4" fill="#FFFBE6"/>
+            </g>
+          </svg>
+        </button>
+      </div>
+      <div class="rail-nav">
+        <button class="icon-btn active" aria-label="Assistant"><svg class="icon"><path d="M12 2l1.7 4.3L18 8l-4.3 1.7L12 14l-1.7-4.3L6 8l4.3-1.7z"/><path d="M5 13l.8 2.2L8 16l-2.2.8L5 19l-.8-2.2L2 16l2.2-.8z"/></svg></button>
+        <button class="icon-btn" aria-label="Apps"><svg class="icon"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg></button>
+        <button class="icon-btn" aria-label="Team"><svg class="icon"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg></button>
+        <button class="icon-btn" aria-label="Access"><svg class="icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></button>
+        <button class="icon-btn" aria-label="Notifications"><svg class="icon"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+        <button class="icon-btn" aria-label="Files"><svg class="icon"><path d="M3 7h6l2 2h10v10H3z"/></svg></button>
+        <button class="icon-btn" aria-label="Layouts"><svg class="icon"><path d="M3 3h18v18H3z"/><path d="M3 9h18M9 21V9"/></svg></button>
+      </div>
+      <div class="rail-bottom">
+        <button class="icon-btn" aria-label="Help"><svg class="icon"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 1 1 5.2 2c-.8.7-1.3 1.2-1.3 2.4"/><path d="M12 17h.01"/></svg></button>
+        <button class="icon-btn" aria-label="Sign out"><svg class="icon"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
+      </div>
+    </nav>
+    <section class="chat" aria-label="Chat">
+      <header class="chat-head">
+        <span class="wm" aria-label="Terrarium">
+          <span class="wm-letter wm-accent">T</span><span class="wm-letter">e</span><span class="wm-letter">r</span><span class="wm-letter">r</span><span class="wm-letter">a</span><span class="wm-letter">r</span><span class="wm-letter wm-accent">i</span><span class="wm-letter">u</span><span class="wm-letter">m</span>
+        </span>
+        <div class="user">Testadmin <span class="green-dot" aria-hidden="true"></span></div>
+      </header>
+      <div class="chat-body">
+        <div class="terra-row">
+          <div class="terra-avatar" aria-hidden="true"><svg class="icon"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg></div>
+          <div>
+            <p class="terra-name">Terra</p>
+            <p class="terra-question">What kind of app should we build today?</p>
+            <p class="helper">Tap an idea below, or just write it in your own words.</p>
+          </div>
+        </div>
+        <div class="ideas-head">
+          <span class="mono">Ideas for you</span>
+          <button class="more" type="button" aria-label="More ideas">⟳ More ideas</button>
+        </div>
+        <div class="chips" aria-label="Suggested ideas">
+          <button class="chip selected" type="button"><span class="plus">+</span><span class="check">✓</span>Keep track of my orders and customers</button>
+          <button class="chip" type="button"><span class="plus">+</span><span class="check">✓</span>Know what I have in stock</button>
+          <button class="chip" type="button"><span class="plus">+</span><span class="check">✓</span>Let customers book appointments</button>
+          <button class="chip" type="button"><span class="plus">+</span><span class="check">✓</span>Share tasks with my team</button>
+          <button class="chip" type="button"><span class="plus">+</span><span class="check">✓</span>See my sales in simple reports</button>
+        </div>
+        <form class="composer">
+          <div class="composer-pill">
+            <input aria-label="Describe the app you want to build" placeholder="Describe the app you want to build..." />
+            <button class="image-btn" aria-label="Attach image" type="button"><svg class="icon"><path d="M3 5h18v14H3z"/><path d="M8 11l3 3 2-2 4 4"/><circle cx="8" cy="8" r="1.5"/></svg></button>
+            <button class="send-btn" aria-label="Send" type="submit"><svg class="icon"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button>
+          </div>
+          <div class="hint">Enter to send · Shift+Enter for new line</div>
+        </form>
+      </div>
+    </section>
+    <section class="preview" aria-label="Generated app preview">
+      <header class="preview-head">
+        <div class="preview-left"><span class="preview-title">Generated app</span><span class="status"><span class="green-dot"></span>No preview</span></div>
+        <div class="preview-actions">
+          <button class="tool active" aria-label="Preview"><svg class="icon"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          <button class="tool" aria-label="Code"><svg class="icon"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></button>
+          <button class="tool" aria-label="Git"><svg class="icon"><path d="M6 3v12a3 3 0 1 0 3-3H6"/><path d="M18 3a3 3 0 1 0-3 3 3 3 0 0 0 3-3z"/><path d="M15 6v6"/></svg></button>
+          <button class="stale" aria-label="Out of date"><svg class="icon"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Out of date</button>
+          <button class="rocket" aria-label="Publish"><svg class="icon"><path d="M5 15c5-7 8-10 14-10-1 6-3 9-10 14l-4-4z"/><path d="M9 19l-4 2 2-4"/></svg></button>
+          <button class="tool" aria-label="Activity"><svg class="icon"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg></button>
+          <button class="tool" aria-label="Collapse"><svg class="icon"><path d="M15 18l-6-6 6-6"/></svg></button>
+        </div>
+      </header>
+      <div class="preview-body">
+        <article class="intro">
+          <p class="tag">Nothing built yet</p>
+          <h1>Start with a head start, or tell Terra what you need.</h1>
+          <p>Pick a useful starting point, then shape it around how your business works.</p>
+          <label class="biz-label" for="biz">Try it with your business name</label>
+          <input class="biz-input" id="biz" placeholder="e.g. Thakur Stationery" />
+        </article>
+        <section class="browse">
+          <h2>Browse by what you need</h2>
+          <div class="filters">
+            <button class="filter active">All</button><button class="filter">Sales</button><button class="filter">Stock</button><button class="filter">Bookings</button><button class="filter">Team</button><button class="filter">Reports</button>
+          </div>
+        </section>
+        <section class="cards">
+          <article class="app-card"><div><h3>Order Tracker</h3><p class="by">by Terra</p><p class="path">in Sales &gt; Orders</p><button class="use">Use this</button></div><div class="mini"><div class="mini-line w"></div><div class="mini-box"></div><div class="mini-line"></div><div class="mini-line w"></div></div><p class="includes">Includes customer list, order status, payment notes, and simple sales totals.</p></article>
+          <article class="app-card"><div><h3>Stock Helper</h3><p class="by">by Terra</p><p class="path">in Stock &gt; Supplies</p><button class="use">Use this</button></div><div class="mini"><div class="mini-line w"></div><div class="mini-box"></div><div class="mini-line"></div><div class="mini-line w"></div></div><p class="includes">Includes item counts, low-stock alerts, supplier notes, and reorder tasks.</p></article>
+          <article class="app-card"><div><h3>Booking Board</h3><p class="by">by Terra</p><p class="path">in Bookings &gt; Calendar</p><button class="use">Use this</button></div><div class="mini"><div class="mini-line w"></div><div class="mini-box"></div><div class="mini-line"></div><div class="mini-line w"></div></div><p class="includes">Includes appointment slots, customer notes, reminders, and daily schedule views.</p></article>
+          <article class="app-card"><div><h3>Team Tasks</h3><p class="by">by Terra</p><p class="path">in Team &gt; Work</p><button class="use">Use this</button></div><div class="mini"><div class="mini-line w"></div><div class="mini-box"></div><div class="mini-line"></div><div class="mini-line w"></div></div><p class="includes">Includes shared tasks, owners, due dates, comments, and weekly progress.</p></article>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    document.querySelectorAll('.chip').forEach((chip)=>chip.addEventListener('click',()=>chip.classList.toggle('selected')));
+    document.querySelectorAll('.filter').forEach((pill)=>pill.addEventListener('click',()=>{document.querySelectorAll('.filter').forEach(p=>p.classList.remove('active'));pill.classList.add('active');}));
+    function startLogo(){
+      if(!window.gsap) return;
+      const mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        const origins = ['30.5 30.5','33.5 30.5','33.5 33.5','30.5 33.5'];
+        const T = '.wm-letter:nth-child(1)', I = '.wm-letter:nth-child(7)';
+        let cycle, wait;
+        const stop = () => { cycle && cycle.kill(); wait && wait.kill();
+          gsap.set('.ring',{rotation:0,svgOrigin:'32 32'});
+          gsap.set('.badge',{scale:1,svgOrigin:'32 32'});
+          gsap.set([T,I],{clearProps:'all'}); gsap.set('.wm',{overflow:'visible'}); };
+        const turn = () => {
+          gsap.set('.wm',{overflow:'visible'});
+          const c = gsap.timeline({onComplete:()=>{ wait = gsap.delayedCall(0.9, turn); }});
+          c.to('.ring',{rotation:'+=90',svgOrigin:'32 32',duration:1.1,ease:'back.inOut(1.6)'},0)
+           .fromTo('.badge',{scale:0.88},{scale:1,svgOrigin:'32 32',duration:1,ease:'elastic.out(1,0.45)'},0.7)
+           .to(T,{rotationY:360,transformPerspective:500,duration:1.1,ease:'back.inOut(1.7)'},1.5)
+           .to(T,{color:'#E2456F',duration:0.45,yoyo:true,repeat:1},1.55)
+           .set(T,{rotationY:0},2.6)
+           .to(I,{y:-7,duration:0.26,ease:'power2.out'},2.9)
+           .to(I,{rotation:360,duration:0.8,ease:'power2.inOut'},2.9)
+           .to(I,{y:0,duration:0.5,ease:'bounce.out'},3.16)
+           .to(I,{color:'#E2456F',duration:0.4,yoyo:true,repeat:1},2.9)
+           .set(I,{rotation:0},3.7)
+           .call(()=>gsap.set([T,I],{clearProps:'color'}),null,3.75);
+          cycle = c;
+        };
+        gsap.timeline({defaults:{ease:'power3.out'}})
+         .from('.pt',{scale:0,rotation:-140,svgOrigin:(i)=>origins[i],duration:1,ease:'elastic.out(1,0.55)',stagger:0.12},0)
+         .from('.badge-circle',{scale:0,svgOrigin:'32 32',duration:0.7,ease:'back.out(2.2)'},0.45)
+         .from('.tt-bar',{scaleX:0,svgOrigin:'32 26.4',duration:0.45},0.85)
+         .from('.tt-stem',{scaleY:0,svgOrigin:'32 24.2',duration:0.45},1.05)
+         .call(turn,null,2.4);
+        return stop;
+      });
+    }
+    startLogo();
+    document.querySelector('.logo-btn').addEventListener('click',()=>{gsap.globalTimeline.clear();gsap.set('.pt,.badge-circle,.tt-bar,.tt-stem,.wm-letter,.ring,.badge,.wm',{clearProps:'all'});startLogo();});
+  </script>
+</body>
+</html>

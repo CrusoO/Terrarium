@@ -1,0 +1,1127 @@
+<<<FILE path="index.html">>>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipe Box</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+<<<END FILE>>>
+
+<<<FILE path="src/main.jsx">>>
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+<<<END FILE>>>
+
+<<<FILE path="src/index.css">>>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #fdf8f2;
+  --surface: #ffffff;
+  --border: #e8ddd0;
+  --primary: #c0392b;
+  --primary-dark: #96281b;
+  --accent: #e67e22;
+  --text: #2c1810;
+  --muted: #7f6a5a;
+  --tag-bg: #fdebd0;
+  --tag-text: #784212;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+<<<END FILE>>>
+
+<<<FILE path="src/data/recipes.js">>>
+export const COURSES = ['All', 'Breakfast', 'Appetizer', 'Soup', 'Salad', 'Main', 'Side', 'Dessert', 'Drink'];
+
+export const initialRecipes = [
+  {
+    id: 1,
+    title: 'Classic Pancakes',
+    course: 'Breakfast',
+    time: 20,
+    servings: 4,
+    description: 'Fluffy golden pancakes perfect for a lazy morning.',
+    ingredients: ['1 cup flour', '2 tbsp sugar', '1 tsp baking powder', '1/2 tsp salt', '1 cup milk', '1 egg', '2 tbsp melted butter'],
+    steps: ['Mix dry ingredients.', 'Whisk wet ingredients separately.', 'Combine until just mixed.', 'Cook on medium heat until bubbles form, flip and cook 1 min more.'],
+    image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80',
+  },
+  {
+    id: 2,
+    title: 'Tomato Basil Soup',
+    course: 'Soup',
+    time: 35,
+    servings: 4,
+    description: 'A velvety, comforting tomato soup with fresh basil.',
+    ingredients: ['2 cans crushed tomatoes', '1 onion', '3 garlic cloves', '1 cup cream', 'Fresh basil', 'Olive oil', 'Salt & pepper'],
+    steps: ['Sauté onion and garlic in olive oil.', 'Add tomatoes, simmer 20 min.', 'Blend until smooth.', 'Stir in cream and basil, season.'],
+    image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&q=80',
+  },
+  {
+    id: 3,
+    title: 'Caesar Salad',
+    course: 'Salad',
+    time: 15,
+    servings: 2,
+    description: 'Crisp romaine with a tangy Caesar dressing and crunchy croutons.',
+    ingredients: ['1 head romaine', 'Parmesan', 'Croutons', 'Caesar dressing', 'Black pepper'],
+    steps: ['Chop romaine.', 'Toss with dressing.', 'Top with parmesan and croutons.'],
+    image: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=600&q=80',
+  },
+  {
+    id: 4,
+    title: 'Spaghetti Carbonara',
+    course: 'Main',
+    time: 25,
+    servings: 2,
+    description: 'A Roman classic — silky egg sauce, guanciale, and pecorino.',
+    ingredients: ['200g spaghetti', '100g guanciale', '2 eggs', '50g pecorino', 'Black pepper'],
+    steps: ['Cook pasta al dente.', 'Fry guanciale until crispy.', 'Mix eggs and cheese.', 'Combine pasta with guanciale off heat, add egg mix, toss quickly.'],
+    image: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&q=80',
+  },
+  {
+    id: 5,
+    title: 'Chocolate Lava Cake',
+    course: 'Dessert',
+    time: 30,
+    servings: 2,
+    description: 'Warm chocolate cake with a gooey molten center.',
+    ingredients: ['100g dark chocolate', '100g butter', '2 eggs', '2 egg yolks', '50g sugar', '2 tbsp flour'],
+    steps: ['Melt chocolate and butter.', 'Whisk eggs, yolks, sugar.', 'Fold in chocolate, then flour.', 'Bake at 200°C for 12 min.'],
+    image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=600&q=80',
+  },
+  {
+    id: 6,
+    title: 'Bruschetta',
+    course: 'Appetizer',
+    time: 10,
+    servings: 4,
+    description: 'Toasted bread topped with fresh tomatoes, garlic, and basil.',
+    ingredients: ['Baguette', '3 tomatoes', '2 garlic cloves', 'Fresh basil', 'Olive oil', 'Salt'],
+    steps: ['Toast bread slices.', 'Rub with garlic.', 'Top with diced tomatoes, basil, olive oil.'],
+    image: 'https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?w=600&q=80',
+  },
+];
+<<<END FILE>>>
+
+<<<FILE path="src/App.jsx">>>
+import React, { useState } from 'react';
+import { initialRecipes, COURSES } from './data/recipes';
+import Header from './components/Header';
+import RecipeGrid from './components/RecipeGrid';
+import RecipeDetail from './components/RecipeDetail';
+import AddRecipeModal from './components/AddRecipeModal';
+import styles from './App.module.css';
+
+export default function App() {
+  const [recipes, setRecipes] = useState(initialRecipes);
+  const [search, setSearch] = useState('');
+  const [course, setCourse] = useState('All');
+  const [selected, setSelected] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
+
+  const filtered = recipes.filter(r => {
+    const matchCourse = course === 'All' || r.course === course;
+    const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) ||
+      r.description.toLowerCase().includes(search.toLowerCase());
+    return matchCourse && matchSearch;
+  });
+
+  function handleAdd(recipe) {
+    const newRecipe = { ...recipe, id: Date.now() };
+    setRecipes(prev => [newRecipe, ...prev]);
+    setShowAdd(false);
+  }
+
+  return (
+    <div className={styles.app}>
+      <Header
+        search={search}
+        onSearch={setSearch}
+        onAdd={() => setShowAdd(true)}
+      />
+      <main className={styles.main}>
+        <CourseFilter course={course} onChange={setCourse} />
+        <RecipeGrid recipes={filtered} onSelect={setSelected} />
+      </main>
+      {selected && (
+        <RecipeDetail recipe={selected} onClose={() => setSelected(null)} />
+      )}
+      {showAdd && (
+        <AddRecipeModal onAdd={handleAdd} onClose={() => setShowAdd(false)} />
+      )}
+    </div>
+  );
+}
+
+function CourseFilter({ course, onChange }) {
+  return (
+    <div className={styles.filters}>
+      {COURSES.map(c => (
+        <button
+          key={c}
+          className={`${styles.filterBtn} ${course === c ? styles.active : ''}`}
+          onClick={() => onChange(c)}
+        >
+          {c}
+        </button>
+      ))}
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/App.module.css">>>
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 24px 48px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 24px 0 20px;
+}
+
+.filterBtn {
+  padding: 7px 18px;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.18s;
+}
+
+.filterBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.filterBtn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.jsx">>>
+import React from 'react';
+import styles from './Header.module.css';
+
+export default function Header({ search, onSearch, onAdd }) {
+  return (
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        <div className={styles.brand}>
+          <span className={styles.logo}>🍳</span>
+          <span className={styles.title}>Recipe Box</span>
+        </div>
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon}>🔍</span>
+          <input
+            className={styles.search}
+            type="text"
+            placeholder="Search recipes…"
+            value={search}
+            onChange={e => onSearch(e.target.value)}
+          />
+          {search && (
+            <button className={styles.clear} onClick={() => onSearch('')}>✕</button>
+          )}
+        </div>
+        <button className={styles.addBtn} onClick={onAdd}>
+          + Add Recipe
+        </button>
+      </div>
+    </header>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.module.css">>>
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.logo { font-size: 1.6rem; }
+
+.title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.searchWrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  padding: 9px 36px 9px 36px;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.95rem;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.search:focus { border-color: var(--accent); }
+
+.clear {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 2px 4px;
+}
+
+.addBtn {
+  flex-shrink: 0;
+  padding: 9px 20px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.18s, transform 0.1s;
+}
+
+.addBtn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.addBtn:active { transform: translateY(0); }
+<<<END FILE>>>
+
+<<<FILE path="src/components/RecipeGrid.jsx">>>
+import React from 'react';
+import RecipeCard from './RecipeCard';
+import styles from './RecipeGrid.module.css';
+
+export default function RecipeGrid({ recipes, onSelect }) {
+  if (recipes.length === 0) {
+    return (
+      <div className={styles.empty}>
+        <span className={styles.emptyIcon}>🍽️</span>
+        <p>No recipes found. Try a different search or add your own!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.grid}>
+      {recipes.map(r => (
+        <RecipeCard key={r.id} recipe={r} onClick={() => onSelect(r)} />
+      ))}
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/RecipeGrid.module.css">>>
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--muted);
+}
+
+.emptyIcon { font-size: 3rem; display: block; margin-bottom: 16px; }
+<<<END FILE>>>
+
+<<<FILE path="src/components/RecipeCard.jsx">>>
+import React from 'react';
+import styles from './RecipeCard.module.css';
+
+export default function RecipeCard({ recipe, onClick }) {
+  return (
+    <article className={styles.card} onClick={onClick} tabIndex={0}
+      onKeyDown={e => e.key === 'Enter' && onClick()}>
+      <div className={styles.imgWrap}>
+        {recipe.image
+          ? <img src={recipe.image} alt={recipe.title} className={styles.img} />
+          : <div className={styles.placeholder}>🍴</div>
+        }
+        <span className={styles.course}>{recipe.course}</span>
+      </div>
+      <div className={styles.body}>
+        <h2 className={styles.title}>{recipe.title}</h2>
+        <p className={styles.desc}>{recipe.description}</p>
+        <div className={styles.meta}>
+          <span>⏱ {recipe.time} min</span>
+          <span>👤 {recipe.servings} servings</span>
+          <span className={styles.ingredients}>🥄 {recipe.ingredients.length} ingredients</span>
+        </div>
+      </div>
+    </article>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/RecipeCard.module.css">>>
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card:focus { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.imgWrap {
+  position: relative;
+  height: 190px;
+  overflow: hidden;
+  background: #f0e8df;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.card:hover .img { transform: scale(1.04); }
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+
+.course {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+.body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.ingredients { margin-left: auto; }
+<<<END FILE>>>
+
+<<<FILE path="src/components/RecipeDetail.jsx">>>
+import React, { useEffect } from 'react';
+import styles from './RecipeDetail.module.css';
+
+export default function RecipeDetail({ recipe, onClose }) {
+  useEffect(() => {
+    const handler = e => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', handler);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', handler);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal} role="dialog" aria-modal="true" aria-label={recipe.title}>
+        <button className={styles.close} onClick={onClose} aria-label="Close">✕</button>
+
+        <div className={styles.hero}>
+          {recipe.image
+            ? <img src={recipe.image} alt={recipe.title} className={styles.heroImg} />
+            : <div className={styles.heroPlaceholder}>🍴</div>
+          }
+          <div className={styles.heroOverlay}>
+            <span className={styles.course}>{recipe.course}</span>
+            <h1 className={styles.title}>{recipe.title}</h1>
+            <div className={styles.heroMeta}>
+              <span>⏱ {recipe.time} min</span>
+              <span>👤 {recipe.servings} servings</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.content}>
+          <p className={styles.description}>{recipe.description}</p>
+
+          <div className={styles.columns}>
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>🥄 Ingredients</h2>
+              <ul className={styles.ingredientList}>
+                {recipe.ingredients.map((ing, i) => (
+                  <li key={i} className={styles.ingredient}>
+                    <span className={styles.bullet} />
+                    {ing}
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>📋 Instructions</h2>
+              <ol className={styles.stepList}>
+                {recipe.steps.map((step, i) => (
+                  <li key={i} className={styles.step}>
+                    <span className={styles.stepNum}>{i + 1}</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/RecipeDetail.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.25s ease;
+  box-shadow: var(--shadow-lg);
+}
+
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.close:hover { background: rgba(0,0,0,0.7); }
+
+.hero {
+  position: relative;
+  height: 260px;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+  background: #f0e8df;
+}
+
+.heroImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 24px;
+  gap: 6px;
+}
+
+.course {
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 999px;
+  align-self: flex-start;
+}
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.heroMeta {
+  display: flex;
+  gap: 16px;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.875rem;
+}
+
+.content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.description {
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 0.95rem;
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 24px;
+}
+
+@media (max-width: 560px) {
+  .columns { grid-template-columns: 1fr; }
+}
+
+.section {}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text);
+}
+
+.ingredientList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ingredient {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--bg);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.stepList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.step {
+  display: flex;
+  gap: 12px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.stepNum {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/AddRecipeModal.jsx">>>
+import React, { useState, useEffect } from 'react';
+import { COURSES } from '../data/recipes';
+import styles from './AddRecipeModal.module.css';
+
+const EMPTY = {
+  title: '', course: 'Main', time: '', servings: '',
+  description: '', image: '',
+  ingredientsRaw: '', stepsRaw: '',
+};
+
+export default function AddRecipeModal({ onAdd, onClose }) {
+  const [form, setForm] = useState(EMPTY);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const handler = e => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', handler);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', handler);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  function set(field, value) {
+    setForm(f => ({ ...f, [field]: value }));
+    setErrors(e => ({ ...e, [field]: undefined }));
+  }
+
+  function validate() {
+    const e = {};
+    if (!form.title.trim()) e.title = 'Title is required.';
+    if (!form.time || isNaN(form.time) || +form.time <= 0) e.time = 'Enter a valid time.';
+    if (!form.servings || isNaN(form.servings) || +form.servings <= 0) e.servings = 'Enter valid servings.';
+    if (!form.description.trim()) e.description = 'Description is required.';
+    if (!form.ingredientsRaw.trim()) e.ingredientsRaw = 'Add at least one ingredient.';
+    if (!form.stepsRaw.trim()) e.stepsRaw = 'Add at least one step.';
+    return e;
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    onAdd({
+      title: form.title.trim(),
+      course: form.course,
+      time: +form.time,
+      servings: +form.servings,
+      description: form.description.trim(),
+      image: form.image.trim() || null,
+      ingredients: form.ingredientsRaw.split('\n').map(s => s.trim()).filter(Boolean),
+      steps: form.stepsRaw.split('\n').map(s => s.trim()).filter(Boolean),
+    });
+  }
+
+  const courses = COURSES.filter(c => c !== 'All');
+
+  return (
+    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal} role="dialog" aria-modal="true" aria-label="Add Recipe">
+        <div className={styles.header}>
+          <h2 className={styles.heading}>Add New Recipe</h2>
+          <button className={styles.close} onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.row}>
+            <Field label="Recipe Title *" error={errors.title}>
+              <input
+                className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
+                value={form.title}
+                onChange={e => set('title', e.target.value)}
+                placeholder="e.g. Grandma's Apple Pie"
+              />
+            </Field>
+            <Field label="Course *">
+              <select className={styles.input} value={form.course} onChange={e => set('course', e.target.value)}>
+                {courses.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </Field>
+          </div>
+
+          <div className={styles.row}>
+            <Field label="Cook Time (min) *" error={errors.time}>
+              <input
+                className={`${styles.input} ${errors.time ? styles.inputError : ''}`}
+                type="number" min="1"
+                value={form.time}
+                onChange={e => set('time', e.target.value)}
+                placeholder="30"
+              />
+            </Field>
+            <Field label="Servings *" error={errors.servings}>
+              <input
+                className={`${styles.input} ${errors.servings ? styles.inputError : ''}`}
+                type="number" min="1"
+                value={form.servings}
+                onChange={e => set('servings', e.target.value)}
+                placeholder="4"
+              />
+            </Field>
+          </div>
+
+          <Field label="Description *" error={errors.description}>
+            <textarea
+              className={`${styles.input} ${styles.textarea} ${errors.description ? styles.inputError : ''}`}
+              rows={2}
+              value={form.description}
+              onChange={e => set('description', e.target.value)}
+              placeholder="A short description of the dish…"
+            />
+          </Field>
+
+          <Field label="Image URL (optional)">
+            <input
+              className={styles.input}
+              value={form.image}
+              onChange={e => set('image', e.target.value)}
+              placeholder="https://…"
+            />
+          </Field>
+
+          <div className={styles.row}>
+            <Field label="Ingredients * (one per line)" error={errors.ingredientsRaw}>
+              <textarea
+                className={`${styles.input} ${styles.textarea} ${errors.ingredientsRaw ? styles.inputError : ''}`}
+                rows={5}
+                value={form.ingredientsRaw}
+                onChange={e => set('ingredientsRaw', e.target.value)}
+                placeholder={"2 cups flour\n1 tsp salt\n…"}
+              />
+            </Field>
+            <Field label="Steps * (one per line)" error={errors.stepsRaw}>
+              <textarea
+                className={`${styles.input} ${styles.textarea} ${errors.stepsRaw ? styles.inputError : ''}`}
+                rows={5}
+                value={form.stepsRaw}
+                onChange={e => set('stepsRaw', e.target.value)}
+                placeholder={"Preheat oven to 180°C.\nMix dry ingredients.\n…"}
+              />
+            </Field>
+          </div>
+
+          <div className={styles.actions}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+            <button type="submit" className={styles.submitBtn}>Save Recipe</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, error, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }}>
+      <label style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--muted)' }}>{label}</label>
+      {children}
+      {error && <span style={{ fontSize: '0.78rem', color: 'var(--primary)' }}>{error}</span>}
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/AddRecipeModal.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.heading {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.close {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.close:hover { background: var(--border); }
+
+.form {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+}
+
+@media (max-width: 500px) {
+  .row { flex-direction: column; }
+}
+
+.input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.input:focus { border-color: var(--accent); }
+
+.inputError { border-color: var(--primary) !important; }
+
+.textarea { resize: vertical; }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.cancelBtn {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: border-color 0.15s;
+}
+
+.cancelBtn:hover { border-color: var(--muted); }
+
+.submitBtn {
+  padding: 10px 26px;
+  border-radius: 999px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: background 0.18s, transform 0.1s;
+}
+
+.submitBtn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.submitBtn:active { transform: translateY(0); }
+<<<END FILE>>>
+
+<<<FILE path="package.json">>>
+{
+  "name": "recipe-box",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
+}
+<<<END FILE>>>
+
+<<<FILE path="vite.config.js">>>
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+});
+<<<END FILE>>>

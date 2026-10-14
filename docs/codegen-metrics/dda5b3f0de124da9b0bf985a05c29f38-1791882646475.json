@@ -1,0 +1,297 @@
+{
+  "durationMs": 44464,
+  "events": [
+    {
+      "atMs": 1791882681148,
+      "name": "codegen.first_file",
+      "payload": {
+        "path": "src/components/StatusBadge.tsx",
+        "secondsSinceCodegenStage": 17.619
+      }
+    },
+    {
+      "atMs": 1791882688237,
+      "name": "codegen.streamed_files",
+      "payload": {
+        "count": 5,
+        "paths": [
+          "src/components/StatusBadge.tsx",
+          "src/components/OrderCard.tsx",
+          "src/components/PageHero.tsx",
+          "src/components/EmptyState.tsx",
+          "src/components/TotalsCard.tsx"
+        ]
+      }
+    },
+    {
+      "atMs": 1791882690932,
+      "name": "preview.healthy",
+      "payload": {
+        "previewUrl": "http://127.0.0.1:61308/"
+      }
+    }
+  ],
+  "fileMap": {
+    "boilerplate": {
+      "estimatedBoilerplateShare": 0.4,
+      "estimatedBoilerplateTokens": 1460,
+      "estimatedTokensByCategory": {
+        "business-logic": 1059,
+        "config": 266,
+        "imports": 171,
+        "layout": 552,
+        "ui": 1135,
+        "ui-primitives": 471
+      }
+    },
+    "fileCount": 25,
+    "jsonOverheadEstimatedTokens": 323,
+    "jsonWrappedBytes": 15919,
+    "jsonWrappedEstimatedTokens": 3980,
+    "rawCodeBytes": 14628,
+    "rawCodeEstimatedTokens": 3657,
+    "tokensPerFileEstimated": {
+      "index.html": {
+        "bytes": 388,
+        "category": "config",
+        "estimatedTokens": 97
+      },
+      "package.json": {
+        "bytes": 293,
+        "category": "config",
+        "estimatedTokens": 73
+      },
+      "public/favicon.svg": {
+        "bytes": 119,
+        "category": "business-logic",
+        "estimatedTokens": 30
+      },
+      "src/App.tsx": {
+        "bytes": 1454,
+        "category": "ui",
+        "estimatedTokens": 364
+      },
+      "src/components/AppShell.tsx": {
+        "bytes": 168,
+        "category": "ui",
+        "estimatedTokens": 42
+      },
+      "src/components/EmptyState.tsx": {
+        "bytes": 88,
+        "category": "ui",
+        "estimatedTokens": 22
+      },
+      "src/components/FilterTabs.tsx": {
+        "bytes": 303,
+        "category": "ui",
+        "estimatedTokens": 76
+      },
+      "src/components/Navbar.tsx": {
+        "bytes": 127,
+        "category": "ui",
+        "estimatedTokens": 32
+      },
+      "src/components/OrderCard.tsx": {
+        "bytes": 936,
+        "category": "ui",
+        "estimatedTokens": 234
+      },
+      "src/components/PageHero.tsx": {
+        "bytes": 295,
+        "category": "ui",
+        "estimatedTokens": 74
+      },
+      "src/components/SearchBar.tsx": {
+        "bytes": 270,
+        "category": "ui",
+        "estimatedTokens": 68
+      },
+      "src/components/StatusBadge.tsx": {
+        "bytes": 336,
+        "category": "ui",
+        "estimatedTokens": 84
+      },
+      "src/components/TotalsCard.tsx": {
+        "bytes": 555,
+        "category": "ui",
+        "estimatedTokens": 139
+      },
+      "src/data/seed.ts": {
+        "bytes": 693,
+        "category": "business-logic",
+        "estimatedTokens": 173
+      },
+      "src/hooks/useData.ts": {
+        "bytes": 1885,
+        "category": "ui-primitives",
+        "estimatedTokens": 471
+      },
+      "src/main.tsx": {
+        "bytes": 254,
+        "category": "config",
+        "estimatedTokens": 64
+      },
+      "src/styles/global.css": {
+        "bytes": 2022,
+        "category": "layout",
+        "estimatedTokens": 506
+      },
+      "src/styles/tokens.css": {
+        "bytes": 185,
+        "category": "layout",
+        "estimatedTokens": 46
+      },
+      "src/types.ts": {
+        "bytes": 373,
+        "category": "imports",
+        "estimatedTokens": 93
+      },
+      "src/views/DashboardPage.tsx": {
+        "bytes": 310,
+        "category": "imports",
+        "estimatedTokens": 78
+      },
+      "src/views/DetailPage.tsx": {
+        "bytes": 630,
+        "category": "business-logic",
+        "estimatedTokens": 158
+      },
+      "src/views/FormPage.tsx": {
+        "bytes": 1239,
+        "category": "business-logic",
+        "estimatedTokens": 310
+      },
+      "src/views/ListPage.tsx": {
+        "bytes": 1347,
+        "category": "business-logic",
+        "estimatedTokens": 337
+      },
+      "tsconfig.json": {
+        "bytes": 205,
+        "category": "business-logic",
+        "estimatedTokens": 51
+      },
+      "vite.config.js": {
+        "bytes": 129,
+        "category": "config",
+        "estimatedTokens": 32
+      }
+    }
+  },
+  "finishedAtMs": 1791882690939,
+  "headline": {
+    "generationSource": "fallback",
+    "healAttempts": 0,
+    "infrastructureStageSeconds": 8.831,
+    "modelStageSeconds": 38.301,
+    "timeToFirstFileSeconds": 34.673,
+    "timeToHealthyPreviewSeconds": 44.457
+  },
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 2874,
+      "inputTokens": 1084,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 142,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 10150,
+      "inputTokens": 475,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1045,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 1520,
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "Purchase order tracker with search, status filter (open, approved, received), add form, detail view and daily totals.",
+  "runId": "dda5b3f0de124da9b0bf985a05c29f38-1791882646475",
+  "runType": "new",
+  "sessionId": "dda5b3f0de124da9b0bf985a05c29f38",
+  "stages": [
+    {
+      "durationMs": 3442,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791882646476
+    },
+    {
+      "durationMs": 10151,
+      "kind": "model",
+      "name": "plan",
+      "startedAtMs": 1791882649921
+    },
+    {
+      "durationMs": 3456,
+      "kind": "infrastructure",
+      "name": "preview_skeleton_stream",
+      "startedAtMs": 1791882660074
+    },
+    {
+      "durationMs": 24708,
+      "kind": "model",
+      "name": "codegen",
+      "startedAtMs": 1791882663529
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "save_filemap",
+      "startedAtMs": 1791882688237
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "preview_file_replay",
+      "startedAtMs": 1791882688238
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791882688239
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791882688240
+    },
+    {
+      "durationMs": 3,
+      "kind": "infrastructure",
+      "name": "github_sync",
+      "startedAtMs": 1791882688242
+    },
+    {
+      "durationMs": 457,
+      "kind": "infrastructure",
+      "name": "sandbox_start",
+      "startedAtMs": 1791882688265
+    },
+    {
+      "durationMs": 2211,
+      "kind": "infrastructure",
+      "name": "sandbox_health_check",
+      "startedAtMs": 1791882688722
+    },
+    {
+      "durationMs": 2702,
+      "kind": "infrastructure",
+      "name": "sandbox_boot_and_health",
+      "startedAtMs": 1791882688239
+    }
+  ],
+  "startedAtMs": 1791882646475,
+  "status": "ready"
+}

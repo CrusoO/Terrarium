@@ -1,7 +1,8 @@
 {
   "version": 1,
-  "phaseCount": 6,
+  "phaseCount": 7,
   "storiesPerPhase": 4,
+  "storyCount": 34,
   "stories": [
     {
       "id": "P1-S1",
@@ -583,6 +584,186 @@
       "nonGoals": [
         "No custom domain ACLs"
       ]
+    },
+    {
+      "id": "P7-S1",
+      "slug": "trust-contracts",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "Trust and change-request contracts",
+      "goal": "Add acceptance checks, vulnerability findings, tool health, remediation, change-request types, and new SessionEvent names to both contract packages with identical camelCase JSON.",
+      "packages": ["packages/contracts", "packages/py-contracts", "ARCHITECTURE.md"],
+      "dependsOn": ["P6-S4"],
+      "parallelWith": [],
+      "contractChanges": [
+        "AcceptanceCheck, AcceptanceCheckResult; Intent.acceptanceChecks",
+        "VulnerabilityFinding, VulnSource, Severity",
+        "HealthStatus, CheckStep, ToolHealth",
+        "RemediationStrategy, RemediationAttempt, Suppression, RemediationCampaign, LedgerEntry",
+        "ChangeChannel, ChangeRequestStatus, ChangeRequest, ChannelLink",
+        "SessionEventName: check.*, publish.blocked, vuln.*, change.* with documented payloads"
+      ],
+      "acceptance": [
+        "packages/contracts and packages/py-contracts build",
+        "Round-trip test serializes every new type in TypeScript and parses in Python"
+      ],
+      "nonGoals": ["No sandbox or API behavior yet"]
+    },
+    {
+      "id": "P7-S2",
+      "slug": "acceptance-checks-browser",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "Acceptance checks in a real browser",
+      "goal": "Intent proposes user-observable checks; agents compile Playwright scripts; sandbox runs them with screenshots; failures feed self-heal.",
+      "packages": ["packages/agents", "packages/sandbox", "apps/api"],
+      "dependsOn": ["P7-S1"],
+      "parallelWith": [],
+      "contractChanges": ["None"],
+      "acceptance": [
+        "Planted broken button fails check and triggers heal",
+        "Typical React tool checks finish in under 25s"
+      ],
+      "nonGoals": ["No publish gate yet"]
+    },
+    {
+      "id": "P7-S3",
+      "slug": "scanners-preboot-gate",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "Scanners and pre-boot gate",
+      "goal": "OSV, Semgrep, gitleaks, and Trivy run in pinned containers; secrets and high/critical code findings block boot.",
+      "packages": ["packages/sandbox", "apps/api"],
+      "dependsOn": ["P7-S1"],
+      "parallelWith": ["P7-S2"],
+      "contractChanges": ["None"],
+      "acceptance": [
+        "FileMap with sk_live_ blocked before boot",
+        "Fixture dependency advisory yields finding with advisoryId and fixedVersions"
+      ],
+      "nonGoals": ["No attack pass yet"]
+    },
+    {
+      "id": "P7-S4",
+      "slug": "live-attack-pass",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "Live attack pass",
+      "goal": "Pinned attacker container runs XSS, injection, IDOR, path traversal, and robustness probes against running drafts.",
+      "packages": ["packages/sandbox", "apps/api"],
+      "dependsOn": ["P7-S2", "P7-S3"],
+      "parallelWith": [],
+      "contractChanges": ["None"],
+      "acceptance": [
+        "Planted IDOR detected",
+        "Clean React tool reports attempted > 0, succeeded = 0"
+      ],
+      "nonGoals": ["No UI yet"]
+    },
+    {
+      "id": "P7-S5",
+      "slug": "health-publish-gate",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "Health status and server-side publish gate",
+      "goal": "compute_health, provisional health during build, publish-check SSE, server refuses unsafe publish, health cache.",
+      "packages": ["apps/api"],
+      "dependsOn": ["P7-S2", "P7-S3", "P7-S4"],
+      "parallelWith": [],
+      "contractChanges": [
+        "PublishToolRequest.acknowledgeWarnings",
+        "ToolHealthResponse, PublishBlockedResponse"
+      ],
+      "acceptance": [
+        "POST /tools/{id}/publish on unsafe version returns 409",
+        "Unchanged code reuses cached check in under 2s"
+      ],
+      "nonGoals": ["No Trust Card UI"]
+    },
+    {
+      "id": "P7-S6",
+      "slug": "trust-card-ui",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "Trust Card UI",
+      "goal": "HealthBadge and PrePublishPanel wired to publish-check SSE; build chat shows check progress.",
+      "packages": ["apps/web"],
+      "dependsOn": ["P7-S5"],
+      "parallelWith": [],
+      "contractChanges": ["None"],
+      "acceptance": [
+        "High dependency shows Unsafe badge and blocked panel",
+        "Clean tool shows Healthy and publishes"
+      ],
+      "nonGoals": ["Fix automatically wired in P7-S7"]
+    },
+    {
+      "id": "P7-S7",
+      "slug": "remediation-ladder",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "Remediation ladder, policy, and ledger",
+      "goal": "Seven-step remediation ladder with policy, ledger, nightly re-scan job, and Fix automatically in UI.",
+      "packages": ["packages/agents", "apps/api", "apps/web"],
+      "dependsOn": ["P7-S5", "P7-S6"],
+      "parallelWith": [],
+      "contractChanges": ["LedgerResponse export formats"],
+      "acceptance": [
+        "Vulnerable dependency patched and auto-published",
+        "Critical contained never suppressed",
+        "replace_package without allowlist refused"
+      ],
+      "nonGoals": ["No fleet campaigns yet"]
+    },
+    {
+      "id": "P7-S8",
+      "slug": "whatsapp-relay",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "WhatsApp relay service",
+      "goal": "Always-on apps/relay stores change requests, verifies webhooks, worker lease API, no agents or Docker.",
+      "packages": ["apps/relay", "packages/py-contracts"],
+      "dependsOn": ["P7-S1"],
+      "parallelWith": ["P7-S5"],
+      "contractChanges": ["None"],
+      "acceptance": [
+        "Signed webhook creates one request; replay ignored; unsigned 403",
+        "Expired lease returns request to queued"
+      ],
+      "nonGoals": ["No laptop worker yet"]
+    },
+    {
+      "id": "P7-S9",
+      "slug": "change-request-worker",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "Worker integration for change requests",
+      "goal": "ARQ worker polls relay, proposes tests, builds draft, runs publish gate, PUBLISH/UNDO commands.",
+      "packages": ["apps/api", "packages/agents", "apps/web"],
+      "dependsOn": ["P7-S7", "P7-S8"],
+      "parallelWith": [],
+      "contractChanges": ["Tool.autoApproveTests optional"],
+      "acceptance": [
+        "Integration test: queue, YES, build, gate, PUBLISH, UNDO; viewer never builds; unsafe never published"
+      ],
+      "nonGoals": ["Morning digest in P7-S10"]
+    },
+    {
+      "id": "P7-S10",
+      "slug": "fleet-campaigns-digest",
+      "phase": 7,
+      "phaseName": "Trust, remediation, and change requests",
+      "title": "Fleet campaigns and morning digest",
+      "goal": "Nightly campaigns batch-fix advisory across tools; 08:00 digest; Security page in web.",
+      "packages": ["apps/api", "apps/relay", "apps/web"],
+      "dependsOn": ["P7-S7", "P7-S9"],
+      "parallelWith": [],
+      "contractChanges": ["None"],
+      "acceptance": [
+        "One advisory across 5 tools creates one campaign patching all 5",
+        "Digest lists result; APPROVE 1 publishes through gate"
+      ],
+      "nonGoals": ["No new scanner types"]
     }
   ]
 }

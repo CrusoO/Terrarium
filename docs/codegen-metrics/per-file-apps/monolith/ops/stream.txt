@@ -1,0 +1,1646 @@
+<<<FILE path="package.json">>>
+{
+  "name": "ops-dashboard",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "date-fns": "^3.3.1",
+    "lucide-react": "^0.344.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.1.3"
+  }
+}
+<<<END FILE>>>
+<<<FILE path="vite.config.js">>>
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+});
+<<<END FILE>>>
+<<<FILE path="index.html">>>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ops Dashboard</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+<<<END FILE>>>
+<<<FILE path="src/main.jsx">>>
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+<<<END FILE>>>
+<<<FILE path="src/index.css">>>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #22263a;
+  --border: #2e3350;
+  --accent: #4f6ef7;
+  --accent-hover: #6b85ff;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #38bdf8;
+  --muted: #6b7280;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --radius: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+<<<END FILE>>>
+<<<FILE path="src/data/jobs.js">>>
+import { subDays, addDays, subHours } from "date-fns";
+
+const now = new Date();
+
+export const STATUSES = ["Pending", "In Progress", "On Hold", "Completed", "Cancelled"];
+
+export const PRIORITIES = ["Low", "Medium", "High", "Critical"];
+
+export const CATEGORIES = ["Maintenance", "Installation", "Inspection", "Repair", "Delivery", "Audit"];
+
+export const ASSIGNEES = [
+  "Alice Morgan",
+  "Bob Chen",
+  "Carlos Rivera",
+  "Diana Patel",
+  "Ethan Brooks",
+  "Fiona Walsh",
+];
+
+let idCounter = 100;
+const uid = () => `JOB-${++idCounter}`;
+
+export const seedJobs = () => [
+  {
+    id: uid(), title: "HVAC Filter Replacement", category: "Maintenance",
+    status: "Completed", priority: "Low", assignee: "Alice Morgan",
+    created: subDays(now, 10).toISOString(), due: subDays(now, 3).toISOString(),
+    description: "Replace all HVAC filters on floors 2–5 of Building A.",
+    notes: "Completed ahead of schedule. All filters replaced with MERV-13.",
+  },
+  {
+    id: uid(), title: "Server Room Inspection", category: "Inspection",
+    status: "In Progress", priority: "High", assignee: "Bob Chen",
+    created: subDays(now, 5).toISOString(), due: addDays(now, 1).toISOString(),
+    description: "Quarterly inspection of server room cooling and power systems.",
+    notes: "Found minor cable management issues. Documenting for follow-up.",
+  },
+  {
+    id: uid(), title: "Elevator Safety Audit", category: "Audit",
+    status: "Pending", priority: "Critical", assignee: "Carlos Rivera",
+    created: subDays(now, 2).toISOString(), due: subDays(now, 1).toISOString(),
+    description: "Annual elevator safety compliance audit required by regulation.",
+    notes: "",
+  },
+  {
+    id: uid(), title: "Parking Lot Lighting Repair", category: "Repair",
+    status: "On Hold", priority: "Medium", assignee: "Diana Patel",
+    created: subDays(now, 8).toISOString(), due: subDays(now, 2).toISOString(),
+    description: "Three lighting poles in Lot C are non-functional.",
+    notes: "Waiting on parts delivery from vendor.",
+  },
+  {
+    id: uid(), title: "Fire Suppression System Test", category: "Inspection",
+    status: "Pending", priority: "Critical", assignee: "Ethan Brooks",
+    created: subDays(now, 1).toISOString(), due: subDays(now, 0).toISOString(),
+    description: "Monthly test of fire suppression system across all zones.",
+    notes: "",
+  },
+  {
+    id: uid(), title: "Office Furniture Delivery", category: "Delivery",
+    status: "In Progress", priority: "Low", assignee: "Fiona Walsh",
+    created: subDays(now, 3).toISOString(), due: addDays(now, 2).toISOString(),
+    description: "Deliver and assemble 20 standing desks for Floor 3.",
+    notes: "12 desks assembled. 8 remaining.",
+  },
+  {
+    id: uid(), title: "Network Switch Installation", category: "Installation",
+    status: "Pending", priority: "High", assignee: "Bob Chen",
+    created: subDays(now, 4).toISOString(), due: addDays(now, 3).toISOString(),
+    description: "Install new 48-port managed switch in IDF closet B2.",
+    notes: "",
+  },
+  {
+    id: uid(), title: "Roof Leak Repair", category: "Repair",
+    status: "In Progress", priority: "Critical", assignee: "Carlos Rivera",
+    created: subDays(now, 6).toISOString(), due: subDays(now, 4).toISOString(),
+    description: "Active leak detected in roof section near HVAC unit 7.",
+    notes: "Temporary patch applied. Permanent repair scheduled.",
+  },
+  {
+    id: uid(), title: "Security Camera Upgrade", category: "Installation",
+    status: "Cancelled", priority: "Medium", assignee: "Alice Morgan",
+    created: subDays(now, 15).toISOString(), due: subDays(now, 7).toISOString(),
+    description: "Replace analog cameras with IP cameras in lobby and parking.",
+    notes: "Project cancelled due to budget freeze.",
+  },
+  {
+    id: uid(), title: "Plumbing Inspection – B Wing", category: "Inspection",
+    status: "Completed", priority: "Medium", assignee: "Diana Patel",
+    created: subDays(now, 12).toISOString(), due: subDays(now, 5).toISOString(),
+    description: "Inspect all plumbing fixtures and pipes in B Wing.",
+    notes: "No issues found. All fixtures operational.",
+  },
+  {
+    id: uid(), title: "Generator Maintenance", category: "Maintenance",
+    status: "Pending", priority: "High", assignee: "Ethan Brooks",
+    created: subHours(now, 6).toISOString(), due: addDays(now, 5).toISOString(),
+    description: "Scheduled maintenance on backup generator unit G-02.",
+    notes: "",
+  },
+  {
+    id: uid(), title: "Chemical Storage Audit", category: "Audit",
+    status: "On Hold", priority: "High", assignee: "Fiona Walsh",
+    created: subDays(now, 9).toISOString(), due: subDays(now, 3).toISOString(),
+    description: "Audit chemical storage compliance per OSHA standards.",
+    notes: "Waiting on updated OSHA guidelines before proceeding.",
+  },
+];
+<<<END FILE>>>
+<<<FILE path="src/store/useStore.js">>>
+import { create } from "zustand";
+import { seedJobs } from "../data/jobs";
+
+let nextId = 200;
+const genId = () => `JOB-${++nextId}`;
+
+const useStore = create((set, get) => ({
+  jobs: seedJobs(),
+
+  addJob: (jobData) => {
+    const job = {
+      ...jobData,
+      id: genId(),
+      created: new Date().toISOString(),
+      notes: "",
+    };
+    set((s) => ({ jobs: [job, ...s.jobs] }));
+    return job.id;
+  },
+
+  updateJob: (id, patch) => {
+    set((s) => ({
+      jobs: s.jobs.map((j) => (j.id === id ? { ...j, ...patch } : j)),
+    }));
+  },
+
+  deleteJob: (id) => {
+    set((s) => ({ jobs: s.jobs.filter((j) => j.id !== id) }));
+  },
+
+  getJob: (id) => get().jobs.find((j) => j.id === id),
+}));
+
+export default useStore;
+<<<END FILE>>>
+<<<FILE path="src/App.jsx">>>
+import React, { useState } from "react";
+import Dashboard from "./pages/Dashboard";
+import JobDetail from "./pages/JobDetail";
+
+export default function App() {
+  const [page, setPage] = useState({ name: "dashboard" });
+
+  const navigate = (name, params = {}) => setPage({ name, ...params });
+
+  if (page.name === "detail") {
+    return <JobDetail jobId={page.jobId} navigate={navigate} />;
+  }
+
+  return <Dashboard navigate={navigate} />;
+}
+<<<END FILE>>>
+<<<FILE path="src/pages/Dashboard.jsx">>>
+import React, { useState, useMemo } from "react";
+import { isPast, parseISO } from "date-fns";
+import useStore from "../store/useStore";
+import StatsBar from "../components/StatsBar";
+import JobTable from "../components/JobTable";
+import CreateJobModal from "../components/CreateJobModal";
+import SearchBar from "../components/SearchBar";
+import FilterBar from "../components/FilterBar";
+import styles from "./Dashboard.module.css";
+import { Plus } from "lucide-react";
+
+export default function Dashboard({ navigate }) {
+  const jobs = useStore((s) => s.jobs);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [showCreate, setShowCreate] = useState(false);
+
+  const overdue = useMemo(
+    () =>
+      jobs.filter(
+        (j) =>
+          j.status !== "Completed" &&
+          j.status !== "Cancelled" &&
+          isPast(parseISO(j.due))
+      ),
+    [jobs]
+  );
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return jobs.filter((j) => {
+      const matchSearch =
+        !q ||
+        j.title.toLowerCase().includes(q) ||
+        j.id.toLowerCase().includes(q) ||
+        j.assignee.toLowerCase().includes(q);
+      const matchStatus = statusFilter === "All" || j.status === statusFilter;
+      const matchPriority = priorityFilter === "All" || j.priority === priorityFilter;
+      const matchCategory = categoryFilter === "All" || j.category === categoryFilter;
+      return matchSearch && matchStatus && matchPriority && matchCategory;
+    });
+  }, [jobs, search, statusFilter, priorityFilter, categoryFilter]);
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <span className={styles.logo}>⚙️</span>
+          <div>
+            <h1 className={styles.title}>Operations Dashboard</h1>
+            <p className={styles.subtitle}>Supervisor View · {jobs.length} total jobs</p>
+          </div>
+        </div>
+        <button className={styles.createBtn} onClick={() => setShowCreate(true)}>
+          <Plus size={16} />
+          New Job
+        </button>
+      </header>
+
+      <StatsBar jobs={jobs} overdue={overdue} />
+
+      <div className={styles.controls}>
+        <SearchBar value={search} onChange={setSearch} />
+        <FilterBar
+          statusFilter={statusFilter} setStatusFilter={setStatusFilter}
+          priorityFilter={priorityFilter} setPriorityFilter={setPriorityFilter}
+          categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
+        />
+      </div>
+
+      <div className={styles.tableWrap}>
+        <JobTable jobs={filtered} navigate={navigate} />
+      </div>
+
+      {showCreate && (
+        <CreateJobModal onClose={() => setShowCreate(false)} navigate={navigate} />
+      )}
+    </div>
+  );
+}
+<<<END FILE>>>
+<<<FILE path="src/pages/Dashboard.module.css">>>
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.createBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.createBtn:hover { background: var(--accent-hover); }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.tableWrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+<<<END FILE>>>
+<<<FILE path="src/pages/JobDetail.jsx">>>
+import React, { useState } from "react";
+import { format, parseISO, isPast } from "date-fns";
+import useStore from "../store/useStore";
+import StatusBadge from "../components/StatusBadge";
+import PriorityBadge from "../components/PriorityBadge";
+import styles from "./JobDetail.module.css";
+import { ArrowLeft, Trash2, Save, AlertTriangle } from "lucide-react";
+import { STATUSES, PRIORITIES, ASSIGNEES } from "../data/jobs";
+
+export default function JobDetail({ jobId, navigate }) {
+  const job = useStore((s) => s.getJob(jobId));
+  const updateJob = useStore((s) => s.updateJob);
+  const deleteJob = useStore((s) => s.deleteJob);
+
+  const [form, setForm] = useState(job ? { ...job } : null);
+  const [saved, setSaved] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  if (!job || !form) {
+    return (
+      <div className={styles.notFound}>
+        <p>Job not found.</p>
+        <button onClick={() => navigate("dashboard")}>← Back</button>
+      </div>
+    );
+  }
+
+  const isOverdue =
+    form.status !== "Completed" &&
+    form.status !== "Cancelled" &&
+    isPast(parseISO(form.due));
+
+  const set = (key, val) => {
+    setForm((f) => ({ ...f, [key]: val }));
+    setSaved(false);
+  };
+
+  const handleSave = () => {
+    updateJob(jobId, form);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleDelete = () => {
+    deleteJob(jobId);
+    navigate("dashboard");
+  };
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.topBar}>
+        <button className={styles.back} onClick={() => navigate("dashboard")}>
+          <ArrowLeft size={16} /> Back to Dashboard
+        </button>
+        <div className={styles.topActions}>
+          {saved && <span className={styles.savedMsg}>✓ Saved</span>}
+          <button className={styles.saveBtn} onClick={handleSave}>
+            <Save size={15} /> Save Changes
+          </button>
+          <button className={styles.deleteBtn} onClick={() => setConfirmDelete(true)}>
+            <Trash2 size={15} />
+          </button>
+        </div>
+      </div>
+
+      {isOverdue && (
+        <div className={styles.overdueBanner}>
+          <AlertTriangle size={16} />
+          This job is <strong>overdue</strong>. Due date was{" "}
+          {format(parseISO(form.due), "MMM d, yyyy")}.
+        </div>
+      )}
+
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div>
+            <span className={styles.jobId}>{form.id}</span>
+            <input
+              className={styles.titleInput}
+              value={form.title}
+              onChange={(e) => set("title", e.target.value)}
+            />
+          </div>
+          <div className={styles.badges}>
+            <StatusBadge status={form.status} />
+            <PriorityBadge priority={form.priority} />
+          </div>
+        </div>
+
+        <div className={styles.grid}>
+          <Field label="Status">
+            <select value={form.status} onChange={(e) => set("status", e.target.value)}>
+              {STATUSES.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </Field>
+          <Field label="Priority">
+            <select value={form.priority} onChange={(e) => set("priority", e.target.value)}>
+              {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
+            </select>
+          </Field>
+          <Field label="Assignee">
+            <select value={form.assignee} onChange={(e) => set("assignee", e.target.value)}>
+              {ASSIGNEES.map((a) => <option key={a}>{a}</option>)}
+            </select>
+          </Field>
+          <Field label="Category">
+            <input value={form.category} onChange={(e) => set("category", e.target.value)} />
+          </Field>
+          <Field label="Due Date">
+            <input
+              type="date"
+              value={form.due.slice(0, 10)}
+              onChange={(e) => set("due", new Date(e.target.value).toISOString())}
+            />
+          </Field>
+          <Field label="Created">
+            <input value={format(parseISO(form.created), "MMM d, yyyy HH:mm")} readOnly />
+          </Field>
+        </div>
+
+        <Field label="Description">
+          <textarea
+            rows={4}
+            value={form.description}
+            onChange={(e) => set("description", e.target.value)}
+          />
+        </Field>
+
+        <Field label="Notes / Updates">
+          <textarea
+            rows={4}
+            value={form.notes}
+            onChange={(e) => set("notes", e.target.value)}
+            placeholder="Add internal notes or status updates…"
+          />
+        </Field>
+      </div>
+
+      {confirmDelete && (
+        <div className={styles.overlay}>
+          <div className={styles.dialog}>
+            <h3>Delete Job?</h3>
+            <p>This will permanently remove <strong>{form.id}</strong>. This cannot be undone.</p>
+            <div className={styles.dialogActions}>
+              <button className={styles.cancelBtn} onClick={() => setConfirmDelete(false)}>Cancel</button>
+              <button className={styles.confirmDeleteBtn} onClick={handleDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <div className={styles.field}>
+      <label className={styles.label}>{label}</label>
+      {children}
+    </div>
+  );
+}
+<<<END FILE>>>
+<<<FILE path="src/pages/JobDetail.module.css">>>
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  font-size: 13px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.back:hover { color: var(--text); border-color: var(--accent); }
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.savedMsg {
+  color: var(--success);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.saveBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.saveBtn:hover { background: var(--accent-hover); }
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  transition: background 0.15s;
+}
+.deleteBtn:hover { background: rgba(239,68,68,0.1); }
+
+.overdueBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.35);
+  color: #fca5a5;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.jobId {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.titleInput {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+  width: 100%;
+  padding: 4px 0;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.titleInput:focus { border-color: var(--accent); }
+
+.badges {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  padding: 9px 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus { border-color: var(--accent); }
+.field input[readonly] { color: var(--text-dim); cursor: default; }
+.field select option { background: var(--surface2); }
+
+.notFound {
+  padding: 60px;
+  text-align: center;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+.notFound button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 20px;
+}
+
+/* Delete dialog */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.dialog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  max-width: 400px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dialog h3 { font-size: 18px; font-weight: 700; }
+.dialog p { color: var(--text-dim); font-size: 14px; line-height: 1.6; }
+
+.dialogActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.cancelBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+}
+.cancelBtn:hover { border-color: var(--accent); }
+
+.confirmDeleteBtn {
+  background: var(--danger);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.confirmDeleteBtn:hover { opacity: 0.85; }
+<<<END FILE>>>
+<<<FILE path="src/components/StatsBar.jsx">>>
+import React, { useMemo } from "react";
+import styles from "./StatsBar.module.css";
+import { Briefcase, Clock, CheckCircle, AlertTriangle, PauseCircle } from "lucide-react";
+
+export default function StatsBar({ jobs, overdue }) {
+  const counts = useMemo(() => {
+    const c = { Pending: 0, "In Progress": 0, Completed: 0, "On Hold": 0, Cancelled: 0 };
+    jobs.forEach((j) => { if (c[j.status] !== undefined) c[j.status]++; });
+    return c;
+  }, [jobs]);
+
+  const stats = [
+    { label: "Total Jobs", value: jobs.length, icon: <Briefcase size={20} />, color: "var(--accent)" },
+    { label: "In Progress", value: counts["In Progress"], icon: <Clock size={20} />, color: "var(--info)" },
+    { label: "Completed", value: counts["Completed"], icon: <CheckCircle size={20} />, color: "var(--success)" },
+    { label: "On Hold", value: counts["On Hold"], icon: <PauseCircle size={20} />, color: "var(--warning)" },
+    { label: "Overdue", value: overdue.length, icon: <AlertTriangle size={20} />, color: "var(--danger)", highlight: overdue.length > 0 },
+  ];
+
+  return (
+    <div className={styles.bar}>
+      {stats.map((s) => (
+        <div key={s.label} className={`${styles.card} ${s.highlight ? styles.highlight : ""}`}>
+          <div className={styles.icon} style={{ color: s.color, background: `${s.color}18` }}>
+            {s.icon}
+          </div>
+          <div>
+            <div className={styles.value} style={{ color: s.highlight ? s.color : "var(--text)" }}>
+              {s.value}
+            </div>
+            <div className={styles.label}>{s.label}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+<<<END FILE>>>
+<<<FILE path="src/components/StatsBar.module.css">>>
+.bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color 0.15s;
+}
+.card:hover { border-color: var(--accent); }
+
+.highlight {
+  border-color: rgba(239,68,68,0.4);
+  background: rgba(239,68,68,0.06);
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.value {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.label {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  font-weight: 500;
+}
+<<<END FILE>>>
+<<<FILE path="src/components/SearchBar.jsx">>>
+import React from "react";
+import styles from "./SearchBar.module.css";
+import { Search, X } from "lucide-react";
+
+export default function SearchBar({ value, onChange }) {
+  return (
+    <div className={styles.wrap}>
+      <Search size={15} className={styles.icon} />
+      <input
+        className={styles.input}
+        placeholder="Search by title, ID, or assignee…"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {value && (
+        <button className={styles.clear} onClick={() => onChange("")}>
+          <X size={14} />
+        </button>
+      )}
+    </div>
+  );
+}
+<<<END FILE>>>
+<<<FILE path="src/components/SearchBar.module.css">>>
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 220px;
+  max-width: 380px;
+}
+
+.icon {
+  position: absolute;
+  left: 12px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 10px 36px 10px 36px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input:focus { border-color: var(--accent); }
+.input::placeholder { color: var(--muted); }
+
+.clear {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+.clear:hover { color: var(--text); }
+<<<END FILE>>>
+<<<FILE path="src/components/FilterBar.jsx">>>
+import React from "react";
+import styles from "./FilterBar.module.css";
+import { STATUSES, PRIORITIES, CATEGORIES } from "../data/jobs";
+
+export default function FilterBar({
+  statusFilter, setStatusFilter,
+  priorityFilter, setPriorityFilter,
+  categoryFilter, setCategoryFilter,
+}) {
+  return (
+    <div className={styles.bar}>
+      <Select label="Status" value={statusFilter} onChange={setStatusFilter} options={["All", ...STATUSES]} />
+      <Select label="Priority" value={priorityFilter} onChange={setPriorityFilter} options={["All", ...PRIORITIES]} />
+      <Select label="Category" value={categoryFilter} onChange={setCategoryFilter} options={["All", ...CATEGORIES]} />
+    </div>
+  );
+}
+
+function Select({ label, value, onChange, options }) {
+  return (
+    <div className={styles.selectWrap}>
+      <label className={styles.label}>{label}</label>
+      <select
+        className={styles.select}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {options.map((o) => <option key={o}>{o}</option>)}
+      </select>
+    </div>
+  );
+}
+<<<END FILE>>>
+<<<FILE path="src/components/FilterBar.module.css">>>
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.selectWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-left: 2px;
+}
+
+.select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.15s;
+}
+.select:focus { border-color: var(--accent); }
+.select option { background: var(--surface2); }
+<<<END FILE>>>
+<<<FILE path="src/components/JobTable.jsx">>>
+import React, { useState } from "react";
+import { format, parseISO, isPast } from "date-fns";
+import StatusBadge from "./StatusBadge";
+import PriorityBadge from "./PriorityBadge";
+import styles from "./JobTable.module.css";
+import { ChevronUp, ChevronDown, AlertTriangle } from "lucide-react";
+
+const COLS = [
+  { key: "id", label: "Job ID" },
+  { key: "title", label: "Title" },
+  { key: "category", label: "Category" },
+  { key: "status", label: "Status" },
+  { key: "priority", label: "Priority" },
+  { key: "assignee", label: "Assignee" },
+  { key: "due", label: "Due Date" },
+];
+
+export default function JobTable({ jobs, navigate }) {
+  const [sort, setSort] = useState({ key: "due", dir: "asc" });
+
+  const toggleSort = (key) => {
+    setSort((s) => ({ key, dir: s.key === key && s.dir === "asc" ? "desc" : "asc" }));
+  };
+
+  const sorted = [...jobs].sort((a, b) => {
+    let av = a[sort.key] ?? "";
+    let bv = b[sort.key] ?? "";
+    if (sort.key === "due" || sort.key === "created") {
+      av = new Date(av);
+      bv = new Date(bv);
+    } else {
+      av = av.toString().toLowerCase();
+      bv = bv.toString().toLowerCase();
+    }
+    if (av < bv) return sort.dir === "asc" ? -1 : 1;
+    if (av > bv) return sort.dir === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  return (
+    <div className={styles.tableContainer}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            {COLS.map((c) => (
+              <th key={c.key} onClick={() => toggleSort(c.key)} className={styles.th}>
+                <span className={styles.thInner}>
+                  {c.label}
+                  <span className={styles.sortIcon}>
+                    {sort.key === c.key
+                      ? sort.dir === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />
+                      : <ChevronDown size={13} className={styles.sortFade} />}
+                  </span>
+                </span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.length === 0 && (
+            <tr>
+              <td colSpan={COLS.length} className={styles.empty}>
+                No jobs match your filters.
+              </td>
+            </tr>
+          )}
+          {sorted.map((job) => {
+            const overdue =
+              job.status !== "Completed" &&
+              job.status !== "Cancelled" &&
+              isPast(parseISO(job.due));
+            return (
+              <tr
+                key={job.id}
+                className={`${styles.row} ${overdue ? styles.overdueRow : ""}`}
+                onClick={() => navigate("detail", { jobId: job.id })}
+              >
+                <td className={styles.td}>
+                  <span className={styles.jobId}>{job.id}</span>
+                </td>
+                <td className={styles.td}>
+                  <span className={styles.jobTitle}>{job.title}</span>
+                  {overdue && (
+                    <span className={styles.overdueTag}>
+                      <AlertTriangle size={11} /> Overdue
+                    </span>
+                  )}
+                </td>
+                <td className={styles.td}>
+                  <span className={styles.category}>{job.category}</span>
+                </td>
+                <td className={styles.td}>
+                  <StatusBadge status={job.status} />
+                </td>
+                <td className={styles.td}>
+                  <PriorityBadge priority={job.priority} />
+                </td>
+                <td className={styles.td}>
+                  <span className={styles.assignee}>{job.assignee}</span>
+                </td>
+                <td className={styles.td}>
+                  <span className={overdue ? styles.dueDateOverdue : styles.dueDate}>
+                    {format(parseISO(job.due), "MMM d, yyyy")}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+<<<END FILE>>>
+<<<FILE path="src/components/JobTable.module.css">>>
+.tableContainer {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.th:hover { color: var(--text); }
+
+.thInner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sortIcon { display: flex; align-items: center; }
+.sortFade { opacity: 0.3; }
+
+.row {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.row:hover { background: var(--surface2); }
+.row:last-child { border-bottom: none; }
+
+.overdueRow { background: rgba(239,68,68,0.04); }
+.overdueRow:hover { background: rgba(239,68,68,0.09); }
+
+.td {
+  padding: 13px 16px;
+  vertical-align: middle;
+}
+
+.jobId {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.3px;
+}
+
+.jobTitle {
+  font-weight: 500;
+  color: var(--text);
+  display: block;
+}
+
+.overdueTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--danger);
+  margin-top: 3px;
+}
+
+.category {
+  font-size: 12px;
+  color: var(--text-dim);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 8px;
+}
+
+.assignee {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.dueDate {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.dueDateOverdue {
+  font-size: 12px;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.empty {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+<<<END FILE>>>
+<<<FILE path="src/components/StatusBadge.jsx">>>
+import React from "react";
+import styles from "./StatusBadge.module.css";
+
+const CONFIG = {
+  "Pending":     { color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
+  "In Progress": { color: "#38bdf8", bg: "rgba(56,189,248,0.12)" },
+  "On Hold":     { color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
+  "Completed":   { color: "#22c55e", bg: "rgba(34,197,94,0.12)" },
+  "Cancelled":   { color: "#6b7280", bg: "rgba(107,114,128,0.12)" },
+};
+
+export default function StatusBadge({ status }) {
+  const cfg = CONFIG[status] || { color: "#6b7280", bg: "rgba(107,114,128,0.12)" };
+  return (
+    <span
+      className={styles.badge}
+      style={{ color: cfg.color, background: cfg.bg, borderColor: `${cfg.color}40` }}
+    >
+      <span className={styles.dot} style={{ background: cfg.color }} />
+      {status}
+    </span>
+  );
+}
+<<<END FILE>>>
+<<<FILE path="src/components/StatusBadge.module.css">>>
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+<<<END FILE>>>
+<<<FILE path="src/components/PriorityBadge.jsx">>>
+import React from "react";
+import styles from "./PriorityBadge.module.css";
+
+const CONFIG = {
+  "Low":      { color: "#6b7280", bg: "rgba(107,114,128,0.12)" },
+  "Medium":   { color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
+  "High":     { color: "#f97316", bg: "rgba(249,115,22,0.12)" },
+  "Critical": { color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
+};
+
+const ICONS = { Low: "↓", Medium: "→", High: "↑", Critical: "⚡" };
+
+export default function PriorityBadge({ priority }) {
+  const cfg = CONFIG[priority] || CONFIG["Low"];
+  return (
+    <span
+      className={styles.badge}
+      style={{ color: cfg.color, background: cfg.bg, borderColor: `${cfg.color}40` }}
+    >
+      <span>{ICONS[priority] || "·"}</span>
+      {priority}
+    </span>
+  );
+}
+<<<END FILE>>>
+<<<FILE path="src/components/PriorityBadge.module.css">>>
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+<<<END FILE>>>
+<<<FILE path="src/components/CreateJobModal.jsx">>>
+import React, { useState } from "react";
+import useStore from "../store/useStore";
+import { STATUSES, PRIORITIES, CATEGORIES, ASSIGNEES } from "../data/jobs";
+import styles from "./CreateJobModal.module.css";
+import { X } from "lucide-react";
+import { addDays, format } from "date-fns";
+
+const defaultDue = format(addDays(new Date(), 7), "yyyy-MM-dd");
+
+const initial = {
+  title: "",
+  category: CATEGORIES[0],
+  status: "Pending",
+  priority: "Medium",
+  assignee: ASSIGNEES[0],
+  due: defaultDue,
+  description: "",
+};
+
+export default function CreateJobModal({ onClose, navigate }) {
+  const addJob = useStore((s) => s.addJob);
+  const [form, setForm] = useState(initial);
+  const [errors, setErrors] = useState({});
+
+  const set = (key, val) => {
+    setForm((f) => ({ ...f, [key]: val }));
+    setErrors((e) => ({ ...e, [key]: undefined }));
+  };
+
+  const validate = () => {
+    const e = {};
+    if (!form.title.trim()) e.title = "Title is required.";
+    if (!form.due) e.due = "Due date is required.";
+    return e;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    const id = addJob({ ...form, due: new Date(form.due).toISOString() });
+    onClose();
+    navigate("detail", { jobId: id });
+  };
+
+  return (
+    <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Create New Job</h2>
+          <button className={styles.closeBtn} onClick={onClose}><X size={18} /></button>
+        </div>
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <Field label="Job Title *" error={errors.title}>
+            <input
+              placeholder="e.g. Replace HVAC filters in Building B"
+              value={form.title}
+              onChange={(e) => set("title", e.target.value)}
+              autoFocus
+            />
+          </Field>
+
+          <div className={styles.row}>
+            <Field label="Category">
+              <select value={form.category} onChange={(e) => set("category", e.target.value)}>
+                {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+              </select>
+            </Field>
+            <Field label="Priority">
+              <select value={form.priority} onChange={(e) => set("priority", e.target.value)}>
+                {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
+              </select>
+            </Field>
+          </div>
+
+          <div className={styles.row}>
+            <Field label="Status">
+              <select value={form.status} onChange={(e) => set("status", e.target.value)}>
+                {STATUSES.map((s) => <option key={s}>{s}</option>)}
+              </select>
+            </Field>
+            <Field label="Assignee">
+              <select value={form.assignee} onChange={(e) => set("assignee", e.target.value)}>
+                {ASSIGNEES.map((a) => <option key={a}>{a}</option>)}
+              </select>
+            </Field>
+          </div>
+
+          <Field label="Due Date *" error={errors.due}>
+            <input
+              type="date"
+              value={form.due}
+              onChange={(e) => set("due", e.target.value)}
+            />
+          </Field>
+
+          <Field label="Description">
+            <textarea
+              rows={3}
+              placeholder="Describe the job scope and requirements…"
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
+            />
+          </Field>
+
+          <div className={styles.actions}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+            <button type="submit" className={styles.submitBtn}>Create Job</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, error, children }) {
+  return (
+    <div className={styles.field}>
+      <label className={styles.label}>{label}</label>
+      {children}
+      {error && <span className={styles.error}>{error}</span>}
+    </div>
+  );
+}
+<<<END FILE>>>
+<<<FILE path="src/components/CreateJobModal.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.closeBtn:hover { color: var(--text); background: var(--surface2); }
+
+.form {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus { border-color: var(--accent); }
+.field input::placeholder,
+.field textarea::placeholder { color: var(--muted); }
+.field select option { background: var(--surface2); }
+
+.error {
+  font-size: 11px;
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.cancelBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13px;
+  transition: border-color 0.15s;
+}
+.cancelBtn:hover { border-color: var(--accent); }
+
+.submitBtn {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.submitBtn:hover { background: var(--accent-hover); }
+<<<END FILE>>>
+<<<FILE path="src/store/useStore.js">>>
+import { create } from "zustand";
+import { seedJobs } from "../data/jobs";
+
+let nextId = 200;
+const genId = () => `JOB-${++nextId}`;
+
+const useStore = create((set, get) => ({
+  jobs: seedJobs(),
+
+  addJob: (jobData) => {
+    const job = {
+      ...jobData,
+      id: genId(),
+      created: new Date().toISOString(),
+      notes: "",
+    };
+    set((s) => ({ jobs: [job, ...s.jobs] }));
+    return job.id;
+  },
+
+  updateJob: (id, patch) => {
+    set((s) => ({
+      jobs: s.jobs.map((j) => (j.id === id ? { ...j, ...patch } : j)),
+    }));
+  },
+
+  deleteJob: (id) => {
+    set((s) => ({ jobs: s.jobs.filter((j) => j.id !== id) }));
+  },
+
+  getJob: (id) => get().jobs.find((j) => j.id === id),
+}));
+
+export default useStore;
+<<<END FILE>>>

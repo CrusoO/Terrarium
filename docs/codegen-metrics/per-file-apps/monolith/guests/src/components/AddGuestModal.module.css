@@ -1,0 +1,132 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: popIn 0.25s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.94) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.closeBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.closeBtn:hover { color: var(--text); }
+
+.form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 13px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.18s;
+  font-family: inherit;
+}
+
+.input::placeholder { color: var(--muted); }
+.input:focus { border-color: var(--accent); }
+.input option { background: var(--surface2); }
+
+.inputError { border-color: var(--no) !important; }
+
+.formActions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.cancelBtn:hover { color: var(--text); }
+
+.submitBtn {
+  flex: 2;
+  padding: 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.submitBtn:hover { background: #5a52e0; }

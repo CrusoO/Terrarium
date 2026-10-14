@@ -46,6 +46,12 @@ def run_heal(job: AgentJob) -> HealDecision:
             f"healAttempt must be 1–{MAX_HEAL_ATTEMPTS}, got {attempt}"
         )
 
+    # Prefer surgical patches when a FileMap already exists (Step 3).
+    if job.files and attempt <= 2:
+        return HealDecision(
+            route="editor",
+            reason="FileMap present; apply search/replace patches to failing files only",
+        )
     routed = _route_through_intent(job, ctx, attempt)
     if agents_mode() == "live":
         override = _maybe_llm_route(job, ctx, attempt)
@@ -84,8 +90,9 @@ def _maybe_llm_route(
         (
             "You are Terrarium's self-healing router. Return JSON only: "
             '{"route":"editor"|"codegen","reason":"one line"}. '
-            "editor = patch the current FileMap. codegen = regenerate. "
-            "No Docker. No file contents."
+            "Prefer editor when a FileMap exists — editor applies search/replace "
+            "patches to failing files only. Use codegen only when files are missing "
+            "or the app structure is fundamentally wrong. No Docker. No file contents."
         ),
         (
             f"attempt={attempt}/{MAX_HEAL_ATTEMPTS}\n"
@@ -95,7 +102,7 @@ def _maybe_llm_route(
             f"prompt={job.prompt}\n"
             f"logs={ctx.logs[:3000]}"
         ),
-        purpose="codegen",
+        purpose="plan",
     )
     if not payload:
         return None

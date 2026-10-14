@@ -1,0 +1,88 @@
+[
+  {
+    "slug": "expenses",
+    "attempts": [
+      {
+        "implicated": [
+          {
+            "caller": "src/views/DashboardPage.tsx",
+            "callee": "TotalsCard",
+            "prop": "totals",
+            "detail": "TS2339: Property 'spentOn' does not exist on type 'DailyTotal'. DailyTotal fields are date, count, and total."
+          }
+        ],
+        "applied": [
+          "src/components/TotalsCard.tsx"
+        ],
+        "ok": true,
+        "durationSeconds": 2.468,
+        "failReason": null
+      }
+    ]
+  },
+  {
+    "slug": "guests",
+    "attempts": [
+      {
+        "implicated": [
+          {
+            "caller": "src/views/FormPage.tsx",
+            "callee": "GuestCard",
+            "prop": "item",
+            "detail": "TS2304: Cannot find name 'Guest'. Import the Guest type from '../types'. Also FormPage passes id inside Omit<Guest, 'id'>; do not send id to addItem."
+          }
+        ],
+        "applied": [
+          "src/views/FormPage.tsx",
+          "src/views/FormPage.tsx",
+          "src/components/GuestCard.tsx"
+        ],
+        "ok": true,
+        "durationSeconds": 3.414,
+        "failReason": null
+      }
+    ]
+  },
+  {
+    "slug": "recipes",
+    "attempts": [
+      {
+        "implicated": [
+          {
+            "caller": "src/views/FormPage.tsx",
+            "callee": "useRecipeActions",
+            "prop": "addItem",
+            "detail": "TS2353: Object literal may only specify known properties, and 'id' does not exist in type Omit<Recipe, 'id'>. Remove id from the addItem argument."
+          }
+        ],
+        "applied": [
+          "src/views/FormPage.tsx"
+        ],
+        "ok": true,
+        "durationSeconds": 2.767,
+        "failReason": null
+      }
+    ]
+  },
+  {
+    "slug": "roster",
+    "attempts": [
+      {
+        "implicated": [
+          {
+            "caller": "src/views/FormPage.tsx",
+            "callee": "useStudentActions",
+            "prop": "addItem",
+            "detail": "TS2345: addItem expects Omit<Student, 'id'>, not a function. Pass an object with the form fields."
+          }
+        ],
+        "applied": [
+          "src/views/FormPage.tsx"
+        ],
+        "ok": true,
+        "durationSeconds": 2.833,
+        "failReason": null
+      }
+    ]
+  }
+]

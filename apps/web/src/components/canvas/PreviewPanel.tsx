@@ -30,7 +30,15 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import type { FileMap, GitHubStatusResponse, RuntimeErrorRequest, SessionEvent } from "@terrarium/contracts";
+import {
+  toolHealthSchema,
+  type CheckStep,
+  type FileMap,
+  type GitHubStatusResponse,
+  type RuntimeErrorRequest,
+  type SessionEvent,
+  type ToolHealth,
+} from "@terrarium/contracts";
 import { useSplitControls } from "../layout/SplitControls";
 import { CodePanel } from "./CodePanel";
 import { EventLogButton } from "./EventLogButton";
@@ -41,6 +49,9 @@ import {
 } from "../../api/github";
 import { listGroups, type Group } from "../../api/groups";
 import { publishSession } from "../../api/sessions";
+import { fetchToolHealth, remediateTool, runSessionPublishCheck } from "../../api/trust";
+import { HealthBadge } from "../trust/HealthBadge";
+import { PrePublishPanel } from "../trust/PrePublishPanel";
 import { useAuth } from "../../hooks/useAuth";
 import { applyPreviewDocument } from "../../utils/domMorpher";
 import { fileMapToPreviewDocument } from "../../utils/previewDocument";
@@ -198,6 +209,7 @@ export function PreviewPanel({
   files = null,
   streamFiles = null,
   sessionId = null,
+  toolId = null,
   tab = "preview",
   onTabChange,
   onRuntimeError,
@@ -209,6 +221,7 @@ export function PreviewPanel({
   files?: FileMap | null;
   streamFiles?: FileMap | null;
   sessionId?: string | null;
+  toolId?: string | null;
   tab?: "preview" | "code";
   onTabChange?: (tab: "preview" | "code") => void;
   onRuntimeError?: (error: RuntimeErrorRequest) => void;
@@ -221,6 +234,26 @@ export function PreviewPanel({
   const [groupId, setGroupId] = useState("");
   const [groups, setGroups] = useState<Group[]>([]);
   const [publishNote, setPublishNote] = useState<string | null>(null);
+  const [draftHealth, setDraftHealth] = useState<ToolHealth | null>(null);
+  const [healthLoading, setHealthLoading] = useState(false);
+  const [trustOpen, setTrustOpen] = useState(false);
+  const [checkHealth, setCheckHealth] = useState<ToolHealth | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [acknowledgeWarnings, setAcknowledgeWarnings] = useState(false);
+  const stepStatus = useMemo(() => {
+    const map: Partial<Record<CheckStep, "running" | "passed" | "failed" | "skipped">> = {};
+    for (const event of events) {
+      if (event.name !== "check.step" || !event.payload) {
+        continue;
+      }
+      const step = event.payload.step;
+      const status = event.payload.status;
+      if (typeof step === "string" && typeof status === "string") {
+        map[step as CheckStep] = status as "running" | "passed" | "failed" | "skipped";
+      }
+    }
+    return map;
+  }, [events]);
   const [githubStatus, setGithubStatus] = useState<GitHubStatusResponse | null>(null);
   const [githubBusy, setGithubBusy] = useState(false);
   const [githubNote, setGithubNote] = useState<string | null>(null);
@@ -233,12 +266,56 @@ export function PreviewPanel({
   const githubReturnHandled = useRef(false);
   const auth = useAuth();
   const signedIn = auth.state.status === "authenticated";
-  const userEmail = signedIn ? auth.state.user.email ?? "" : "";
+  const userEmail =
+    auth.state.status === "authenticated" ? auth.state.user.email ?? "" : "";
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const src = previewUrl ? iframeSrc(previewUrl) : null;
   const streamDocument = useMemo(() => fileMapToPreviewDocument(streamFiles), [streamFiles]);
   const showFrame = Boolean(src || streamDocument) && (status === "live" || status === "draft" || status === "updating");
   const canPublish = Boolean(sessionId) && status === "live" && !publishing;
+
+  async function beginTrustCheck() {
+    if (!sessionId) {
+      return;
+    }
+    setTrustOpen(true);
+    setChecking(true);
+    setCheckHealth(null);
+    try {
+      const health = await runSessionPublishCheck(sessionId);
+      setCheckHealth(health);
+      setDraftHealth(health);
+    } catch (error) {
+      setPublishNote(error instanceof Error ? error.message : "Publish check failed.");
+      setTrustOpen(false);
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!toolId) {
+      setDraftHealth(null);
+      return;
+    }
+    setHealthLoading(true);
+    void fetchToolHealth(toolId)
+      .then((res) => setDraftHealth(res.draft ?? res.live ?? null))
+      .catch(() => setDraftHealth(null))
+      .finally(() => setHealthLoading(false));
+  }, [toolId, refreshKey]);
+
+  useEffect(() => {
+    for (const event of events) {
+      if (event.name === "check.completed" && event.payload?.health) {
+        const parsed = toolHealthSchema.safeParse(event.payload.health);
+        if (parsed.success) {
+          setCheckHealth(parsed.data);
+        }
+      }
+    }
+  }, [events]);
+
   const canGitHub = Boolean(sessionId) && signedIn && !githubBusy;
   const githubHasAccount = Boolean(githubStatus?.connected);
   const githubHasRepo = Boolean(githubStatus?.htmlUrl);
@@ -451,6 +528,16 @@ export function PreviewPanel({
               </IconButton>
             </span>
           </Tooltip>
+          <Box
+            component="button"
+            type="button"
+            onClick={() => void beginTrustCheck()}
+            disabled={!canPublish}
+            sx={{ border: 0, bgcolor: "transparent", p: 0, cursor: canPublish ? "pointer" : "default" }}
+            aria-label="View trust status"
+          >
+            <HealthBadge health={checkHealth ?? draftHealth} loading={healthLoading || checking} />
+          </Box>
           <Tooltip title="Publish">
             <span>
               <IconButton
@@ -461,7 +548,7 @@ export function PreviewPanel({
                     return;
                   }
                   setPublishNote(null);
-                  setPublishOpen(true);
+                  void beginTrustCheck();
                   if (userEmail) {
                     void listGroups(userEmail).then(setGroups).catch(() => setGroups([]));
                   }
@@ -589,12 +676,14 @@ export function PreviewPanel({
         onClose={() => !githubBusy && setGithubSetupOpen(false)}
         fullWidth
         maxWidth="sm"
-        PaperProps={{
-          sx: {
-            borderRadius: "20px",
-            border: "1px solid #efeae4",
-            boxShadow: "0 28px 64px rgba(47, 36, 28, 0.16)",
-            overflow: "hidden",
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: "20px",
+              border: "1px solid #efeae4",
+              boxShadow: "0 28px 64px rgba(47, 36, 28, 0.16)",
+              overflow: "hidden",
+            },
           },
         }}
       >
@@ -722,8 +811,12 @@ export function PreviewPanel({
                   setGithubToken(event.target.value);
                   setGithubError(null);
                 }}
-                InputProps={{
-                  startAdornment: <LockOutlinedIcon sx={{ mr: 1, color: "text.secondary", fontSize: 18 }} />,
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <LockOutlinedIcon sx={{ mr: 1, color: "text.secondary", fontSize: 18 }} />
+                    ),
+                  },
                 }}
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px", bgcolor: "#fff" } }}
               />
@@ -863,6 +956,32 @@ export function PreviewPanel({
           </Button>
         </DialogActions>
       </Dialog>
+      <PrePublishPanel
+        open={trustOpen}
+        onClose={() => !checking && setTrustOpen(false)}
+        health={checkHealth}
+        stepStatus={stepStatus}
+        publishing={publishing}
+        checking={checking}
+        onFixAutomatically={() => {
+          if (!toolId) {
+            setPublishNote("Save a draft tool before auto-fix.");
+            return;
+          }
+          setChecking(true);
+          void remediateTool(toolId)
+            .then((health) => {
+              setCheckHealth(health);
+              setDraftHealth(health);
+            })
+            .finally(() => setChecking(false));
+        }}
+        onPublish={(ackWarnings) => {
+          setAcknowledgeWarnings(ackWarnings);
+          setTrustOpen(false);
+          setPublishOpen(true);
+        }}
+      />
       <Dialog open={publishOpen} onClose={() => !publishing && setPublishOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Publish</DialogTitle>
         <DialogContent>
@@ -927,6 +1046,7 @@ export function PreviewPanel({
                 visibility,
                 groupId: visibility === "group" ? groupId : undefined,
                 groupName: visibility === "group" ? selected?.name : undefined,
+                acknowledgeWarnings: acknowledgeWarnings || undefined,
               })
                 .then((result) => {
                   setPublishNote(

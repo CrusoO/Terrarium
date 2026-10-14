@@ -1,0 +1,285 @@
+{
+  "durationMs": 58678,
+  "events": [
+    {
+      "atMs": 1791882354977,
+      "name": "codegen.first_file",
+      "payload": {
+        "path": "src/components/StatusBadge.tsx",
+        "secondsSinceCodegenStage": 16.787
+      }
+    },
+    {
+      "atMs": 1791882373795,
+      "name": "codegen.streamed_files",
+      "payload": {
+        "count": 4,
+        "paths": [
+          "src/components/StatusBadge.tsx",
+          "src/components/ProductCard.tsx",
+          "src/components/PageHero.tsx",
+          "src/components/EmptyState.tsx"
+        ]
+      }
+    },
+    {
+      "atMs": 1791882376344,
+      "name": "preview.healthy",
+      "payload": {
+        "previewUrl": "http://127.0.0.1:53153/"
+      }
+    }
+  ],
+  "fileMap": {
+    "boilerplate": {
+      "estimatedBoilerplateShare": 0.334,
+      "estimatedBoilerplateTokens": 1172,
+      "estimatedTokensByCategory": {
+        "business-logic": 1320,
+        "config": 278,
+        "layout": 554,
+        "ui": 1018,
+        "ui-primitives": 340
+      }
+    },
+    "fileCount": 23,
+    "jsonOverheadEstimatedTokens": 306,
+    "jsonWrappedBytes": 15285,
+    "jsonWrappedEstimatedTokens": 3821,
+    "rawCodeBytes": 14060,
+    "rawCodeEstimatedTokens": 3515,
+    "tokensPerFileEstimated": {
+      "index.html": {
+        "bytes": 420,
+        "category": "config",
+        "estimatedTokens": 105
+      },
+      "package.json": {
+        "bytes": 309,
+        "category": "config",
+        "estimatedTokens": 77
+      },
+      "public/favicon.svg": {
+        "bytes": 119,
+        "category": "business-logic",
+        "estimatedTokens": 30
+      },
+      "src/App.tsx": {
+        "bytes": 1242,
+        "category": "ui",
+        "estimatedTokens": 310
+      },
+      "src/components/AppShell.tsx": {
+        "bytes": 168,
+        "category": "ui",
+        "estimatedTokens": 42
+      },
+      "src/components/EmptyState.tsx": {
+        "bytes": 109,
+        "category": "ui",
+        "estimatedTokens": 27
+      },
+      "src/components/FilterTabs.tsx": {
+        "bytes": 303,
+        "category": "ui",
+        "estimatedTokens": 76
+      },
+      "src/components/Navbar.tsx": {
+        "bytes": 127,
+        "category": "ui",
+        "estimatedTokens": 32
+      },
+      "src/components/PageHero.tsx": {
+        "bytes": 280,
+        "category": "ui",
+        "estimatedTokens": 70
+      },
+      "src/components/ProductCard.tsx": {
+        "bytes": 1290,
+        "category": "ui",
+        "estimatedTokens": 322
+      },
+      "src/components/SearchBar.tsx": {
+        "bytes": 270,
+        "category": "ui",
+        "estimatedTokens": 68
+      },
+      "src/components/StatusBadge.tsx": {
+        "bytes": 284,
+        "category": "ui",
+        "estimatedTokens": 71
+      },
+      "src/data/seed.ts": {
+        "bytes": 841,
+        "category": "business-logic",
+        "estimatedTokens": 210
+      },
+      "src/hooks/useData.ts": {
+        "bytes": 1362,
+        "category": "ui-primitives",
+        "estimatedTokens": 340
+      },
+      "src/main.tsx": {
+        "bytes": 254,
+        "category": "config",
+        "estimatedTokens": 64
+      },
+      "src/styles/global.css": {
+        "bytes": 2022,
+        "category": "layout",
+        "estimatedTokens": 506
+      },
+      "src/styles/tokens.css": {
+        "bytes": 191,
+        "category": "layout",
+        "estimatedTokens": 48
+      },
+      "src/types.ts": {
+        "bytes": 429,
+        "category": "business-logic",
+        "estimatedTokens": 107
+      },
+      "src/views/DetailPage.tsx": {
+        "bytes": 734,
+        "category": "business-logic",
+        "estimatedTokens": 184
+      },
+      "src/views/FormPage.tsx": {
+        "bytes": 1574,
+        "category": "business-logic",
+        "estimatedTokens": 394
+      },
+      "src/views/ListPage.tsx": {
+        "bytes": 1376,
+        "category": "business-logic",
+        "estimatedTokens": 344
+      },
+      "tsconfig.json": {
+        "bytes": 205,
+        "category": "business-logic",
+        "estimatedTokens": 51
+      },
+      "vite.config.js": {
+        "bytes": 129,
+        "category": "config",
+        "estimatedTokens": 32
+      }
+    }
+  },
+  "finishedAtMs": 1791882376351,
+  "headline": {
+    "generationSource": "fallback",
+    "healAttempts": 0,
+    "infrastructureStageSeconds": 8.517,
+    "modelStageSeconds": 52.66,
+    "timeToFirstFileSeconds": 37.304,
+    "timeToHealthyPreviewSeconds": 58.671
+  },
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 3122,
+      "inputTokens": 1287,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 185,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 13902,
+      "inputTokens": 583,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1469,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 2052,
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "1. What does your business sell?\nClothing and accessories\n\n2. Who are your main customers?\nOffice workers, Small business owners\n\n3. How do customers usually buy from you?\nOn our website, In our shop\n\n4. What do you want to keep track of?\nProducts and prices, Customers and orders, Bookings and dates\n\n5. Who on your team will use this?\nJust me, Sales team, Shop staff\n\n6. What would you like to see first?\nProducts to check",
+  "runId": "6e32f288ead546faa0660f4adb1dd502-1791882317673",
+  "runType": "new",
+  "sessionId": "6e32f288ead546faa0660f4adb1dd502",
+  "stages": [
+    {
+      "durationMs": 3145,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791882317674
+    },
+    {
+      "durationMs": 13908,
+      "kind": "model",
+      "name": "plan",
+      "startedAtMs": 1791882320823
+    },
+    {
+      "durationMs": 3460,
+      "kind": "infrastructure",
+      "name": "preview_skeleton_stream",
+      "startedAtMs": 1791882334730
+    },
+    {
+      "durationMs": 35607,
+      "kind": "model",
+      "name": "codegen",
+      "startedAtMs": 1791882338190
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "save_filemap",
+      "startedAtMs": 1791882373796
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "preview_file_replay",
+      "startedAtMs": 1791882373798
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791882373801
+    },
+    {
+      "durationMs": 5,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791882373804
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "github_sync",
+      "startedAtMs": 1791882373810
+    },
+    {
+      "durationMs": 537,
+      "kind": "infrastructure",
+      "name": "sandbox_start",
+      "startedAtMs": 1791882373844
+    },
+    {
+      "durationMs": 1960,
+      "kind": "infrastructure",
+      "name": "sandbox_health_check",
+      "startedAtMs": 1791882374381
+    },
+    {
+      "durationMs": 2550,
+      "kind": "infrastructure",
+      "name": "sandbox_boot_and_health",
+      "startedAtMs": 1791882373800
+    }
+  ],
+  "startedAtMs": 1791882317673,
+  "status": "ready"
+}

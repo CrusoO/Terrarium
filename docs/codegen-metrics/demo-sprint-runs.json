@@ -1,0 +1,39 @@
+[
+  {
+    "prompt": "Purchase order tracker with search, status filter (open, approved, received), add form, detail view and daily totals.",
+    "run": 1,
+    "seconds": 45.4,
+    "events": [
+      "session.created",
+      "intent.classified",
+      "codegen.started",
+      "preview.stream.started",
+      "preview.stream.file",
+      "preview.stream.file",
+      "preview.stream.file",
+      "preview.stream.file",
+      "preview.stream.file",
+      "preview.stream.file",
+      "preview.stream.file",
+      "preview.stream.file",
+      "preview.stream.file",
+      "preview.stream.completed",
+      "codegen.completed",
+      "sandbox.booting",
+      "sandbox.ready",
+      "preview.ready"
+    ],
+    "messages": [
+      "Architecture ready. Generating the application FileMap from the plan with bedrock/anthropic.claude-sonnet-4-6. Reason: Code generation uses Claude on Bedrock for large structured FileMaps.",
+      "Rendering a live preview while files are generated.",
+      "Live preview files streamed during generation; verifying in Docker.",
+      "FileMap ready (25 files) using deterministic fallback after bedrock/anthropic.claude-sonnet-4-6 did not return JSON. Starting Docker preview.",
+      "Starting preview container..."
+    ],
+    "previewReady": true,
+    "validated": true,
+    "clarify": false,
+    "terminalMessage": null,
+    "sessionId": "dda5b3f0de124da9b0bf985a05c29f38"
+  }
+]

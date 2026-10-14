@@ -223,7 +223,7 @@ export function ChatThread({
             </Box>
           );
         }
-        if (item.kind === "heal-exhausted") {
+        if (item.kind === "heal-exhausted" || item.kind === "session-ended") {
           return (
             <Stack
               component="li"
@@ -247,7 +247,7 @@ export function ChatThread({
                 }}
               >
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: "error.dark" }}>
-                  ⚠️ Build failed after 3 attempts
+                  {item.kind === "session-ended" ? "Preview was not validated" : "Build failed after 3 attempts"}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -335,7 +335,11 @@ export function ChatThread({
                 </Paper>
                 {item.questions && item.questions.length > 0 ? (
                   active ? (
-                    <ClarifyAnswers questions={item.questions} onSend={(text) => onSendChoice?.(text)} />
+                    <ClarifyAnswers
+                      questions={item.questions}
+                      questionItems={item.questionItems}
+                      onSend={(text) => onSendChoice?.(text)}
+                    />
                   ) : (
                     <Stack spacing={1} sx={{ mt: 1.5, opacity: 0.7 }}>
                       {item.questions.map((question, index) => (

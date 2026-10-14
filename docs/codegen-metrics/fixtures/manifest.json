@@ -1,0 +1,746 @@
+{
+  "mode": "replay",
+  "apps": [
+    {
+      "id": "catalogue/orders",
+      "source": "docs/codegen-metrics/canary-apps/orders",
+      "calls": 7,
+      "hashes": [
+        "eb98674ad06685cb83d9f2c214a1cdabfdd79845935bb663f826c32c69c3ef42",
+        "9f5582bc5c472985dc660f077f940ff93b20f1345b0f0e78f78e6a76ef7bd7af",
+        "00342fa70ca3f388bde4010a91461173202c8b581f3c45e955b614ff3a4a81c2",
+        "bec931d26b52e44f0969711dad6c8cda447802d777b97092552d7470d57f8664",
+        "cb9c11b15abfff00ca8cb2bde09ac0336153f8c65989b867f04e3a0f72f449fb",
+        "d2438418d51cab6ffd178af71dbeedf5245f86cb431a75e5268fd22fe2752da6",
+        "6d8c45feaf5e2f37fed960d0e63706e23d692bafbbb3ae53b4e0b81f18026c5c"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a customer order tracker. Staff search orders, filter by payment status, create an order, open a detail, and see daily totals."
+    },
+    {
+      "id": "catalogue/catalogue",
+      "source": "docs/codegen-metrics/canary-apps/catalogue",
+      "calls": 6,
+      "hashes": [
+        "a0c5db8ee50200411213aca49854fd6b12c9716029fe98bdc78b32ff5455aadc",
+        "e9510a2df3c6d101805e70945a523cacc7c6aaf96d0d45c4677efeb5d86bab61",
+        "e078701593564cd5bbc727f9251bb3d8b6466752ec040622853d64cb3b8665c6",
+        "07427754e8c05cb5fe2cf1fc67454240418bceb0aa0cbf197b5e56b9b41af8d4",
+        "a2ee366b3434f3df3b0dcf23a18bed01b9bf4d49109279c656f59accd5e29f48",
+        "ca7cffe628880715718f358483f411d416956a53ffe6dceae71f64bf090e9c6f"
+      ],
+      "mismatches": 0,
+      "prompt": "Build an ecommerce catalogue. Shoppers search products, filter by category, open a product detail, and add it to a cart."
+    },
+    {
+      "id": "catalogue/ops",
+      "source": "docs/codegen-metrics/canary-apps/ops",
+      "calls": 7,
+      "hashes": [
+        "94d2d072aa463307d8926e8880ae07c9ba14e27067b81900878cebf01b9cd18f",
+        "0d14a7703c19bba3627027ad3ce3df6e1aa0b3b319e298348877147470b42042",
+        "e1a88f6e1adfd7cf21eb75e51570d981558de97a802926edf8000f1897007825",
+        "a228ce8da085802e4a8c18982521eb697de7dc978a9a012586b3404609ad73fe",
+        "062cc3fd2cf3c2440d1b6986ed5a827ad2c84436e8265dbc8148e972b02c95ea",
+        "eff7496bb3ff590cc6cdbbbcd7cb1808b457063f76a3e40ab862115920c69b81",
+        "dacf8609f5dbe07a9a07379057c8ea73ca10d76611602c9f1f1fc917648ded46"
+      ],
+      "mismatches": 0,
+      "prompt": "Build an operations dashboard. Supervisors search jobs, filter by status, create a job, open a detail, and see overdue totals."
+    },
+    {
+      "id": "catalogue/appointments",
+      "source": "docs/codegen-metrics/canary-apps/appointments",
+      "calls": 6,
+      "hashes": [
+        "b487e2e9ee475ac170a948604707bc3319f612b2daf071c8eaa59d864ad80cbe",
+        "d601cba976930138c3336c4d3cffb4748df2e6c89098501516ddf503273e52b7",
+        "0bec8cfb5417f34325c8b076996a4f055494e3222e4b04a6fc0ab6424f15e159",
+        "86076fbf3be40af88ac76dbf521f0a1cab6be0f862e2c5cd30dcb383d08a2be0",
+        "452daf7bd875d324fa8d4a423a487cc969930e03ff377e384689866c6a6dc606",
+        "01ebf4c45307a37bce8f22f02973a1ebfeaff24fc41f0ead798b7e5311d5cd97"
+      ],
+      "mismatches": 0,
+      "prompt": "Build an appointment book. Staff search visits, filter by status, create a visit, and open its detail."
+    },
+    {
+      "id": "catalogue/inventory",
+      "source": "docs/codegen-metrics/canary-apps/inventory",
+      "calls": 7,
+      "hashes": [
+        "0603d2653a9f83a61410ca9db002dde1f1141951960f32b2b99161fa5a02be4e",
+        "82039d441877278f89e235bb6e78698225fa97a782e49b6b7352c34279d9b333",
+        "cf8c43cf81b517d323397a6c1763c8a8a638ff7d6f76ba4279e12ca29e39079a",
+        "2f00043b5701999d7350bad24598032432aaea6ec82760289e1abc834ed72bb0",
+        "d44e38f6bf134037bf2fc3628683e8cf33cb4cc65c7c5ba89a2a677bc4a64a19",
+        "7b52b1a61ef0ff0e2a52076aac8b0cb93247f76af648b8abdcb23f1586c47f29",
+        "271d51e10da69705c9d20b6783d2e6bdd0ff6362f2ccfb781bb78c905c125c93"
+      ],
+      "mismatches": 0,
+      "prompt": "Build an inventory counter. Staff search items, filter low stock, add an item, open a detail, and see stock totals."
+    },
+    {
+      "id": "catalogue/roster",
+      "source": "docs/codegen-metrics/canary-apps/roster",
+      "calls": 6,
+      "hashes": [
+        "917fee2c1619b0b29090070ee41ac65cb3d7799e5d88516208d18aec04ba7b84",
+        "4578277dab72ba2897d4b6c690acec3c317f89a9205a6fdd70588cc26f7bbb1d",
+        "c345ce9d387d2b8e095ea108977d3326fae3aa4df51e1353673810ebee7c1092",
+        "81319c4a2d116664a66fe4a359c1fbff85508140970f60693bf67cfa3a55c005",
+        "0d3a99177d904b17671ec535bb446286a10f4d8cb687081c153854cbf0156716",
+        "8336f7fc9bd21077521fccac92c51f3d84242bf25da1983dfb6ac493a14e9755"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a class roster. Teachers search students, filter by status, add a student, and open a detail."
+    },
+    {
+      "id": "catalogue/recipes",
+      "source": "docs/codegen-metrics/canary-apps/recipes",
+      "calls": 6,
+      "hashes": [
+        "4a199ddfeb18223b5bb4cb8f8dcfa4a8b847dc341f4118d05f372d7cd4a98541",
+        "ce43242c7f8ac0bf1087737925fa20764e3632b248ec6dc1354c2067abac6b59",
+        "69c0d9f033b648fd31f451535b81c8260fa5562713dd31bc13b1b386e422cd62",
+        "d04b1ada1d235ab60f8178fa2e12d3b408f9e01614e85518e950c2d077f46883",
+        "3daf307e18c6806a97fb5eee6803f7552cf2dc6f8051bd705c4dab3ccded3006",
+        "56e5589fc62aa745d67de196dfb8104a755ec69767fc9c488ffe39042b3498fd"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a recipe box. Cooks search recipes, filter by course, add a recipe, and open its detail."
+    },
+    {
+      "id": "catalogue/tickets",
+      "source": "docs/codegen-metrics/canary-apps/tickets",
+      "calls": 6,
+      "hashes": [
+        "814b5182f7f43aff683b9f74e1cf576c41632ee37d0746b6c676820c1336ba67",
+        "bb97377d0305d3cecd35c52484fd0dd2246b50dcb20d2184e7bb25c440260635",
+        "b965b61b4dcc9e684a01ec11caf546d15d80a9ae8de214e187694b627f6e93eb",
+        "1791e341b593e40440dcc7bb806c37e85e1c8fbf3a504c9a2d9f768a3f1b3253",
+        "9c34769af497e49e8b4dc8e0a01a8d5612542aa387f50a6816d84b433c05e90a",
+        "13e4edd878fde3dff6f1eecd4d19369824e04d7fc14ed7d29f324ed71376227c"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a support ticket desk. Agents search tickets, filter by status, create a ticket, and open its detail."
+    },
+    {
+      "id": "catalogue/expenses",
+      "source": "docs/codegen-metrics/canary-apps/expenses",
+      "calls": 7,
+      "hashes": [
+        "9a1a9a538d505164901b9dadaccf8815768115d7d8538d03e318839ab1bf764e",
+        "bccd16cba5c1d5bd1b94560ba0d1cd053ed2a33b367241aacbc9d3e6ad66aa5c",
+        "42b7b5da836191524f32e818f24a4228951efe9980cba0f882ac4ee6fd21fdf4",
+        "02a943d65477e7ed5725e52f49d66b5b9513e4cc8526a9574b5d0f3c7646a34d",
+        "bfaf507d655f6ad1095a1fef66bab3e93e211cda20c41447b74dd349317e2b45",
+        "f959d0db292eba1814a7b689839a1dd3c30840492cd52683b1bad82bcd8b63db",
+        "aee9a465597348d91bfec6caca57a05445eadcac532ff40d86d20bb90c16bcc9"
+      ],
+      "mismatches": 0,
+      "prompt": "Build an expense log. Staff search expenses, filter by category, add an expense, open its detail, and see totals."
+    },
+    {
+      "id": "catalogue/guests",
+      "source": "docs/codegen-metrics/canary-apps/guests",
+      "calls": 6,
+      "hashes": [
+        "45bc0c28b4b059f7a1ecb56c3f16ceb9a7c8df054bfe549fc84a99d6ffe49db5",
+        "638bc4374bc3af15dce54c93f7b4a18d592cfe5aba32857566792f964584e0d9",
+        "f42a79318872205c922f21a1a5d9977b68e264eabe464397ad10d456339fa56c",
+        "e3b2cc5ef8fd63d666980b395d3aebbc8d1d8d5e5c0ac3d43d529fa3ed659daa",
+        "6efdba6ecd187d31447cb4d1650d97610025cd6c6d22aa3e79b8aa5d2f6336c2",
+        "376e1d63e7b3311bdacd9331bffe41fe89f1ba9808eae49019076351e8e51ac9"
+      ],
+      "mismatches": 0,
+      "prompt": "Build an event guest list. Hosts search guests, filter by RSVP status, add a guest, and open a detail."
+    },
+    {
+      "id": "holdout/crud-1",
+      "source": "docs/codegen-metrics/canary-holdout/crud-1",
+      "calls": 6,
+      "hashes": [
+        "72f9f36740beab24b035e2505ba878ded02884a94442de0b8626bd62732814ce",
+        "f9f85ecae80073e3c0772da71bd292a9649d4b655fe0c338f7e51e33084175af",
+        "8baeb6695aa80c9644f6b11785cb737f3d0264ece66ea24b7a3a92bc81ddb582",
+        "189fff7ca109895ae8467cc36f8b83586bd5a49426e03d5d481607bd4f9ec753",
+        "9cd722abdad0f589939f5f2c8b587fd179f48879e18dfcf2256b2e0c117277ae",
+        "78345faf2d1639ca8ad760abe03f7037eb8eb9bcc32df9b25fe8292b4a171c07"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a library checkout desk. Librarians search books, filter by status, add a book, and open its detail."
+    },
+    {
+      "id": "holdout/crud-2",
+      "source": "docs/codegen-metrics/canary-holdout/crud-2",
+      "calls": 6,
+      "hashes": [
+        "a1462b45863dc127bcbf06011cf4fd2de49a566dc0ad86613413c782658cf9fb",
+        "65d975b78819bb2e118a5c6e57e7e5427639f64ed77913bbb4b9d99ece32ebaa",
+        "c4e3f0679fdeb4abf67be88b2866c9014d9c14288bdd10602e599c81413c7b9e",
+        "4818bdeffbe441d7e369ca7526f9920d4b9041eb1879b8c206a9ecd15145c29c",
+        "c9b5ee632a78f4e50764c5bbf7bf1f831f59f6cad2d99bbd8ca6911ef17a36de",
+        "db7f7e76b78816b4d3adfb79c4ebda6e35cb19ee2a375175af250e3deab9912c"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a kennel roster. Staff search dogs, filter by status, add a dog, and open its detail."
+    },
+    {
+      "id": "holdout/crud-3",
+      "source": "docs/codegen-metrics/canary-holdout/crud-3",
+      "calls": 6,
+      "hashes": [
+        "5081b73c08f6c3b06c713020dca1c33f027147a4a444b9e81c13b83359746467",
+        "828122d682d2535215c651a88b9fb7230433001bba2d7bfc925ec27995a76fd8",
+        "6dc1cc8840a53b8b29704ab51fbd71d74a4907c6e720ea62a158a9d3aa7e9fda",
+        "69da648a059b65ee0b15ba69b4913a146ccb2b1b46ced8660c2067c2017e0579",
+        "223c1438fcbfe79ece5bc66eea1be79b88c817eb2a11cbe6ff860736101252b3",
+        "d07d1a60b8f3b88ea39f1d8ccece59852563cc19f0b4eeb6e9665b8fbf227d07"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a parts bin. Mechanics search parts, filter by condition, add a part, and open its detail."
+    },
+    {
+      "id": "holdout/crud-4",
+      "source": "docs/codegen-metrics/canary-holdout/crud-4",
+      "calls": 6,
+      "hashes": [
+        "0e9ecffc785c6a5e27f4af579c39f3a849f810294403d85e0df95989132927da",
+        "1e3f472703846a2a4d4e80b0a7f01f72442ccff2c46a5d4864047f9a9841c75e",
+        "6261decaab76589b97c55ff3b4ac039082478469bfafeb522d83fe9de1a82a6b",
+        "0616acabb8530321717f5ce7c15f7af7f4ae26c232011b2868ad2a1b1d59670d",
+        "3f13e61fd81547727222c5fde040065410f3d187eaeea358348e1b6debae558d",
+        "5e97b8f07c0e89820c13ad2fce74ed12488d7ecfd94a6fbe37ac07b7a178eb38"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a volunteer list. Coordinators search volunteers, filter by status, add a volunteer, and open a detail."
+    },
+    {
+      "id": "holdout/crud-5",
+      "source": "docs/codegen-metrics/canary-holdout/crud-5",
+      "calls": 6,
+      "hashes": [
+        "c578a9a2c5dc8fb2f613612372dac91ad661dec493a987420443f0bce6667711",
+        "98aa66a69e3c372369f1d338fbf9a4f006c3030c303ef686624a2d63f736097f",
+        "68d8e9553392e776a45332e8a79851cb098d1e2089315904340766ccb3656858",
+        "2bd20bd3c140da65f960d33f67da3c885373257dc93c50cc725ffb768c0aa5bb",
+        "ef735a3d6892f5335f75312499e10c55ce64dd3c8789065a3f223972d5d7ed12",
+        "3908fb71adc6c2be42e6fb1271602f935a166c24850166bb4d18ed067c23ae8a"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a farm stand price list. Staff search produce, filter by status, add an item, and open its detail."
+    },
+    {
+      "id": "holdout/crud-6",
+      "source": "docs/codegen-metrics/canary-holdout/crud-6",
+      "calls": 6,
+      "hashes": [
+        "c5d6a7b3b12c91b5cdf5f757edf20c2f1fefc38e7e9af31b03b41d034391cc29",
+        "acea6700fe25f9fbe69a3eb35c12da3c3f850e98074a3a8721b6030c18a44439",
+        "0537ab1de40a46252ff5e32bf5ab992674411c858113d40ef6880098bfc2736b",
+        "fe36e9a96fdad29c2c1d6f629c3aa879a11cc59758f8719b127619de336d3ffb",
+        "abe29eaf51efb315fb9abda0ff81941243ac3dbbbfba9141fff4710caa244613",
+        "597dfa79f3e3099535cbedc1230f67c5617840af4b384ef950b5778bdb142616"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a clinic supply list. Nurses search supplies, filter by status, add a supply, and open its detail."
+    },
+    {
+      "id": "holdout/dashboard-1",
+      "source": "docs/codegen-metrics/canary-holdout/dashboard-1",
+      "calls": 7,
+      "hashes": [
+        "c7bb6719b8667f4de5702d9d17a8fc9e4ac62d6dfc106fc07661226122c14be0",
+        "08c687ddce23edb75dddebaee4ce5ddadb769fe22f50715b642379059040bcc6",
+        "50579d3ca2414f8be694a563b9f847a24d1931b3863fe11ea19a9db0582cd25f",
+        "8ddbe2a295786b50501b016ffd405fc8523728ed0e8059547f99ce6519da7062",
+        "dee3da3e5bfa43a6dbb97a73e37d2d733372704cd2ccfb4f027255bfababc335",
+        "fe5a1b86c6741af07a2f694224060b24f4b0e20ad815f5632ecc7da51976d37c",
+        "7e8a1f331bf84872c724cfc043ed492fc010f03404a84f2b9d88805dcf51ae34"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a bakery dashboard. Bakers search orders, filter by status, and see overdue totals."
+    },
+    {
+      "id": "holdout/dashboard-2",
+      "source": "docs/codegen-metrics/canary-holdout/dashboard-2",
+      "calls": 7,
+      "hashes": [
+        "62224e2cfc73c245bc19af4ec55aabbe4cb3a089b222cf3ff0621d1d30575df9",
+        "e1c5cf60cb4e708deb306f926f9fcefd5e6ffc770f47c4b2ab4754cb8f5764d4",
+        "d366cbbbe505d1141ccc5248419542e87a8a629412b0d3828306c616a9c1e5fb",
+        "7e0f4513f707b57849c16737a4f6fd36e16f82e378f7cbf66628fb953dbc8363",
+        "cbfdec90e4324ba4048fca1972af88441c12713c39883aa2b7c387e3611f0c60",
+        "66cd2ae8dc69dc3e832b72d85f3180c61aa6b38b17a5d6bef8d22fad862c87ad",
+        "b8b4676c5e96425f4bde75bb073013ea0695f61565d9224e68bbde93b9cac468"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a fleet dashboard. Dispatchers search vans, filter by status, and see mileage totals."
+    },
+    {
+      "id": "holdout/dashboard-3",
+      "source": "docs/codegen-metrics/canary-holdout/dashboard-3",
+      "calls": 7,
+      "hashes": [
+        "97d4c23d98a749460fe2eba586db33ed535d1dfed387d905b7f6831afe8e082e",
+        "01a59ffce29fdbb2199296f81978526a899302c8521ef3c1b0ee15d129d247bf",
+        "303a476f0553647faa82276de0ffc9e4fe2c9fb1e1caec4b16386b4d4a8e138e",
+        "512d3c6d4494cacb9378efac24aa0ef321786c2461f93260f48c891d4df920a1",
+        "5c528cd6df6136c1aeb015a1f84d6962b1313533e3f12cc2ec89806c0cbaad8d",
+        "57e944c79dcb800b2fc3bf539dce5be94fd677fa4dcc4d644309f25307b3273b",
+        "09004e877b01235a469942edca46e893850b1f5e74a8aed4da03bcc0b23591df"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a studio dashboard. Producers search sessions, filter by status, and see hour totals."
+    },
+    {
+      "id": "holdout/dashboard-4",
+      "source": "docs/codegen-metrics/canary-holdout/dashboard-4",
+      "calls": 7,
+      "hashes": [
+        "a4f397903155ca84409955fa243d37fa570c19277ff8a1d7cc73ee42fd674797",
+        "c017af184ff7e47279d74b905df740353f7dec07f82180cc78ef1cb8af042211",
+        "f03a6cdd15c87f06620b69ad0a8a2fc8ae534a5555e59d7cdc286bf6e8ba8f26",
+        "67d63566a8c0882c4c690c7e6686ece0612e9749a682879ffff74a9fce4ddffc",
+        "32c2bc747024a1a1bf2d6dc6bfeec70e2fc816996618d10390cf4855a0018a7e",
+        "03790331c422e893d1764f410d595578fdfbe19bea7c35e6c9d5e8fb2e928477",
+        "a2b38f2cf1c35eb80996fee170f38b6761e922deeb38e2051a1c7044507aa976"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a warehouse dashboard. Leads search pallets, filter by status, and see weight totals."
+    },
+    {
+      "id": "holdout/dashboard-5",
+      "source": "docs/codegen-metrics/canary-holdout/dashboard-5",
+      "calls": 7,
+      "hashes": [
+        "86b1063b81f3979e9a09c87559ce5510782ef8a4c434717c5e34b1613e78f7cc",
+        "3369d59be7e3703248855bf98839ebd2931de1ad02eae6240b2ca5e8643e070c",
+        "1993e61eea339a3c3cfaab679b12756aeae4a23f84520af60a792e8a794ba20c",
+        "2720697dade312348486ea8109692d1fca3790053d53b7030389492d5504f4fc",
+        "b42879b9426269cc667102b6f772dad404f6ef5709c1d5283c609fb947a33b59",
+        "f32fce10845c67e0ba89a70d42db40bb8f608f4ca50bdb0a03eacbe6347030b6",
+        "cb4698ce4df92d83c673f8fe0c841c67b64ae644ead620a396da94e3cb7c55be"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a cafe dashboard. Managers search shifts, filter by status, and see tip totals."
+    },
+    {
+      "id": "holdout/booking-1",
+      "source": "docs/codegen-metrics/canary-holdout/booking-1",
+      "calls": 6,
+      "hashes": [
+        "d8274520ec5c9c3c14357e2ce28c3201513796950ac4c808aecdbd85ac309ef2",
+        "1d0f70138e6787fde958a1b584a4fa31b2cf3f14980ba196587a98f541a01499",
+        "0549ae34fe4d51a6692a02b3b6ecc331542f80f9665b14cd7629ca53418d15e3",
+        "b99cfb31b697fdc0bd285202bb9c0266b1b877c4ed61ce6e8861800c84d28c1e",
+        "8036e2b2b806e53e1a8dbeed88be0e413b5e870447b63766f28f13030b7b7527",
+        "f79e101fdaae5a35a3a47a1df75bed82e0fb31c46b59ec107e38d5a2761dbdd6"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a desk booking board. People book a desk, search reservations, filter by status, and open a reservation."
+    },
+    {
+      "id": "holdout/booking-2",
+      "source": "docs/codegen-metrics/canary-holdout/booking-2",
+      "calls": 6,
+      "hashes": [
+        "c20f5c55b4ba701a98431fae290d9dfd8338e96425df7abc72df14ecfa00576a",
+        "e6890308cddce952f4b603b42b15581e65b3c71666133a06f28e1ab4d45f26ca",
+        "3bfc5be7a3a51b56ded8a1d8287802d8817b93fe6452e8c1f9b13fd7e493ed68",
+        "30eabb55c4117da27fe32ec0ae6b10cc309773d9a90f4aec06d194f64bb20e87",
+        "b4e4cc3c3a679c31687a45ca957eacd124009877079af8b62350fb2829b9e1d1",
+        "6dc39bdf4f62ded7ea41b4010d93394f47d402c3d6b86bbf56a935fb64de17c2"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a studio booking board. Musicians book a room, search appointments, and open a reservation."
+    },
+    {
+      "id": "holdout/booking-3",
+      "source": "docs/codegen-metrics/canary-holdout/booking-3",
+      "calls": 6,
+      "hashes": [
+        "6e2d8026d5fdfcffa2836b8cbda4f79de2169073135edeb3a1ef635f89fc1fca",
+        "00a2031501ab84c7a707a5d876da9c8b2b38d93d9ec5d5457bf0ca0958e12250",
+        "b01c9daa957b5f4b85ef1cb9a6e4e5aac454d6d21c6ae5794d54f1d8b6b750f4",
+        "d99b8859e4574b72b040aaa9df5cf79deae5b4b5f1efd10495b376d55fb4ad50",
+        "df2410a7a0e9d9b27ddb5df50e688c132d4042b111a5287400d90ec541824bd4",
+        "f94f61738f7daab3ed8112d77d2c1751ac019a3bd911ff803316c6711ea32c4f"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a court booking board. Players book a court, filter reservations, and open a booking."
+    },
+    {
+      "id": "holdout/booking-4",
+      "source": "docs/codegen-metrics/canary-holdout/booking-4",
+      "calls": 6,
+      "hashes": [
+        "db701bd53fa25de6c5f3257f8b8f4ed1206c23e25fb93a2c916a08d31e4b2e3c",
+        "6d6e6ee9e95e4b07a47847f29bbdb1c7aa090389f66a08c2588e237745bebead",
+        "6dc924b9b9fa0e0b52f7923a6141b9e3db5fb3ef2abd646c09a2532249939c3c",
+        "38065bea801bf6bf482b0abe9383dcacda699806dcab35f93f9eaaff63ee68ec",
+        "a283e38da56419a541ee9d887a78e85f5b16be8ea6125fdb998b42e177f62b8c",
+        "6baa06ad000808ec5ae46e83dcfcace731969076b90066a8aa7c360929ce9417"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a tour booking board. Guides book a tour, search reservations, and open a booking."
+    },
+    {
+      "id": "holdout/crud-7",
+      "source": "docs/codegen-metrics/canary-holdout/crud-7",
+      "calls": 6,
+      "hashes": [
+        "227fde8fe1725e1fe3b198b2ed19d8eee786864a99881cad55e5cd9c423987f9",
+        "58f786f52a1b7cb39ccadf420caea34f3125c8e1f20df12564b63984173e4b22",
+        "118703c6f8528ed3e065bb9bf7f33fc4eaceb368bb33bd62dd29de2650d444c1",
+        "6a96dd6269f62019949445493cee357cdf5e57feff23bea2cdd3bf89916eebe5",
+        "237bc49946018731781b27c55301c15c612ccc63e25c45aa3b33a754fb9522e8",
+        "0b45d52ece019e7e687cac46b88f276234c685bf4f856023146094cb256e2fb0"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a tool crib. Supervisors search tools, filter by status, add a tool, and open its detail."
+    },
+    {
+      "id": "holdout/dashboard-6",
+      "source": "docs/codegen-metrics/canary-holdout/dashboard-6",
+      "calls": 7,
+      "hashes": [
+        "eb9254b299914abb85d8833f516432a9f2e8c5fd0bdf12375d657af0cb5bfd5c",
+        "f22e585e59e11f398eac3627cc87819c2914fd849a55a946b45294e87672d92e",
+        "564dbd991248a7189e40b78c4d9010c45fe87618cab9ab2e50183cfe87299423",
+        "e91b38599270505a791612f95ac08489c231dcbfc58805b25c6d217cbd50cccd",
+        "8244c8710a633fd1bfe74d45f7ef249b2c4fe9aa54e8e1fd357399a5eb95e181",
+        "7f33e5a8d1b4266ff4df90402217c95ccde48c722df06c693a18deac60609c3a",
+        "7a9f05a257a7f4cb23105bbe9fe5788f975ad5a056255010e00ba05815ac74c5"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a clinic dashboard. Leads search visits, filter by status, and see wait-time totals as a kpi list."
+    },
+    {
+      "id": "holdout/booking-5",
+      "source": "docs/codegen-metrics/canary-holdout/booking-5",
+      "calls": 6,
+      "hashes": [
+        "043b9f7f8bf1e309f03ad27cba1fd8148a62cc95bc4b9b75221d917171700a7f",
+        "1186c87870b1d559e10cbba7b2622dad7a2ae2e2b57a6aa89743cf16fe6ff386",
+        "9dcd3ce2e4a41dff0b33438a213d3d085ce751513ed9838c0dce719f4cdea89e",
+        "7ebe0829435b2b6f6e04aebf0301568f486896a891f04af3d32b05a1077bdb69",
+        "08ce5bada3511c836f8f1f642d3d0c323e2757c0be2d05cd2343f3b85e60ce4f",
+        "a5d73180924b4688806726e8417c1009bd8f2f1346ff9c1cd3e4c3d7cad386b3"
+      ],
+      "mismatches": 0,
+      "prompt": "Build a table booking board. Hosts book a table, search reservations, and open a booking."
+    },
+    {
+      "id": "monolith/landing-1",
+      "source": "docs/codegen-metrics/monolith-holdout/landing-1",
+      "calls": 1,
+      "hashes": [
+        "e162b6d6fc4408dab07032a773c9095663ff530eabe9b0e8bb8ec189adfab52a"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a landing page for a pottery studio with a hero section, a pricing section, and a short about blurb."
+    },
+    {
+      "id": "monolith/landing-2",
+      "source": "docs/codegen-metrics/monolith-holdout/landing-2",
+      "calls": 1,
+      "hashes": [
+        "1cfacc03651660d18ce1d6eb14599211c0ee0b7a3f78ba42bc2bcc4bae08d809"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a marketing page for a bike co-op with a hero section and a pricing section."
+    },
+    {
+      "id": "monolith/landing-3",
+      "source": "docs/codegen-metrics/monolith-holdout/landing-3",
+      "calls": 1,
+      "hashes": [
+        "4afb2f07b2d234d91e290feb3fa01a9a5afdc38c65399ce60c906fb8a84d3203"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a landing page for a neighborhood bakery with a hero section and a menu teaser."
+    },
+    {
+      "id": "monolith/landing-4",
+      "source": "docs/codegen-metrics/monolith-holdout/landing-4",
+      "calls": 1,
+      "hashes": [
+        "8ce24910602c9f5995770ee09dcdadc1baeed74d9598876d001b88f7778be0df"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a marketing page for a dog walker with a hero section and testimonials."
+    },
+    {
+      "id": "monolith/landing-5",
+      "source": "docs/codegen-metrics/monolith-holdout/landing-5",
+      "calls": 1,
+      "hashes": [
+        "bd9026b9b5b9ad506c536b39e4457be68d8c7c62313c953dd7538acfe9abdc4a"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a landing page for a plant shop with a hero section and a pricing section."
+    },
+    {
+      "id": "monolith/multi-step-form-6",
+      "source": "docs/codegen-metrics/monolith-holdout/multi-step-form-6",
+      "calls": 1,
+      "hashes": [
+        "0dce06cbde2b97e2bdbf7f50d64d651eae5be8b6a57eb8b3fae4715e0511d0d6"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a permit wizard. Step 1 of 3 collects the address, the next step collects the work type, and the last step reviews it."
+    },
+    {
+      "id": "monolith/multi-step-form-7",
+      "source": "docs/codegen-metrics/monolith-holdout/multi-step-form-7",
+      "calls": 1,
+      "hashes": [
+        "fc94416726fc10affc2f9bd58517ee9eee95b3f8de1dbd44b3d078621f66718b"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build an onboarding wizard. Step 1 of 3 asks for a name, the next step asks for a team, and the last step confirms."
+    },
+    {
+      "id": "monolith/multi-step-form-8",
+      "source": "docs/codegen-metrics/monolith-holdout/multi-step-form-8",
+      "calls": 1,
+      "hashes": [
+        "2b5a40dd9f36c7a1167f7f488c5cde2a6fcbcda921e56772134390025b40bca8"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a claim wizard. Step 1 of 3 collects the date, the next step collects the amount, and the last step reviews."
+    },
+    {
+      "id": "monolith/multi-step-form-9",
+      "source": "docs/codegen-metrics/monolith-holdout/multi-step-form-9",
+      "calls": 1,
+      "hashes": [
+        "209648c6c37de5930b6c96a3fd78af16bbe952b77ccc404d34ff7d127fe9022c"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a registration wizard. Step 1 of 4 collects contact info, then a course, then a waiver, then a review."
+    },
+    {
+      "id": "monolith/charts-10",
+      "source": "docs/codegen-metrics/monolith-holdout/charts-10",
+      "calls": 1,
+      "hashes": [
+        "af1b6c149be6f4472d6f6e479f0002f928568fb727c2ece78eda44bfda0847e8"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a sales chart page with a bar graph of monthly revenue and a line graph of orders."
+    },
+    {
+      "id": "monolith/charts-11",
+      "source": "docs/codegen-metrics/monolith-holdout/charts-11",
+      "calls": 1,
+      "hashes": [
+        "510aa4c8ec9c07056afdb4103233e446270aa95c1d067cdfff93a88538b7c89c"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a weather chart page with a line graph of temperature and a bar graph of rainfall."
+    },
+    {
+      "id": "monolith/charts-12",
+      "source": "docs/codegen-metrics/monolith-holdout/charts-12",
+      "calls": 1,
+      "hashes": [
+        "103163f39c88dd8af11b602ead4d61d5935b67b247561624a5b7ce440f6d3cde"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a fitness chart page with a sparkline of steps and a bar graph of workouts."
+    },
+    {
+      "id": "monolith/charts-13",
+      "source": "docs/codegen-metrics/monolith-holdout/charts-13",
+      "calls": 1,
+      "hashes": [
+        "0012474521c1b1c226bd76d156861e1157d71aa4310fbab5b307ab8a9f4cb601"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a budget chart page with a bar graph of spending and a line graph of savings."
+    },
+    {
+      "id": "monolith/auth-14",
+      "source": "docs/codegen-metrics/monolith-holdout/auth-14",
+      "calls": 1,
+      "hashes": [
+        "657d1f5c7887faa04f63c7b09f29671ac96970d17fb02b6f68b7e4dfec8ac0a6"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a sign in screen with email, password, and a create an account link."
+    },
+    {
+      "id": "monolith/auth-15",
+      "source": "docs/codegen-metrics/monolith-holdout/auth-15",
+      "calls": 1,
+      "hashes": [
+        "a64e7c0e5ee18ede6b01b3f7486fa52a6928ed5480c5c7f0495e4dc93434b6dc"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a login page with password reset and a register form."
+    },
+    {
+      "id": "monolith/auth-16",
+      "source": "docs/codegen-metrics/monolith-holdout/auth-16",
+      "calls": 1,
+      "hashes": [
+        "ff171a4d3ef7e627a7492ff44f4d08972357b866ab1792938ac9af3a78b7c227"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a member sign in page that asks for a password and shows an error on failure."
+    },
+    {
+      "id": "monolith/file-upload-17",
+      "source": "docs/codegen-metrics/monolith-holdout/file-upload-17",
+      "calls": 1,
+      "hashes": [
+        "fdf6cf17e18a47e3f8b86f83e64e9749d8cad87b43acfff64f5bb63d618dd639"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a receipt drop box where staff upload a photo of a receipt."
+    },
+    {
+      "id": "monolith/file-upload-18",
+      "source": "docs/codegen-metrics/monolith-holdout/file-upload-18",
+      "calls": 1,
+      "hashes": [
+        "b9f02f659c7ac2853ac79da5f53b9cd548c6d6bf14e3cd2fd6d40392e8c63df6"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a homework drop box where students attach a file."
+    },
+    {
+      "id": "monolith/file-upload-19",
+      "source": "docs/codegen-metrics/monolith-holdout/file-upload-19",
+      "calls": 1,
+      "hashes": [
+        "00eece30e0598fe1e3c84435aa58609fe216ac4ed90fd6abe5d1fc25011eecba"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a gallery where editors drop a file onto the page."
+    },
+    {
+      "id": "monolith/game-20",
+      "source": "docs/codegen-metrics/monolith-holdout/game-20",
+      "calls": 1,
+      "hashes": [
+        "6a19704862ba090ac24c54201b90e14c56d1ad6b7d08cbb988c90ab62a4e59d5"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a memory puzzle game. The player flips cards and matches pairs."
+    },
+    {
+      "id": "monolith/game-21",
+      "source": "docs/codegen-metrics/monolith-holdout/game-21",
+      "calls": 1,
+      "hashes": [
+        "0196fe9e75104992f3ec7e35bdde677b0b5e5dff52aa6aaf72d78be1e51f94f4"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a trivia quiz bowl. The player answers questions and sees a score."
+    },
+    {
+      "id": "monolith/game-22",
+      "source": "docs/codegen-metrics/monolith-holdout/game-22",
+      "calls": 1,
+      "hashes": [
+        "eefed0d8cf7358dac9966fd27d8429469bc2c823a9e230a2ab1ad970e3b64361"
+      ],
+      "keyKind": "snapshot",
+      "prompt": "Build a reaction game. The player taps when the square turns green."
+    },
+    {
+      "id": "edit/crud-add-field",
+      "source": "docs/codegen-metrics/canary-edit-five/crud-add-field",
+      "calls": 0,
+      "hashes": [],
+      "prompt": ""
+    },
+    {
+      "id": "edit/dashboard-rename",
+      "source": "docs/codegen-metrics/canary-edit-five/dashboard-rename",
+      "calls": 0,
+      "hashes": [],
+      "prompt": ""
+    },
+    {
+      "id": "edit/booking-new-filter",
+      "source": "docs/codegen-metrics/canary-edit-five/booking-new-filter",
+      "calls": 0,
+      "hashes": [],
+      "prompt": ""
+    },
+    {
+      "id": "edit/landing-add-field",
+      "source": "docs/codegen-metrics/canary-edit-five/landing-add-field",
+      "calls": 0,
+      "hashes": [],
+      "prompt": ""
+    },
+    {
+      "id": "edit/charts-new-page",
+      "source": "docs/codegen-metrics/canary-edit-five/charts-new-page",
+      "calls": 1,
+      "hashes": [
+        "03ce2e199c94036836b4c8420b80ece886f902bfb6ea6464e92eba8d42864dd7"
+      ],
+      "prompt": ""
+    }
+  ],
+  "latencies": [
+    6.753,
+    7.005,
+    7.063,
+    7.238,
+    7.305,
+    7.436,
+    7.468,
+    7.507,
+    7.542,
+    7.662,
+    7.715,
+    7.837,
+    7.941,
+    7.983,
+    8.1,
+    8.122,
+    8.163,
+    8.202,
+    8.239,
+    8.37,
+    8.413,
+    8.45,
+    8.542,
+    8.645,
+    8.772,
+    8.852,
+    8.892,
+    8.912,
+    37.092,
+    47.03,
+    52.06,
+    58.942,
+    59.174,
+    60.165,
+    61.446,
+    61.63,
+    63.117,
+    64.054,
+    64.148,
+    66.864,
+    71.83,
+    72.035,
+    74.277,
+    74.344,
+    80.425,
+    80.883,
+    101.081,
+    102.092,
+    103.863,
+    110.758
+  ],
+  "calls": 201,
+  "note": "Reconstructed from saved apps. A live record-missing run writes only hashes that are not already here."
+}

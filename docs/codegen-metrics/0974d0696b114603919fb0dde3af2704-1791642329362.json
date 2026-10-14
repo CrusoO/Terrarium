@@ -1,0 +1,320 @@
+{
+  "durationMs": 356090,
+  "events": [
+    {
+      "atMs": 1791642604290,
+      "name": "heal.attempt",
+      "payload": {
+        "attempt": 1
+      }
+    }
+  ],
+  "fileMap": {
+    "boilerplate": {
+      "estimatedBoilerplateShare": 0.626,
+      "estimatedBoilerplateTokens": 5452,
+      "estimatedTokensByCategory": {
+        "config": 279,
+        "layout": 3912,
+        "mock-data": 796,
+        "ui": 3263,
+        "ui-primitives": 465
+      }
+    },
+    "fileCount": 14,
+    "jsonOverheadEstimatedTokens": 1311,
+    "jsonWrappedBytes": 40119,
+    "jsonWrappedEstimatedTokens": 10030,
+    "rawCodeBytes": 36247,
+    "rawCodeEstimatedTokens": 8719,
+    "tokensPerFileEstimated": {
+      "README.md": {
+        "bytes": 1399,
+        "category": "mock-data",
+        "estimatedTokens": 342
+      },
+      "index.html": {
+        "bytes": 507,
+        "category": "config",
+        "estimatedTokens": 126
+      },
+      "package.json": {
+        "bytes": 363,
+        "category": "config",
+        "estimatedTokens": 91
+      },
+      "src/App.jsx": {
+        "bytes": 2010,
+        "category": "ui",
+        "estimatedTokens": 502
+      },
+      "src/components/AppShell.jsx": {
+        "bytes": 4837,
+        "category": "ui",
+        "estimatedTokens": 1209
+      },
+      "src/components/OrderCard.jsx": {
+        "bytes": 3009,
+        "category": "ui",
+        "estimatedTokens": 752
+      },
+      "src/components/OrderList.jsx": {
+        "bytes": 1562,
+        "category": "ui",
+        "estimatedTokens": 390
+      },
+      "src/components/Toolbar.jsx": {
+        "bytes": 1642,
+        "category": "ui",
+        "estimatedTokens": 410
+      },
+      "src/data/seed.js": {
+        "bytes": 1817,
+        "category": "mock-data",
+        "estimatedTokens": 454
+      },
+      "src/hooks/useLocalState.js": {
+        "bytes": 662,
+        "category": "ui-primitives",
+        "estimatedTokens": 165
+      },
+      "src/main.jsx": {
+        "bytes": 247,
+        "category": "config",
+        "estimatedTokens": 62
+      },
+      "src/styles/global.css": {
+        "bytes": 16885,
+        "category": "layout",
+        "estimatedTokens": 3889
+      },
+      "src/utils/helpers.js": {
+        "bytes": 1202,
+        "category": "ui-primitives",
+        "estimatedTokens": 300
+      },
+      "styles.css": {
+        "bytes": 92,
+        "category": "layout",
+        "estimatedTokens": 23
+      }
+    }
+  },
+  "finishedAtMs": 1791642685452,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 10780,
+      "inputTokens": 524,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1073,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 1597,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 14391,
+      "inputTokens": 738,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1589,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "codegen",
+      "totalTokens": 2327,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "durationMs": 269398,
+      "model": "gemini-3.8-flash",
+      "ok": false,
+      "provider": "gemini",
+      "purpose": "codegen",
+      "stage": "codegen"
+    },
+    {
+      "attempt": 3,
+      "durationMs": 259030,
+      "model": "gemini-3.8-flash",
+      "ok": false,
+      "provider": "gemini",
+      "purpose": "codegen",
+      "stage": "codegen"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 2492,
+      "inputTokens": 114,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 28,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "heal",
+      "totalTokens": 142,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 268394,
+      "model": "gemini-3.8-flash",
+      "ok": false,
+      "provider": "gemini",
+      "purpose": "codegen",
+      "stage": "codegen"
+    },
+    {
+      "attempt": 2,
+      "durationMs": 8012,
+      "inputTokens": 453,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 782,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "codegen",
+      "totalTokens": 1235,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 3,
+      "durationMs": 65369,
+      "inputTokens": 1944,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 13214,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "codegen",
+      "totalTokens": 15158,
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "Add a status filter to the main list.",
+  "runId": "0974d0696b114603919fb0dde3af2704-1791642329362",
+  "runType": "new",
+  "sessionId": "0974d0696b114603919fb0dde3af2704",
+  "stages": [
+    {
+      "durationMs": 1656,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791642329362
+    },
+    {
+      "durationMs": 10782,
+      "kind": "model",
+      "name": "plan",
+      "startedAtMs": 1791642331022
+    },
+    {
+      "durationMs": 3457,
+      "kind": "infrastructure",
+      "name": "preview_skeleton_stream",
+      "startedAtMs": 1791642341805
+    },
+    {
+      "durationMs": 259032,
+      "kind": "model",
+      "name": "codegen",
+      "startedAtMs": 1791642345261
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "save_filemap",
+      "startedAtMs": 1791642604279
+    },
+    {
+      "durationMs": 3,
+      "kind": "infrastructure",
+      "name": "preview_file_replay",
+      "startedAtMs": 1791642604280
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791642604284
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791642604284
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "sandbox_boot_and_health",
+      "startedAtMs": 1791642604284
+    },
+    {
+      "durationMs": 4449,
+      "kind": "model",
+      "name": "heal_decision_1",
+      "startedAtMs": 1791642604290
+    },
+    {
+      "durationMs": 73392,
+      "kind": "model",
+      "name": "heal_codegen_1",
+      "startedAtMs": 1791642608740
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "heal_save_filemap_1",
+      "startedAtMs": 1791642682127
+    },
+    {
+      "durationMs": 4,
+      "kind": "infrastructure",
+      "name": "heal_preview_replay_1",
+      "startedAtMs": 1791642682130
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791642682134
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791642682135
+    },
+    {
+      "durationMs": 3,
+      "kind": "infrastructure",
+      "name": "github_sync",
+      "startedAtMs": 1791642682138
+    },
+    {
+      "durationMs": 774,
+      "kind": "infrastructure",
+      "name": "sandbox_start",
+      "startedAtMs": 1791642682156
+    },
+    {
+      "durationMs": 2514,
+      "kind": "infrastructure",
+      "name": "sandbox_health_check",
+      "startedAtMs": 1791642682931
+    },
+    {
+      "durationMs": 3317,
+      "kind": "infrastructure",
+      "name": "heal_sandbox_boot_and_health_1",
+      "startedAtMs": 1791642682134
+    }
+  ],
+  "startedAtMs": 1791642329362,
+  "status": "healed-1"
+}

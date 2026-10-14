@@ -1,0 +1,274 @@
+/* ============================================
+   CSS Custom Properties — Happy Paws Theme
+   ============================================ */
+:root {
+  --color-primary: #f59e0b;
+  --color-primary-dark: #d97706;
+  --color-primary-light: #fef3c7;
+  --color-secondary: #16a34a;
+  --color-secondary-dark: #15803d;
+  --color-secondary-light: #dcfce7;
+  --color-accent: #fb923c;
+
+  --color-bg: #fffbf5;
+  --color-bg-alt: #f9fafb;
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+
+  --color-text: #1f2937;
+  --color-text-muted: #6b7280;
+  --color-text-light: #9ca3af;
+
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.10), 0 4px 8px rgba(0, 0, 0, 0.06);
+
+  --transition: 0.2s ease;
+
+  --max-width: 1120px;
+  --section-padding: 80px 24px;
+}
+
+/* ============================================
+   Reset & Base
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  font-family: var(--font-family);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+h1, h2, h3, h4 {
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+h1 { font-size: clamp(2rem, 5vw, 3.25rem); }
+h2 { font-size: clamp(1.6rem, 3.5vw, 2.25rem); }
+h3 { font-size: clamp(1.1rem, 2vw, 1.35rem); }
+h4 { font-size: 1.05rem; }
+
+p {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/* ============================================
+   Layout Utilities
+   ============================================ */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section {
+  padding: var(--section-padding);
+}
+
+.section-alt {
+  background-color: var(--color-bg-alt);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.section-header h2 {
+  margin-bottom: 12px;
+}
+
+.section-header p {
+  font-size: 1.05rem;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.section-label {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+  background: var(--color-secondary-light);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 26px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1.5px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-green {
+  background: var(--color-secondary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.30);
+}
+
+.btn-green:hover {
+  background: var(--color-secondary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.40);
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+/* ============================================
+   Star Ratings
+   ============================================ */
+.stars {
+  display: flex;
+  gap: 2px;
+  color: var(--color-primary);
+  font-size: 1rem;
+}
+
+/* ============================================
+   Responsive Grid Helpers
+   ============================================ */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  :root { --section-padding: 56px 16px; }
+  .section-header { margin-bottom: 36px; }
+}
+
+/* ============================================
+   Focus / Accessibility
+   ============================================ */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ============================================
+   Scrollbar (subtle)
+   ============================================ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}

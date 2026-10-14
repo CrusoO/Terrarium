@@ -1,0 +1,33 @@
+{
+  "durationMs": 2259,
+  "events": [],
+  "finishedAtMs": 1791747481577,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 2240,
+      "inputTokens": 1079,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 149,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "Spare parts inventory with search, category filter, add form, detail view and stock totals.",
+  "runId": "4a83b25218db424ca4760c1a3f0ced40-1791747479318",
+  "runType": "new",
+  "sessionId": "4a83b25218db424ca4760c1a3f0ced40",
+  "stages": [
+    {
+      "durationMs": 2256,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791747479318
+    }
+  ],
+  "startedAtMs": 1791747479318,
+  "status": "clarify"
+}

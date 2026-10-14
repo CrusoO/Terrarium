@@ -1,0 +1,67 @@
+.header {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow: 0 4px 20px rgba(79,70,229,.35);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo {
+  font-size: 2rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+}
+
+.title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.3px;
+}
+
+.sub {
+  font-size: .8rem;
+  color: rgba(255,255,255,.75);
+  margin-top: 1px;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #4f46e5;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: .9rem;
+  font-weight: 700;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  white-space: nowrap;
+}
+
+.addBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+
+.plus {
+  font-size: 1.2rem;
+  line-height: 1;
+}

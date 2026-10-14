@@ -72,8 +72,30 @@ export function ChatPane({
           flexShrink: 0,
         }}
       >
-        <Typography sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: "1.05rem", letterSpacing: "-0.02em" }}>
-          Terrarium
+        <Typography
+          sx={{
+            fontFamily: '"Bricolage Grotesque", system-ui, sans-serif',
+            fontWeight: 800,
+            lineHeight: 1.1,
+            fontSize: 27,
+            letterSpacing: "-0.03em",
+            color: "var(--tt-ink)",
+            overflow: "hidden",
+          }}
+        >
+          {"Terrarium".split("").map((letter, index) => (
+            <Box
+              key={`${letter}-${index}`}
+              component="span"
+              className={`wordmark-letter ${index === 0 ? "wordmark-t" : ""} ${index === 6 ? "wordmark-i" : ""}`}
+              sx={{
+                "--letter-index": index,
+                color: index === 0 || index === 6 ? "var(--tt-accent-text)" : "inherit",
+              }}
+            >
+              {letter}
+            </Box>
+          ))}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
           {userName ? (
@@ -86,7 +108,7 @@ export function ChatPane({
               {userName}
             </Typography>
           ) : null}
-          <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#1f8a4c", flexShrink: 0 }} />
+          <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "var(--tt-ok)", flexShrink: 0 }} />
         </Box>
       </Box>
       <Box ref={scrollerRef} sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2.5, py: 3 }}>

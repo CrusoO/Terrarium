@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty false",
+    "build": "tsc -b --pretty false && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -15,6 +16,7 @@
     "@mui/material": "^9.3.1",
     "@terrarium/contracts": "workspace:*",
     "firebase": "^12.19.0",
+    "gsap": "^3.15.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

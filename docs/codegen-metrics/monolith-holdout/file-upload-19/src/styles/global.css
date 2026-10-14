@@ -1,0 +1,626 @@
+/* ── CSS Custom Properties ─────────────────────────────────────────── */
+:root {
+  --color-bg: #f5f5f7;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-border: #e2e2e7;
+  --color-border-focus: #0071e3;
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #6e6e73;
+  --color-text-tertiary: #aeaeb2;
+  --color-accent: #0071e3;
+  --color-accent-hover: #0077ed;
+  --color-accent-light: #e8f0fb;
+  --color-danger: #d93025;
+  --color-danger-hover: #c5281e;
+  --color-danger-light: #fce8e6;
+  --color-drop-active: #0071e3;
+  --color-drop-active-bg: #e8f0fb;
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.08);
+  --shadow-header: 0 1px 0 var(--color-border);
+  --shadow-fab: 0 2px 8px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.1);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --header-h: 60px;
+}
+
+/* ── Reset & Base ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── App Layout ─────────────────────────────────────────────────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-header);
+  height: var(--header-h);
+}
+
+.app-header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.app-brand-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.app-brand-name {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--color-text-primary);
+}
+
+.app-main {
+  flex: 1;
+  position: relative;
+}
+
+/* ── Drop Zone — Empty State ────────────────────────────────────────── */
+.dropzone-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--header-h));
+  padding: 40px 24px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.2s ease;
+}
+
+.dropzone-empty:focus-visible {
+  box-shadow: inset 0 0 0 3px var(--color-border-focus);
+}
+
+.dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  max-width: 420px;
+  padding: 56px 48px;
+  background: var(--color-surface);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-xl);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.dropzone-empty.dropzone-active .dropzone-content {
+  border-color: var(--color-drop-active);
+  background: var(--color-drop-active-bg);
+  transform: scale(1.02);
+}
+
+.dropzone-icon-wrap {
+  color: var(--color-text-tertiary);
+  transition: color 0.2s ease, transform 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.dropzone-icon-active {
+  color: var(--color-accent);
+  transform: translateY(-4px) scale(1.1);
+}
+
+.dropzone-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: var(--color-text-primary);
+}
+
+.dropzone-subtitle {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.dropzone-link {
+  color: var(--color-accent);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dropzone-hint {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+}
+
+.dropzone-input {
+  display: none;
+}
+
+/* ── Drop Zone — Overlay (when gallery has images) ──────────────────── */
+.dropzone-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 113, 227, 0.08);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.dropzone-overlay-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dropzone-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 56px;
+  background: var(--color-surface);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius-xl);
+  color: var(--color-accent);
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: var(--shadow-card-hover);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+/* ── Drop Zone — FAB (add more button) ──────────────────────────────── */
+.dropzone-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-fab);
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.dropzone-fab:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,113,227,0.35);
+}
+
+.dropzone-fab:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-accent-light), var(--shadow-fab);
+}
+
+.dropzone-fab:active {
+  transform: translateY(0);
+}
+
+.dropzone-fab-active {
+  background: var(--color-accent-hover);
+}
+
+/* ── Shake Animation (rejected files) ──────────────────────────────── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-8px); }
+  30%       { transform: translateX(8px); }
+  45%       { transform: translateX(-6px); }
+  60%       { transform: translateX(6px); }
+  75%       { transform: translateX(-3px); }
+  90%       { transform: translateX(3px); }
+}
+
+.shake {
+  animation: shake 0.5s ease;
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding: 5px 10px;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.toolbar-btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-accent-light);
+}
+
+.toolbar-btn:active {
+  transform: scale(0.97);
+}
+
+.toolbar-btn-secondary {
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.toolbar-btn-secondary:hover {
+  background: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.toolbar-btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+.toolbar-btn-danger:hover {
+  background: var(--color-danger-hover);
+}
+
+.toolbar-btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.toolbar-btn-ghost:hover {
+  background: var(--color-bg);
+}
+
+/* ── Gallery Grid ───────────────────────────────────────────────────── */
+.gallery {
+  padding: 28px 24px 120px;
+  max-width: 1400px;
+  margin: 0 auto;
+  transition: opacity 0.2s ease;
+}
+
+.gallery-drag-over {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* ── Image Card ─────────────────────────────────────────────────────── */
+.image-card {
+  position: relative;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  animation: cardIn 0.25s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.image-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.image-card-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  cursor: zoom-in;
+  background: var(--color-bg);
+  outline: none;
+}
+
+.image-card-thumb:focus-visible {
+  box-shadow: inset 0 0 0 3px var(--color-border-focus);
+}
+
+.image-card-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.image-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-card-img-loaded {
+  opacity: 1;
+}
+
+.image-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-card-thumb:hover .image-card-overlay,
+.image-card-thumb:focus-visible .image-card-overlay {
+  opacity: 1;
+}
+
+.image-card-meta {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.image-card-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.image-card-size {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.image-card-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  outline: none;
+}
+
+.image-card:hover .image-card-remove,
+.image-card:focus-within .image-card-remove {
+  opacity: 1;
+}
+
+.image-card-remove:hover {
+  background: var(--color-danger);
+  transform: scale(1.1);
+}
+
+.image-card-remove:focus-visible {
+  opacity: 1;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.6);
+}
+
+/* ── Lightbox ───────────────────────────────────────────────────────── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0,0,0,0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+  cursor: zoom-out;
+  outline: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  outline: none;
+  z-index: 1;
+}
+
+.lightbox-close:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.lightbox-close:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.4);
+}
+
+.lightbox-img {
+  max-width: 100%;
+  max-height: calc(100vh - 100px);
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  cursor: default;
+  animation: zoomIn 0.2s ease;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.lightbox-caption {
+  margin-top: 16px;
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .app-header-inner {
+    padding: 0 16px;
+  }
+
+  .app-brand-name {
+    font-size: 15px;
+  }
+
+  .gallery {
+    padding: 16px 12px 100px;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .dropzone-content {
+    padding: 40px 28px;
+  }
+
+  .dropzone-title {
+    font-size: 18px;
+  }
+
+  .dropzone-fab {
+    bottom: 20px;
+    right: 16px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .toolbar-count span {
+    display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .gallery-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

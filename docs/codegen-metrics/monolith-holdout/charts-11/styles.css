@@ -1,0 +1,4 @@
+
+button, input, select, textarea, a, [role="button"] {
+  pointer-events: auto !important;
+}

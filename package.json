@@ -4,9 +4,11 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "build": "pnpm --filter @terrarium/contracts build",
-    "postinstall": "pnpm --filter @terrarium/contracts build",
-    "dev:web": "pnpm --filter @terrarium/web dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "postinstall": "turbo run build --filter=@terrarium/contracts",
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@terrarium/web",
     "dev:api": "uv run uvicorn terrarium_api.main:app --reload --host 0.0.0.0 --port 3001",
     "dev:worker": "uv run arq terrarium_api.worker.WorkerSettings",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
@@ -14,6 +16,7 @@
     "stories:generate": "node scripts/generate-stories.mjs"
   },
   "devDependencies": {
+    "turbo": "2.11.8",
     "typescript": "^5.7.3"
   },
   "engines": {

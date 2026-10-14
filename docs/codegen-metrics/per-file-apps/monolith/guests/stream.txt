@@ -1,0 +1,1291 @@
+<<<FILE path="index.html">>>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Guest List</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+<<<END FILE>>>
+
+<<<FILE path="package.json">>>
+{
+  "name": "event-guest-list",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
+}
+<<<END FILE>>>
+
+<<<FILE path="vite.config.js">>>
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+});
+<<<END FILE>>>
+
+<<<FILE path="src/main.jsx">>>
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+<<<END FILE>>>
+
+<<<FILE path="src/index.css">>>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #22263a;
+  --border: #2e3250;
+  --accent: #6c63ff;
+  --accent2: #a78bfa;
+  --yes: #22c55e;
+  --no: #ef4444;
+  --maybe: #f59e0b;
+  --pending: #64748b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --radius: 12px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+<<<END FILE>>>
+
+<<<FILE path="src/data/guests.js">>>
+export const INITIAL_GUESTS = [
+  { id: 1, name: "Alice Mercer", email: "alice@example.com", phone: "+1 555-0101", rsvp: "yes", meal: "Vegetarian", table: 3, notes: "Allergic to nuts", avatar: "AM" },
+  { id: 2, name: "Bob Tanaka", email: "bob@example.com", phone: "+1 555-0102", rsvp: "no", meal: "Standard", table: null, notes: "Cannot attend due to travel", avatar: "BT" },
+  { id: 3, name: "Clara Osei", email: "clara@example.com", phone: "+1 555-0103", rsvp: "maybe", meal: "Vegan", table: null, notes: "Will confirm by Friday", avatar: "CO" },
+  { id: 4, name: "David Lim", email: "david@example.com", phone: "+1 555-0104", rsvp: "yes", meal: "Standard", table: 1, notes: "", avatar: "DL" },
+  { id: 5, name: "Eva Rossi", email: "eva@example.com", phone: "+1 555-0105", rsvp: "pending", meal: "Standard", table: null, notes: "Invited via email", avatar: "ER" },
+  { id: 6, name: "Frank Nguyen", email: "frank@example.com", phone: "+1 555-0106", rsvp: "yes", meal: "Gluten-Free", table: 2, notes: "Celiac disease", avatar: "FN" },
+  { id: 7, name: "Grace Kim", email: "grace@example.com", phone: "+1 555-0107", rsvp: "yes", meal: "Standard", table: 1, notes: "", avatar: "GK" },
+  { id: 8, name: "Henry Park", email: "henry@example.com", phone: "+1 555-0108", rsvp: "no", meal: "Standard", table: null, notes: "Out of town", avatar: "HP" },
+  { id: 9, name: "Isla Chen", email: "isla@example.com", phone: "+1 555-0109", rsvp: "maybe", meal: "Vegetarian", table: null, notes: "", avatar: "IC" },
+  { id: 10, name: "James Wright", email: "james@example.com", phone: "+1 555-0110", rsvp: "pending", meal: "Standard", table: null, notes: "New contact", avatar: "JW" },
+  { id: 11, name: "Karen Patel", email: "karen@example.com", phone: "+1 555-0111", rsvp: "yes", meal: "Vegan", table: 4, notes: "", avatar: "KP" },
+  { id: 12, name: "Leo Martins", email: "leo@example.com", phone: "+1 555-0112", rsvp: "yes", meal: "Standard", table: 2, notes: "Bringing a gift", avatar: "LM" },
+];
+<<<END FILE>>>
+
+<<<FILE path="src/App.jsx">>>
+import React, { useState, useMemo } from "react";
+import { INITIAL_GUESTS } from "./data/guests";
+import Header from "./components/Header";
+import StatsBar from "./components/StatsBar";
+import Toolbar from "./components/Toolbar";
+import GuestGrid from "./components/GuestGrid";
+import GuestDetail from "./components/GuestDetail";
+import AddGuestModal from "./components/AddGuestModal";
+import styles from "./App.module.css";
+
+export default function App() {
+  const [guests, setGuests] = useState(INITIAL_GUESTS);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [selectedGuest, setSelectedGuest] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
+
+  const filtered = useMemo(() => {
+    return guests.filter((g) => {
+      const matchSearch =
+        g.name.toLowerCase().includes(search.toLowerCase()) ||
+        g.email.toLowerCase().includes(search.toLowerCase());
+      const matchFilter = filter === "all" || g.rsvp === filter;
+      return matchSearch && matchFilter;
+    });
+  }, [guests, search, filter]);
+
+  const stats = useMemo(() => ({
+    total: guests.length,
+    yes: guests.filter((g) => g.rsvp === "yes").length,
+    no: guests.filter((g) => g.rsvp === "no").length,
+    maybe: guests.filter((g) => g.rsvp === "maybe").length,
+    pending: guests.filter((g) => g.rsvp === "pending").length,
+  }), [guests]);
+
+  function addGuest(data) {
+    const newGuest = {
+      ...data,
+      id: Date.now(),
+      avatar: data.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
+    };
+    setGuests((prev) => [newGuest, ...prev]);
+    setShowAdd(false);
+  }
+
+  function updateGuest(updated) {
+    setGuests((prev) => prev.map((g) => (g.id === updated.id ? updated : g)));
+    setSelectedGuest(updated);
+  }
+
+  function deleteGuest(id) {
+    setGuests((prev) => prev.filter((g) => g.id !== id));
+    setSelectedGuest(null);
+  }
+
+  return (
+    <div className={styles.app}>
+      <Header />
+      <main className={styles.main}>
+        <StatsBar stats={stats} activeFilter={filter} onFilter={setFilter} />
+        <Toolbar
+          search={search}
+          onSearch={setSearch}
+          onAdd={() => setShowAdd(true)}
+          count={filtered.length}
+        />
+        <GuestGrid
+          guests={filtered}
+          onSelect={setSelectedGuest}
+          selectedId={selectedGuest?.id}
+        />
+        {filtered.length === 0 && (
+          <div className={styles.empty}>
+            <span className={styles.emptyIcon}>🔍</span>
+            <p>No guests match your search.</p>
+          </div>
+        )}
+      </main>
+
+      {selectedGuest && (
+        <GuestDetail
+          guest={selectedGuest}
+          onClose={() => setSelectedGuest(null)}
+          onUpdate={updateGuest}
+          onDelete={deleteGuest}
+        />
+      )}
+
+      {showAdd && (
+        <AddGuestModal onClose={() => setShowAdd(false)} onAdd={addGuest} />
+      )}
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/App.module.css">>>
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 24px 48px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.jsx">>>
+import React from "react";
+import styles from "./Header.module.css";
+
+export default function Header() {
+  return (
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        <div className={styles.brand}>
+          <span className={styles.logo}>🎉</span>
+          <div>
+            <h1 className={styles.title}>GuestList</h1>
+            <p className={styles.sub}>Summer Gala 2025 · June 21</p>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.module.css">>>
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo {
+  font-size: 2rem;
+}
+
+.title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/StatsBar.jsx">>>
+import React from "react";
+import styles from "./StatsBar.module.css";
+
+const FILTERS = [
+  { key: "all", label: "All", color: "var(--accent2)" },
+  { key: "yes", label: "Attending", color: "var(--yes)" },
+  { key: "maybe", label: "Maybe", color: "var(--maybe)" },
+  { key: "no", label: "Declined", color: "var(--no)" },
+  { key: "pending", label: "Pending", color: "var(--pending)" },
+];
+
+export default function StatsBar({ stats, activeFilter, onFilter }) {
+  return (
+    <div className={styles.bar}>
+      {FILTERS.map((f) => {
+        const count = f.key === "all" ? stats.total : stats[f.key];
+        const active = activeFilter === f.key;
+        return (
+          <button
+            key={f.key}
+            className={`${styles.chip} ${active ? styles.active : ""}`}
+            style={{ "--chip-color": f.color }}
+            onClick={() => onFilter(f.key)}
+          >
+            <span className={styles.dot} />
+            <span className={styles.chipLabel}>{f.label}</span>
+            <span className={styles.count}>{count}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/StatsBar.module.css">>>
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 28px 0 20px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.18s ease;
+}
+
+.chip:hover {
+  border-color: var(--chip-color);
+  color: var(--text);
+}
+
+.chip.active {
+  border-color: var(--chip-color);
+  background: color-mix(in srgb, var(--chip-color) 12%, transparent);
+  color: var(--chip-color);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--chip-color);
+  flex-shrink: 0;
+}
+
+.chipLabel { }
+
+.count {
+  background: color-mix(in srgb, var(--chip-color) 20%, transparent);
+  color: var(--chip-color);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Toolbar.jsx">>>
+import React from "react";
+import styles from "./Toolbar.module.css";
+
+export default function Toolbar({ search, onSearch, onAdd, count }) {
+  return (
+    <div className={styles.toolbar}>
+      <div className={styles.searchWrap}>
+        <span className={styles.searchIcon}>🔍</span>
+        <input
+          className={styles.input}
+          type="text"
+          placeholder="Search by name or email…"
+          value={search}
+          onChange={(e) => onSearch(e.target.value)}
+        />
+        {search && (
+          <button className={styles.clear} onClick={() => onSearch("")}>✕</button>
+        )}
+      </div>
+      <div className={styles.right}>
+        <span className={styles.countLabel}>{count} guest{count !== 1 ? "s" : ""}</span>
+        <button className={styles.addBtn} onClick={onAdd}>
+          <span>＋</span> Add Guest
+        </button>
+      </div>
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Toolbar.module.css">>>
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  flex: 1;
+  min-width: 220px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  padding: 11px 40px 11px 40px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.input::placeholder { color: var(--muted); }
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.clear {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 4px;
+  line-height: 1;
+}
+
+.clear:hover { color: var(--text); }
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.countLabel {
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.addBtn:hover { background: #5a52e0; }
+.addBtn:active { transform: scale(0.97); }
+<<<END FILE>>>
+
+<<<FILE path="src/components/GuestGrid.jsx">>>
+import React from "react";
+import GuestCard from "./GuestCard";
+import styles from "./GuestGrid.module.css";
+
+export default function GuestGrid({ guests, onSelect, selectedId }) {
+  return (
+    <div className={styles.grid}>
+      {guests.map((g) => (
+        <GuestCard
+          key={g.id}
+          guest={g}
+          selected={g.id === selectedId}
+          onClick={() => onSelect(g)}
+        />
+      ))}
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/GuestGrid.module.css">>>
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/GuestCard.jsx">>>
+import React from "react";
+import styles from "./GuestCard.module.css";
+import { rsvpMeta } from "../utils/rsvp";
+
+export default function GuestCard({ guest, selected, onClick }) {
+  const meta = rsvpMeta(guest.rsvp);
+  return (
+    <button
+      className={`${styles.card} ${selected ? styles.selected : ""}`}
+      onClick={onClick}
+      style={{ "--rsvp-color": meta.color }}
+    >
+      <div className={styles.top}>
+        <div className={styles.avatar}>{guest.avatar}</div>
+        <div className={styles.info}>
+          <p className={styles.name}>{guest.name}</p>
+          <p className={styles.email}>{guest.email}</p>
+        </div>
+        <span className={styles.badge}>{meta.icon} {meta.label}</span>
+      </div>
+      <div className={styles.bottom}>
+        <span className={styles.detail}>🍽 {guest.meal}</span>
+        {guest.table && <span className={styles.detail}>🪑 Table {guest.table}</span>}
+        {guest.notes && <span className={styles.note} title={guest.notes}>📝 {guest.notes}</span>}
+      </div>
+    </button>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/GuestCard.module.css">>>
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s, transform 0.15s, box-shadow 0.18s;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card:hover {
+  border-color: var(--rsvp-color);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--rsvp-color) 15%, transparent);
+  color: var(--rsvp-color);
+  border: 1px solid color-mix(in srgb, var(--rsvp-color) 30%, transparent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail, .note {
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: var(--surface2);
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.note {
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/GuestDetail.jsx">>>
+import React, { useState } from "react";
+import styles from "./GuestDetail.module.css";
+import { rsvpMeta, RSVP_OPTIONS } from "../utils/rsvp";
+
+export default function GuestDetail({ guest, onClose, onUpdate, onDelete }) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ ...guest });
+  const meta = rsvpMeta(guest.rsvp);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  }
+
+  function handleSave() {
+    onUpdate(form);
+    setEditing(false);
+  }
+
+  function handleCancel() {
+    setForm({ ...guest });
+    setEditing(false);
+  }
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <aside className={styles.panel} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.panelHeader}>
+          <h2 className={styles.panelTitle}>Guest Details</h2>
+          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        </div>
+
+        <div className={styles.hero}>
+          <div className={styles.bigAvatar}>{guest.avatar}</div>
+          {!editing ? (
+            <>
+              <h3 className={styles.heroName}>{guest.name}</h3>
+              <span className={styles.heroBadge} style={{ "--rsvp-color": meta.color }}>
+                {meta.icon} {meta.label}
+              </span>
+            </>
+          ) : (
+            <input
+              className={styles.editInput}
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Full name"
+            />
+          )}
+        </div>
+
+        <div className={styles.fields}>
+          <Field label="Email" icon="✉️">
+            {editing
+              ? <input className={styles.editInput} name="email" value={form.email} onChange={handleChange} />
+              : <span>{guest.email}</span>}
+          </Field>
+          <Field label="Phone" icon="📞">
+            {editing
+              ? <input className={styles.editInput} name="phone" value={form.phone} onChange={handleChange} />
+              : <span>{guest.phone}</span>}
+          </Field>
+          <Field label="RSVP Status" icon="📋">
+            {editing
+              ? (
+                <select className={styles.editSelect} name="rsvp" value={form.rsvp} onChange={handleChange}>
+                  {RSVP_OPTIONS.map((o) => (
+                    <option key={o.key} value={o.key}>{o.label}</option>
+                  ))}
+                </select>
+              )
+              : <span style={{ color: meta.color }}>{meta.icon} {meta.label}</span>}
+          </Field>
+          <Field label="Meal Preference" icon="🍽">
+            {editing
+              ? <input className={styles.editInput} name="meal" value={form.meal} onChange={handleChange} />
+              : <span>{guest.meal}</span>}
+          </Field>
+          <Field label="Table" icon="🪑">
+            {editing
+              ? <input className={styles.editInput} name="table" type="number" value={form.table || ""} onChange={handleChange} placeholder="—" />
+              : <span>{guest.table ? `Table ${guest.table}` : "—"}</span>}
+          </Field>
+          <Field label="Notes" icon="📝">
+            {editing
+              ? <textarea className={styles.editTextarea} name="notes" value={form.notes} onChange={handleChange} rows={3} />
+              : <span className={styles.notes}>{guest.notes || "—"}</span>}
+          </Field>
+        </div>
+
+        <div className={styles.actions}>
+          {editing ? (
+            <>
+              <button className={styles.saveBtn} onClick={handleSave}>Save Changes</button>
+              <button className={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
+            </>
+          ) : (
+            <>
+              <button className={styles.editBtn} onClick={() => setEditing(true)}>✏️ Edit</button>
+              <button className={styles.deleteBtn} onClick={() => onDelete(guest.id)}>🗑 Remove</button>
+            </>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function Field({ label, icon, children }) {
+  return (
+    <div className={styles.field}>
+      <span className={styles.fieldLabel}>{icon} {label}</span>
+      <div className={styles.fieldValue}>{children}</div>
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/GuestDetail.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 200;
+  display: flex;
+  justify-content: flex-end;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.panel {
+  width: 420px;
+  max-width: 100vw;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.panelTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.closeBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.closeBtn:hover { color: var(--text); }
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 24px;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bigAvatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.heroName {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.heroBadge {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--rsvp-color) 15%, transparent);
+  color: var(--rsvp-color);
+  border: 1px solid color-mix(in srgb, var(--rsvp-color) 30%, transparent);
+}
+
+.fields {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fieldValue {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.notes {
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.editInput, .editSelect, .editTextarea {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.18s;
+  font-family: inherit;
+}
+
+.editInput:focus, .editSelect:focus, .editTextarea:focus {
+  border-color: var(--accent);
+}
+
+.editTextarea { resize: vertical; }
+
+.editSelect option { background: var(--surface2); }
+
+.actions {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+}
+
+.editBtn, .saveBtn {
+  flex: 1;
+  padding: 11px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.editBtn {
+  background: var(--accent);
+  color: #fff;
+}
+
+.editBtn:hover { background: #5a52e0; }
+
+.saveBtn {
+  background: var(--yes);
+  color: #fff;
+}
+
+.saveBtn:hover { background: #16a34a; }
+
+.cancelBtn, .deleteBtn {
+  flex: 1;
+  padding: 11px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.cancelBtn {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+}
+
+.cancelBtn:hover { color: var(--text); }
+
+.deleteBtn {
+  background: color-mix(in srgb, var(--no) 15%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--no) 30%, transparent);
+  color: var(--no);
+}
+
+.deleteBtn:hover { background: color-mix(in srgb, var(--no) 25%, transparent); }
+<<<END FILE>>>
+
+<<<FILE path="src/components/AddGuestModal.jsx">>>
+import React, { useState } from "react";
+import styles from "./AddGuestModal.module.css";
+import { RSVP_OPTIONS } from "../utils/rsvp";
+
+const EMPTY = {
+  name: "", email: "", phone: "", rsvp: "pending",
+  meal: "Standard", table: "", notes: "",
+};
+
+export default function AddGuestModal({ onClose, onAdd }) {
+  const [form, setForm] = useState(EMPTY);
+  const [errors, setErrors] = useState({});
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+    if (errors[name]) setErrors((e) => ({ ...e, [name]: "" }));
+  }
+
+  function validate() {
+    const errs = {};
+    if (!form.name.trim()) errs.name = "Name is required";
+    if (!form.email.trim()) errs.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = "Invalid email";
+    return errs;
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    onAdd({ ...form, table: form.table ? Number(form.table) : null });
+  }
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Add New Guest</h2>
+          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <FormField label="Full Name *" error={errors.name}>
+            <input
+              className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
+              name="name" value={form.name} onChange={handleChange}
+              placeholder="Jane Doe"
+            />
+          </FormField>
+
+          <FormField label="Email *" error={errors.email}>
+            <input
+              className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
+              name="email" type="email" value={form.email} onChange={handleChange}
+              placeholder="jane@example.com"
+            />
+          </FormField>
+
+          <FormField label="Phone">
+            <input
+              className={styles.input}
+              name="phone" value={form.phone} onChange={handleChange}
+              placeholder="+1 555-0000"
+            />
+          </FormField>
+
+          <div className={styles.row}>
+            <FormField label="RSVP Status">
+              <select className={styles.input} name="rsvp" value={form.rsvp} onChange={handleChange}>
+                {RSVP_OPTIONS.map((o) => (
+                  <option key={o.key} value={o.key}>{o.label}</option>
+                ))}
+              </select>
+            </FormField>
+
+            <FormField label="Table #">
+              <input
+                className={styles.input}
+                name="table" type="number" value={form.table} onChange={handleChange}
+                placeholder="—" min="1"
+              />
+            </FormField>
+          </div>
+
+          <FormField label="Meal Preference">
+            <select className={styles.input} name="meal" value={form.meal} onChange={handleChange}>
+              {["Standard", "Vegetarian", "Vegan", "Gluten-Free", "Halal", "Kosher"].map((m) => (
+                <option key={m}>{m}</option>
+              ))}
+            </select>
+          </FormField>
+
+          <FormField label="Notes">
+            <textarea
+              className={styles.input}
+              name="notes" value={form.notes} onChange={handleChange}
+              placeholder="Any special requirements…"
+              rows={3}
+              style={{ resize: "vertical" }}
+            />
+          </FormField>
+
+          <div className={styles.formActions}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+            <button type="submit" className={styles.submitBtn}>Add Guest</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function FormField({ label, error, children }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        {label}
+      </label>
+      {children}
+      {error && <span style={{ fontSize: "0.75rem", color: "var(--no)" }}>{error}</span>}
+    </div>
+  );
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/AddGuestModal.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: popIn 0.25s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.94) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.closeBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.closeBtn:hover { color: var(--text); }
+
+.form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 13px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.18s;
+  font-family: inherit;
+}
+
+.input::placeholder { color: var(--muted); }
+.input:focus { border-color: var(--accent); }
+.input option { background: var(--surface2); }
+
+.inputError { border-color: var(--no) !important; }
+
+.formActions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.cancelBtn:hover { color: var(--text); }
+
+.submitBtn {
+  flex: 2;
+  padding: 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.submitBtn:hover { background: #5a52e0; }
+<<<END FILE>>>
+
+<<<FILE path="src/utils/rsvp.js">>>
+export const RSVP_OPTIONS = [
+  { key: "yes", label: "Attending", icon: "✅" },
+  { key: "no", label: "Declined", icon: "❌" },
+  { key: "maybe", label: "Maybe", icon: "🤔" },
+  { key: "pending", label: "Pending", icon: "⏳" },
+];
+
+const COLOR_MAP = {
+  yes: "var(--yes)",
+  no: "var(--no)",
+  maybe: "var(--maybe)",
+  pending: "var(--pending)",
+};
+
+export function rsvpMeta(rsvp) {
+  const opt = RSVP_OPTIONS.find((o) => o.key === rsvp) || RSVP_OPTIONS[3];
+  return { ...opt, color: COLOR_MAP[rsvp] || COLOR_MAP.pending };
+}
+<<<END FILE>>>

@@ -1,0 +1,33 @@
+{
+  "durationMs": 2739,
+  "events": [],
+  "finishedAtMs": 1791747470534,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 2709,
+      "inputTokens": 1083,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 138,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "Purchase order tracker with search, status filter (open, approved, received), add form, detail view and daily totals.",
+  "runId": "57cbbcedaec54da69b1ddd9aa007f728-1791747467795",
+  "runType": "new",
+  "sessionId": "57cbbcedaec54da69b1ddd9aa007f728",
+  "stages": [
+    {
+      "durationMs": 2739,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791747467796
+    }
+  ],
+  "startedAtMs": 1791747467795,
+  "status": "clarify"
+}

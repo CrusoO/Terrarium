@@ -9,7 +9,10 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import ViewQuiltRoundedIcon from "@mui/icons-material/ViewQuiltRounded";
 import { Avatar, Badge, Box, IconButton, Stack, Tooltip } from "@mui/material";
 
-export type ViewType = "chat" | "workspace" | "groups" | "approvals";
+import ShieldRoundedIcon from "@mui/icons-material/ShieldRounded";
+import { TerrariumLogo } from "./TerrariumLogo";
+
+export type ViewType = "chat" | "workspace" | "groups" | "approvals" | "security";
 
 type IconRailProps = {
   view?: ViewType;
@@ -40,9 +43,9 @@ function RailButton({
           width: 36,
           height: 36,
           borderRadius: 1.25,
-          color: selected ? "primary.main" : "text.secondary",
-          bgcolor: selected ? "#f6e8ec" : "transparent",
-          "&:hover": { bgcolor: selected ? "#f3dde3" : "#f6f5f3" },
+          color: selected ? "var(--tt-accent-text)" : "text.secondary",
+          bgcolor: selected ? "var(--tt-tint)" : "transparent",
+          "&:hover": { bgcolor: selected ? "var(--tt-tint)" : "var(--tt-bg)" },
         }}
       >
         {children}
@@ -51,7 +54,13 @@ function RailButton({
   );
 }
 
-export function IconRail({ view = "chat", onViewChange, onLogout, pendingApprovals = 0, userName }: IconRailProps) {
+export function IconRail({
+  view = "chat",
+  onViewChange,
+  onLogout,
+  pendingApprovals = 0,
+  userName,
+}: IconRailProps) {
   const initial = (userName?.trim().charAt(0) || "T").toUpperCase();
   return (
     <Stack
@@ -64,10 +73,11 @@ export function IconRail({ view = "chat", onViewChange, onLogout, pendingApprova
         py: 1.75,
         borderRight: 1,
         borderColor: "divider",
-        bgcolor: "background.paper",
+        bgcolor: "var(--tt-rail)",
         flexShrink: 0,
       }}
     >
+      <TerrariumLogo size={44} />
       <Tooltip title={userName ? `Signed in as ${userName}` : "Terrarium"} placement="right">
         <Avatar
           sx={{
@@ -76,6 +86,7 @@ export function IconRail({ view = "chat", onViewChange, onLogout, pendingApprova
             height: 32,
             fontWeight: 700,
             fontSize: 14,
+            mt: 1.25,
             mb: 2,
           }}
         >
@@ -91,6 +102,9 @@ export function IconRail({ view = "chat", onViewChange, onLogout, pendingApprova
         </RailButton>
         <RailButton label="Groups" selected={view === "groups"} onClick={() => onViewChange?.("groups")}>
           <GroupsIcon sx={{ fontSize: 18 }} />
+        </RailButton>
+        <RailButton label="Security" selected={view === "security"} onClick={() => onViewChange?.("security")}>
+          <ShieldRoundedIcon sx={{ fontSize: 18 }} />
         </RailButton>
         <RailButton
           label={pendingApprovals > 0 ? `Approvals (${pendingApprovals} pending)` : "Approvals"}

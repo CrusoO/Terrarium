@@ -1,0 +1,433 @@
+{
+  "apps": 7,
+  "loaded": 6,
+  "interactionValidated": 5,
+  "cold": {
+    "coldWallSeconds": 14.239,
+    "exit": 0,
+    "marks": [
+      "MARK docker-ready 1791716011484",
+      "MARK symlink 1791716011739",
+      "MARK build 1791716021371"
+    ],
+    "tail": "dist/assets/index-DMaPfuru.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-DVxyOPE6.js   227.60 kB \u00e2\u201d\u201a gzip: 70.94 kB\n\u00e2\u0153\u201c built in 7.45s\nMARK build 1791716021371"
+  },
+  "poolSeconds": 3.304,
+  "rows": [
+    {
+      "slug": "catalogue",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\catalogue",
+      "copySeconds": 0.089,
+      "serverReadySeconds": 6.608,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 1841,
+      "timing": {
+        "browserLaunchMs": 2305,
+        "firstPaintMs": 1841,
+        "routesMs": 191,
+        "interactionMs": 1119
+      },
+      "behaviour": {
+        "before": 2,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 3,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "name",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "category",
+              "type": "select-one",
+              "value": "Kitchen",
+              "valid": true
+            },
+            {
+              "id": "price",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "stock",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 10.231,
+      "poolSeconds": 3.304,
+      "buildTail": "dist/assets/index-DMaPfuru.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-D5jGokXO.js   227.67 kB \u00e2\u201d\u201a gzip: 70.97 kB\n\u00e2\u0153\u201c built in 9.74s"
+    },
+    {
+      "slug": "expenses",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-apps-raw\\expenses",
+      "copySeconds": 0.119,
+      "serverReadySeconds": 4.384,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": false,
+      "firstPaintMs": 1513,
+      "timing": {
+        "browserLaunchMs": 1445,
+        "firstPaintMs": 1513,
+        "routesMs": 367,
+        "interactionMs": 1251
+      },
+      "behaviour": {
+        "before": 2,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 3,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "merchant",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "category",
+              "type": "select-one",
+              "value": "Travel",
+              "valid": true
+            },
+            {
+              "id": "amount",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "spentOn",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": false,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 6.939,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DFE_0LOh.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-SQCrtHZR.js   227.63 kB \u00e2\u201d\u201a gzip: 71.01 kB\n\u00e2\u0153\u201c built in 5.81s"
+    },
+    {
+      "slug": "booking-5",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-holdout\\booking-5",
+      "copySeconds": 0.241,
+      "serverReadySeconds": 7.046,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 1334,
+      "timing": {
+        "browserLaunchMs": 1225,
+        "firstPaintMs": 1334,
+        "routesMs": 277,
+        "interactionMs": 1651
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "customer",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "city",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "paymentStatus",
+              "type": "select-one",
+              "value": "Unpaid",
+              "valid": true
+            },
+            {
+              "id": "pickupDate",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 6.873,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-CLLc0jQf.css    1.44 kB \u00e2\u201d\u201a gzip:  0.65 kB\ndist/assets/index-BoHL5J08.js   228.75 kB \u00e2\u201d\u201a gzip: 71.24 kB\n\u00e2\u0153\u201c built in 6.17s"
+    },
+    {
+      "slug": "crud-2",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-holdout\\crud-2",
+      "copySeconds": 0.129,
+      "serverReadySeconds": 7.223,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": false,
+      "interactionValidated": false,
+      "firstPaintMs": 1975,
+      "timing": {
+        "browserLaunchMs": 1404,
+        "firstPaintMs": 1975,
+        "routesMs": 543,
+        "interactionMs": 1538
+      },
+      "behaviour": {
+        "before": 2,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": false,
+        "after": 2,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "name",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "homeroom",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "status",
+              "type": "select-one",
+              "value": "Present",
+              "valid": true
+            },
+            {
+              "id": "guardian",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": false,
+        "totalsChanged": null
+      },
+      "errors": [
+        "TypeError: draft.push is not a function"
+      ],
+      "browserProcessSeconds": 7.902,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DFE_0LOh.css    1.45 kB \u00e2\u201d\u201a gzip:  0.66 kB\ndist/assets/index-DQbar3Dv.js   228.02 kB \u00e2\u201d\u201a gzip: 71.00 kB\n\u00e2\u0153\u201c built in 7.32s"
+    },
+    {
+      "slug": "crud-3",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-holdout\\crud-3",
+      "copySeconds": 0.113,
+      "serverReadySeconds": 3.934,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 1579,
+      "timing": {
+        "browserLaunchMs": 1174,
+        "firstPaintMs": 1579,
+        "routesMs": 362,
+        "interactionMs": 1210
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "customer",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "city",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "paymentStatus",
+              "type": "select-one",
+              "value": "Unpaid",
+              "valid": true
+            },
+            {
+              "id": "pickupDate",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 6.294,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-CLLc0jQf.css    1.44 kB \u00e2\u201d\u201a gzip:  0.65 kB\ndist/assets/index-dGp5irHt.js   229.82 kB \u00e2\u201d\u201a gzip: 71.46 kB\n\u00e2\u0153\u201c built in 5.21s"
+    },
+    {
+      "slug": "crud-6",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-holdout\\crud-6",
+      "copySeconds": 0.156,
+      "serverReadySeconds": 4.32,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 1424,
+      "timing": {
+        "browserLaunchMs": 2024,
+        "firstPaintMs": 1424,
+        "routesMs": 542,
+        "interactionMs": 1565
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "customer",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "city",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "paymentStatus",
+              "type": "select-one",
+              "value": "Unpaid",
+              "valid": true
+            },
+            {
+              "id": "pickupDate",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 8.243,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-CLLc0jQf.css    1.44 kB \u00e2\u201d\u201a gzip:  0.65 kB\ndist/assets/index-C2QBP5oV.js   228.95 kB \u00e2\u201d\u201a gzip: 71.30 kB\n\u00e2\u0153\u201c built in 8.55s"
+    },
+    {
+      "slug": "dashboard-1",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-holdout\\dashboard-1",
+      "copySeconds": 0.212,
+      "serverReadySeconds": 4.556,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 1195,
+      "timing": {
+        "browserLaunchMs": 1484,
+        "firstPaintMs": 1195,
+        "routesMs": 396,
+        "interactionMs": 1463
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "customer",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "city",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "paymentStatus",
+              "type": "select-one",
+              "value": "Unpaid",
+              "valid": true
+            },
+            {
+              "id": "pickupDate",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 6.453,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-CLLc0jQf.css    1.44 kB \u00e2\u201d\u201a gzip:  0.65 kB\ndist/assets/index-DVD7VObA.js   228.88 kB \u00e2\u201d\u201a gzip: 71.29 kB\n\u00e2\u0153\u201c built in 4.96s"
+    }
+  ]
+}

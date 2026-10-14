@@ -12,6 +12,11 @@ FILES_SUFFIX = ":files"
 CONV_SUFFIX = ":conversation"
 TOOL_SUFFIX = ":toolId"
 INTENT_SUFFIX = ":intent"
+PLAN_SUFFIX = ":sessionPlan"
+PREVIEW_SUFFIX = ":previewUrl"
+ACTOR_SUFFIX = ":actorId"
+EMAIL_SUFFIX = ":actorEmail"
+CHECKS_SUFFIX = ":acceptanceChecks"
 GITHUB_SUFFIX = ":github"
 GITHUB_SESSION_TOKEN_SUFFIX = ":githubToken"
 GITHUB_TOKEN_PREFIX = "terrarium:github:token:"
@@ -35,6 +40,26 @@ def tool_id_key(session_id: str) -> str:
 
 def intent_key(session_id: str) -> str:
     return f"{STREAM_PREFIX}{session_id}{INTENT_SUFFIX}"
+
+
+def session_plan_key(session_id: str) -> str:
+    return f"{STREAM_PREFIX}{session_id}{PLAN_SUFFIX}"
+
+
+def preview_url_key(session_id: str) -> str:
+    return f"{STREAM_PREFIX}{session_id}{PREVIEW_SUFFIX}"
+
+
+def actor_key(session_id: str) -> str:
+    return f"{STREAM_PREFIX}{session_id}{ACTOR_SUFFIX}"
+
+
+def actor_email_key(session_id: str) -> str:
+    return f"{STREAM_PREFIX}{session_id}{EMAIL_SUFFIX}"
+
+
+def acceptance_checks_key(session_id: str) -> str:
+    return f"{STREAM_PREFIX}{session_id}{CHECKS_SUFFIX}"
 
 
 def github_repo_key(session_id: str) -> str:
@@ -100,8 +125,61 @@ class SessionEventLog:
     async def save_tool_id(self, session_id: str, tool_id: str) -> None:
         await self.redis.set(tool_id_key(session_id), tool_id, ex=60 * 60 * 24)
 
+    async def save_actor_id(self, session_id: str, actor_id: str) -> None:
+        await self.redis.set(actor_key(session_id), actor_id, ex=60 * 60 * 24)
+
+    async def save_actor_email(self, session_id: str, email: str) -> None:
+        await self.redis.set(actor_email_key(session_id), email, ex=60 * 60 * 24)
+
+    async def load_actor_email(self, session_id: str) -> str | None:
+        raw = await self.redis.get(actor_email_key(session_id))
+        if not raw:
+            return None
+        email = _as_str(raw).strip().lower()
+        return email or None
+
+    async def load_actor_id(self, session_id: str) -> str | None:
+        raw = await self.redis.get(actor_key(session_id))
+        if not raw:
+            return None
+        actor = _as_str(raw).strip()
+        return actor or None
+
+    async def save_preview_url(self, session_id: str, preview_url: str) -> None:
+        await self.redis.set(preview_url_key(session_id), preview_url, ex=60 * 60 * 24)
+
+    async def load_preview_url(self, session_id: str) -> str | None:
+        raw = await self.redis.get(preview_url_key(session_id))
+        if not raw:
+            return None
+        url = _as_str(raw).strip()
+        return url or None
+
+    async def save_acceptance_checks(self, session_id: str, checks: list[dict]) -> None:
+        await self.redis.set(acceptance_checks_key(session_id), json.dumps(checks), ex=60 * 60 * 24)
+
+    async def load_acceptance_checks(self, session_id: str) -> list[dict]:
+        raw = await self.redis.get(acceptance_checks_key(session_id))
+        if not raw:
+            return []
+        parsed = json.loads(_as_str(raw))
+        return parsed if isinstance(parsed, list) else []
+
     async def save_intent(self, session_id: str, intent: dict[str, object]) -> None:
         await self.redis.set(intent_key(session_id), json.dumps(intent), ex=60 * 60 * 24)
+
+    async def save_session_plan(self, session_id: str, plan: dict[str, object]) -> None:
+        await self.redis.set(session_plan_key(session_id), json.dumps(plan), ex=60 * 60 * 24)
+
+    async def load_session_plan(self, session_id: str) -> dict[str, object] | None:
+        raw = await self.redis.get(session_plan_key(session_id))
+        if not raw:
+            return None
+        parsed = json.loads(_as_str(raw))
+        return parsed if isinstance(parsed, dict) else None
+
+    async def clear_session_plan(self, session_id: str) -> None:
+        await self.redis.delete(session_plan_key(session_id))
 
     async def load_intent(self, session_id: str) -> dict[str, object] | None:
         raw = await self.redis.get(intent_key(session_id))

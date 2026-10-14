@@ -1,0 +1,20 @@
+{
+  "durationMs": 1897,
+  "events": [],
+  "finishedAtMs": 1791641753084,
+  "modelCalls": [],
+  "prompt": "Use a clean modern UI, Vite + React, in-memory mock data (no backend), desktop-first layout, English labels, and ship a working MVP preview now.",
+  "runId": "0974d0696b114603919fb0dde3af2704-1791641751187",
+  "runType": "new",
+  "sessionId": "0974d0696b114603919fb0dde3af2704",
+  "stages": [
+    {
+      "durationMs": 1889,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791641751190
+    }
+  ],
+  "startedAtMs": 1791641751187,
+  "status": "clarify"
+}

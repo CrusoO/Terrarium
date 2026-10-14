@@ -24,9 +24,9 @@ def _load_dotenv() -> None:
 _load_dotenv()
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "127.0.0.1")
-REDIS_PORT = int(os.environ.get("REDIS_PORT", "6379"))
+REDIS_PORT = int(os.environ.get("REDIS_PORT", "6380"))
 POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "127.0.0.1")
-POSTGRES_PORT = int(os.environ.get("POSTGRES_PORT", "5432"))
+POSTGRES_PORT = int(os.environ.get("POSTGRES_PORT", "5433"))
 POSTGRES_USER = os.environ.get("POSTGRES_USER", "terrarium")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "terrarium")
 POSTGRES_DB = os.environ.get("POSTGRES_DB", "terrarium")
@@ -59,13 +59,44 @@ GITHUB_OAUTH_REDIRECT = os.environ.get(
 GITHUB_UI_ORIGIN = os.environ.get("GITHUB_UI_ORIGIN", "http://localhost:5173").strip()
 
 
+def _certifi_path() -> str | None:
+    try:
+        import certifi
+
+        p = certifi.where()
+        return p if Path(p).is_file() else None
+    except ImportError:
+        return None
+
+
+def _merged_ca_bundle(extra_pem: Path) -> str:
+    """Mozilla CA bundle plus corporate/Zscaler root (needed when TLS is still MITM'd)."""
+    cache_raw = (os.environ.get("TERRARIUM_CA_BUNDLE_CACHE") or "").strip()
+    cache = Path(cache_raw) if cache_raw else Path("/tmp/terrarium-ca-bundle.pem")
+    parts: list[str] = []
+    base = _certifi_path()
+    if base:
+        parts.append(Path(base).read_text(encoding="ascii"))
+    parts.append(extra_pem.read_text(encoding="ascii"))
+    cache.write_text("\n".join(parts) + "\n", encoding="ascii")
+    return str(cache)
+
+
 def ssl_verify() -> bool | str:
-    """Trust the default CAs, or an extra bundle when a corporate proxy intercepts TLS."""
-    for key in ("TERRARIUM_SSL_CA_FILE", "SSL_CERT_FILE", "REQUESTS_CA_BUNDLE"):
+    """Trust store for httpx: certifi, optional corp CA merge, or explicit bundle paths."""
+    for key in ("TERRARIUM_SSL_CA_FILE", "TERRARIUM_EXTRA_CA_FILE"):
         path = (os.environ.get(key) or "").strip()
-        if path:
+        if path and Path(path).is_file():
+            extra = Path(path)
+            if key == "TERRARIUM_EXTRA_CA_FILE" or _certifi_path():
+                return _merged_ca_bundle(extra)
             return path
-    return True
+    for key in ("SSL_CERT_FILE", "REQUESTS_CA_BUNDLE"):
+        path = (os.environ.get(key) or "").strip()
+        if path and Path(path).is_file():
+            return path
+    base = _certifi_path()
+    return base if base else True
 
 IDLE_TIMEOUT_SECONDS = int(
     os.environ.get(

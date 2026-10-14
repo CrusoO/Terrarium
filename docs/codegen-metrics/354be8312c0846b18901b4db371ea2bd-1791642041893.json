@@ -1,0 +1,20 @@
+{
+  "durationMs": 1832,
+  "events": [],
+  "finishedAtMs": 1791642043725,
+  "modelCalls": [],
+  "prompt": "Build an operations dashboard web app: jobs/tasks, owners, status chips, simple reports, and overdue items. Web UI only.",
+  "runId": "354be8312c0846b18901b4db371ea2bd-1791642041893",
+  "runType": "new",
+  "sessionId": "354be8312c0846b18901b4db371ea2bd",
+  "stages": [
+    {
+      "durationMs": 1831,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791642041893
+    }
+  ],
+  "startedAtMs": 1791642041893,
+  "status": "clarify"
+}

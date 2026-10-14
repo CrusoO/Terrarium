@@ -6,7 +6,7 @@ import os
 import re
 import unittest
 
-from terrarium_agents.intent import _enforce_rules, classify_intent
+from terrarium_agents.intent import _enforce_rules, build_clarify_question_items, classify_intent
 from terrarium_contracts import ConversationTurn, Intent, IntentAgentInput, IntentAgentOutput
 
 
@@ -48,6 +48,14 @@ class IntentAgentTests(unittest.TestCase):
         )
         self.assertEqual(intent.phase, "clarify")
         self.assert_six_everyday(intent.questions)
+
+    def test_greeting_plus_typo_build_request_is_not_greeting(self) -> None:
+        intent = classify_intent(
+            IntentAgentInput(prompt="hi buid me a websit like amazon")
+        )
+        self.assertEqual(intent.phase, "clarify")
+        self.assert_six_everyday(intent.questions)
+        self.assertFalse(re.search(r"what should we build", intent.reply or "", re.I))
 
     def test_build_website_after_hey_asks_questions(self) -> None:
         intent = classify_intent(
@@ -123,6 +131,30 @@ class IntentAgentTests(unittest.TestCase):
         self.assertEqual(intent.phase, "clarify")
         self.assert_six_everyday(intent.questions)
         self.assertNotRegex(intent.reply or "", r"how can i help you today")
+
+    def test_clarify_includes_quick_pick_options(self) -> None:
+        intent = classify_intent(IntentAgentInput(prompt="can you build a website"))
+        self.assertEqual(intent.phase, "clarify")
+        self.assertIsNotNone(intent.questionItems)
+        items = intent.questionItems or []
+        self.assertEqual(len(items), 6)
+        for item in items:
+            self.assertGreaterEqual(len(item.options), 3)
+
+    def test_business_questions_offer_plain_answer_chips(self) -> None:
+        items = build_clarify_question_items(
+            ["What will people start with — a spreadsheet or copied text?"],
+            "excel to json converter",
+        )
+        self.assertEqual(len(items), 6)
+        self.assertTrue(items[0].acceptsFiles)
+        self.assertEqual(items[0].text, "What does your business sell?")
+        self.assertTrue(items[0].allowMultiple)
+        choices = items[0].choices or []
+        self.assertEqual(len(choices), 5)
+        titles = " ".join(c.title for c in choices).lower()
+        self.assertIn("clothing", titles)
+        self.assertNotIn("upload", titles)
 
     def test_library_app_after_hey_asks_questions(self) -> None:
         intent = classify_intent(

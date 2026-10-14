@@ -1,0 +1,84 @@
+{
+  "findings": [
+    {
+      "slug": "roster",
+      "path": "canary-apps/roster/src/views/FormPage.jsx",
+      "kind": "function-addItem"
+    },
+    {
+      "slug": "crud-2",
+      "path": "canary-holdout/crud-2/src/views/FormPage.jsx",
+      "kind": "draft.push"
+    },
+    {
+      "slug": "crud-2",
+      "path": "canary-holdout/crud-2/src/views/FormPage.jsx",
+      "kind": "function-addItem"
+    },
+    {
+      "slug": "multi-step-form-9",
+      "path": "monolith-holdout/multi-step-form-9/src/components/steps/CourseSelection.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "multi-step-form-7",
+      "path": "monolith-holdout/multi-step-form-7/src/components/WizardShell.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "landing-4",
+      "path": "monolith-holdout/landing-4/src/components/Contact.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "landing-4",
+      "path": "monolith-holdout/landing-4/src/components/Services.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "landing-4",
+      "path": "monolith-holdout/landing-4/src/components/Testimonials.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "landing-3",
+      "path": "monolith-holdout/landing-3/src/components/MenuTeaser.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "landing-1",
+      "path": "monolith-holdout/landing-1/src/components/Hero.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "file-upload-18",
+      "path": "monolith-holdout/file-upload-18/src/styles/global.css",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "auth-15",
+      "path": "monolith-holdout/auth-15/frontend/src/pages/LoginPage.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "auth-14",
+      "path": "monolith-holdout/auth-14/frontend/src/pages/Register.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "auth-14",
+      "path": "monolith-holdout/auth-14/frontend/src/pages/SignIn.jsx",
+      "kind": "unclosed"
+    },
+    {
+      "slug": "auth-14",
+      "path": "monolith-holdout/auth-14/backend/src/server.js",
+      "kind": "unclosed"
+    }
+  ],
+  "counts": {
+    "function-addItem": 2,
+    "draft.push": 1,
+    "unclosed": 12
+  }
+}
