@@ -29,6 +29,17 @@ class PreviewUrlTests(unittest.TestCase):
             "http://127.0.0.1:5174/",
         )
 
+    def test_port_mode_opens_fiori_index(self) -> None:
+        os.environ["TERRARIUM_PREVIEW_MODE"] = "port"
+        self.assertEqual(
+            preview_url("abc123", host_port=5174, runtime="sapui5"),
+            "http://127.0.0.1:5174/index.html",
+        )
+        self.assertEqual(
+            preview_url("abc123", host_port=5174, runtime="sap-cap"),
+            "http://127.0.0.1:5174/index.html",
+        )
+
     def test_slug_strips_unsafe_chars(self) -> None:
         self.assertEqual(session_slug("Hello World!"), "hello-world")
 

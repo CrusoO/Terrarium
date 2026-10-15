@@ -280,6 +280,39 @@ class IntentAgentTests(unittest.TestCase):
             {"kind", "stack", "summary", "frontendStack", "backendStack"},
         )
 
+    def test_angular_and_fiori_prompts_select_frontend(self) -> None:
+        angular = classify_intent(IntentAgentInput(prompt="build an angular movie poster site"))
+        self.assertEqual(angular.frontendStack, "angular")
+        fiori = classify_intent(IntentAgentInput(prompt="create a sapui5 fiori goods receipt app"))
+        self.assertEqual(fiori.frontendStack, "sapui5")
+        sap = classify_intent(IntentAgentInput(prompt="Build a SAP catalog app with item status"))
+        self.assertEqual(sap.frontendStack, "sapui5")
+        cap = classify_intent(IntentAgentInput(prompt="fiori app with sap cap odata and shared users"))
+        self.assertEqual(cap.frontendStack, "sapui5")
+        self.assertEqual(cap.backendStack, "sap-cap")
+        catalog = classify_intent(
+            IntentAgentInput(
+                prompt="Build a Fiori catalog app with SAP CAP OData mock data. Show items from the service and their status."
+            )
+        )
+        self.assertEqual(catalog.frontendStack, "sapui5")
+        self.assertEqual(catalog.backendStack, "sap-cap")
+        llm_said_none = _enforce_rules(
+            IntentAgentOutput(
+                kind="new",
+                stack="react",
+                summary="Fiori catalog",
+                phase="ready",
+                reply="Building it.",
+                frontendStack="sapui5",
+                backendStack="none",
+            ),
+            IntentAgentInput(
+                prompt="Build a Fiori catalog app with SAP CAP OData mock data. Show items from the service and their status."
+            ),
+        )
+        self.assertEqual(llm_said_none.backendStack, "sap-cap")
+
     def test_backend_need_selection_overrides_auto_heuristic(self) -> None:
         auto = classify_intent(
             IntentAgentInput(

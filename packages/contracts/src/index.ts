@@ -6,13 +6,13 @@ export const DEV_USER = "dev-user" as const;
 export const stackSchema = z.enum(["react", "fullstack"]);
 export type Stack = z.infer<typeof stackSchema>;
 
-export const frontendStackSchema = z.enum(["vanilla", "react"]);
+export const frontendStackSchema = z.enum(["vanilla", "react", "angular", "sapui5"]);
 export type FrontendStack = z.infer<typeof frontendStackSchema>;
 
 export const backendNeedSchema = z.enum(["auto", "yes", "no"]);
 export type BackendNeed = z.infer<typeof backendNeedSchema>;
 
-export const backendStackSchema = z.enum(["none", "node-express"]);
+export const backendStackSchema = z.enum(["none", "node-express", "sap-cap"]);
 export type BackendStack = z.infer<typeof backendStackSchema>;
 
 export const intentKindSchema = z.enum(["new", "modify"]);

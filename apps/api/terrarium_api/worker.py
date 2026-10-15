@@ -22,6 +22,7 @@ from terrarium_agents import (
     run_editor,
     run_heal,
 )
+from terrarium_agents.llm_fixtures import MissingFixture
 from terrarium_agents.canary import (
     DemoBlocked,
     KILL_MESSAGE,
@@ -311,9 +312,23 @@ def _validate_filemap_structure(files: dict[str, str]) -> tuple[bool, str | None
     Static validation of generated FileMap (Gemini approach).
     Replaces runtime DOM smoke testing with fast structural checks.
     """
-    # 1. Must have index.html
-    entry_path = "index.html" if "index.html" in files else "frontend/index.html"
-    if entry_path not in files:
+    # 1. Must have an HTML entry (React root, Vite frontend, Angular, or UI5 webapp)
+    entry_path = next(
+        (
+            path
+            for path in (
+                "index.html",
+                "frontend/index.html",
+                "src/index.html",
+                "frontend/src/index.html",
+                "webapp/index.html",
+                "frontend/webapp/index.html",
+            )
+            if path in files
+        ),
+        "",
+    )
+    if not entry_path:
         return False, "Missing index.html - every app needs an entry point"
     
     # 2. Check HTML structure basics
@@ -621,7 +636,7 @@ async def _run_stub_session_locked(
                 backend_need=backend_need,
                 backend_stack=backend_stack,
             )
-    except IntentError as error:
+    except (IntentError, MissingFixture) as error:
         logger.exception("Intent classification failed for %s", session_id)
         await _unhealthy(log, session_id, error)
         _llm_fields("intent", session_id)

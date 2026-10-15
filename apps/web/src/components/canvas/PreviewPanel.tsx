@@ -171,6 +171,9 @@ function PreviewPlaceholder({
  * from the parent on :5173 (separate localStorage / cookies).
  */
 export function iframeSrc(previewUrl: string): string {
+  if (/\.[a-zA-Z0-9]+$/.test(previewUrl.split("?")[0] ?? "")) {
+    return previewUrl;
+  }
   if (previewUrl.startsWith("/")) {
     return previewUrl.endsWith("/") ? previewUrl : `${previewUrl}/`;
   }
@@ -649,7 +652,7 @@ export function PreviewPanel({
             src={streamDocument ? undefined : src ?? undefined}
             srcDoc={streamDocument ?? undefined}
             onLoad={handleFrameLoad}
-            sandbox="allow-scripts allow-same-origin allow-forms"
+          sandbox="allow-scripts allow-same-origin allow-forms"
             sx={{
               display: "block",
               flex: 1,
