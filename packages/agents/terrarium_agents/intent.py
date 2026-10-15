@@ -52,8 +52,8 @@ INTENT_JSON_SCHEMA: dict[str, object] = {
         "stack": {"type": "string", "enum": ["react", "fullstack"]},
         "summary": {"type": "string"},
         "toolId": {"type": "string"},
-        "frontendStack": {"type": "string", "enum": ["vanilla", "react"]},
-        "backendStack": {"type": "string", "enum": ["none", "node-express"]},
+        "frontendStack": {"type": "string", "enum": ["vanilla", "react", "angular", "sapui5"]},
+        "backendStack": {"type": "string", "enum": ["none", "node-express", "sap-cap"]},
         "phase": {"type": "string", "enum": ["greeting", "clarify", "ready"]},
         "reply": {"type": "string"},
         "questions": {"type": "array", "items": {"type": "string"}},
@@ -93,7 +93,7 @@ KIND / STACK
 - modify ONLY if an existing FileMap or toolId is in context. Otherwise new.
 - fullstack only if they clearly need sign-in, shared users, saved data for a team, payments, email, or file uploads to a server. Else react.
 - Infer stack from their plain answers. Do not ask them to pick a technology.
-- React/Vite is the default frontend stack unless the user explicitly asks for plain HTML/CSS/JS.
+- React/Vite is the default frontend stack unless they ask for Angular, SAPUI5/Fiori, or plain HTML/CSS/JS.
 
 SUMMARY
 - One line, <= 160 chars, the tool itself. Greeting → "Chat greeting".
@@ -122,7 +122,8 @@ _FULLSTACK_RE = re.compile(
 _BACKEND_NEEDED_RE = re.compile(
     r"\b(auth|logins?|sign[- ]?up|users?|shared|database|db|backend|server|"
     r"api keys?|secrets?|payments?|email|upload|file processing|multi[- ]?user|"
-    r"roles?|permissions?|websocket|real[- ]?time)\b",
+    r"roles?|permissions?|websocket|real[- ]?time|"
+    r"express|node[- ]?express|odata|cap|sap\s*cap)\b",
     re.IGNORECASE,
 )
 
@@ -528,23 +529,23 @@ def _stub_intent(inp: IntentAgentInput) -> IntentAgentOutput:
 
 
 def _selected_frontend(inp: IntentAgentInput, intent: IntentAgentOutput | None = None) -> FrontendStack:
+    from terrarium_agents.stacks import infer_frontend_stack
+
     selected = inp.frontendStack or (intent.frontendStack if intent else None)
-    return selected if selected in {"vanilla", "react"} else "react"
+    return infer_frontend_stack(_stack_decision_text(inp), selected)
 
 
 def _selected_backend(inp: IntentAgentInput, intent: IntentAgentOutput | None = None) -> BackendStack:
-    if inp.backendStack in {"none", "node-express"}:
-        return inp.backendStack
-    if inp.backendNeed == "yes":
-        return "node-express"
-    if inp.backendNeed == "no":
-        return "none"
-    if intent and intent.backendStack in {"none", "node-express"}:
-        return intent.backendStack
-    blob = _stack_decision_text(inp)
-    if _BACKEND_NOT_NEEDED_RE.search(blob):
-        return "none"
-    return "node-express" if _BACKEND_NEEDED_RE.search(blob) else "none"
+    from terrarium_agents.stacks import infer_backend_stack
+
+    frontend = _selected_frontend(inp, intent)
+    selected = inp.backendStack or (intent.backendStack if intent else None)
+    return infer_backend_stack(
+        _stack_decision_text(inp),
+        frontend,
+        selected=selected,
+        need=inp.backendNeed,
+    )
 
 
 def _stack_decision_text(inp: IntentAgentInput) -> str:
@@ -845,8 +846,16 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
         reply = _greeting_reply()
 
     if phase == "ready" and kind == "new":
-        if backend_stack == "node-express":
+        if backend_stack == "sap-cap":
+            reply = f"{reply} Stack: SAPUI5/Fiori with a SAP CAP OData mock."
+        elif backend_stack == "node-express" and frontend_stack == "angular":
+            reply = f"{reply} Stack: Angular frontend with a Node/Express backend."
+        elif backend_stack == "node-express":
             reply = f"{reply} Stack: React/Vite frontend with a Node/Express backend."
+        elif frontend_stack == "angular":
+            reply = f"{reply} Stack: Angular frontend only."
+        elif frontend_stack == "sapui5":
+            reply = f"{reply} Stack: SAPUI5/Fiori frontend only."
         elif frontend_stack == "react":
             reply = f"{reply} Stack: React/Vite frontend only."
         else:

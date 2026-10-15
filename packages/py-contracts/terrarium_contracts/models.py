@@ -20,9 +20,9 @@ class AuthResponse(BaseModel):
     user: User
 
 Stack = Literal["react", "fullstack"]
-FrontendStack = Literal["vanilla", "react"]
+FrontendStack = Literal["vanilla", "react", "angular", "sapui5"]
 BackendNeed = Literal["auto", "yes", "no"]
-BackendStack = Literal["none", "node-express"]
+BackendStack = Literal["none", "node-express", "sap-cap"]
 IntentKind = Literal["new", "modify"]
 ToolRole = Literal["owner", "editor", "viewer"]
 ToolVisibility = Literal["all", "group", "private"]

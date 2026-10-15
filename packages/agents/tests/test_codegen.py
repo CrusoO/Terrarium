@@ -562,6 +562,79 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("backend/src/server.js", result.files)
         self.assertIn("shared/constants.js", result.files)
 
+    def test_angular_frontend_only_scaffold(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="ang1",
+                intent=Intent(kind="new", stack="react", summary="Movie posters", frontendStack="angular"),
+                prompt="build an angular movie poster gallery",
+                frontendStack="angular",
+                backendStack="none",
+            )
+        )
+        self.assertIn("angular.json", result.files)
+        self.assertIn("src/main.ts", result.files)
+        self.assertIn("<html", result.files["src/index.html"])
+        blob = "\n".join(result.files.values()).lower()
+        self.assertNotIn("unpkg.com", blob)
+        self.assertNotIn("cdn.jsdelivr", blob)
+        self.assertNotIn("frontend/package.json", result.files)
+
+    def test_angular_express_has_both_folders(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="ang2",
+                intent=Intent(kind="new", stack="fullstack", summary="Movie posters", frontendStack="angular"),
+                prompt="angular app with a shared team api",
+                frontendStack="angular",
+                backendStack="node-express",
+            )
+        )
+        self.assertIn("frontend/angular.json", result.files)
+        self.assertIn("backend/src/server.js", result.files)
+        self.assertIn("/api/items", result.files["backend/src/server.js"])
+
+    def test_sapui5_frontend_only_scaffold(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="sap1",
+                intent=Intent(kind="new", stack="react", summary="Fiori launchpad", frontendStack="sapui5"),
+                prompt="sapui5 fiori goods receipt app",
+                frontendStack="sapui5",
+                backendStack="none",
+            )
+        )
+        self.assertIn("ui5.yaml", result.files)
+        self.assertIn("webapp/index.html", result.files)
+        self.assertIn("sap.m", result.files["webapp/index.html"])
+        self.assertNotIn("hana.ondemand", "\n".join(result.files.values()))
+
+    def test_sapui5_cap_has_mock_odata(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="sap2",
+                intent=Intent(kind="new", stack="fullstack", summary="Fiori catalog", frontendStack="sapui5"),
+                prompt="fiori app with sap cap odata",
+                frontendStack="sapui5",
+                backendStack="sap-cap",
+            )
+        )
+        self.assertIn("frontend/webapp/index.html", result.files)
+        self.assertIn("backend/srv/catalog-service.cds", result.files)
+        self.assertIn("Whole milk", result.files["backend/srv/catalog-service.js"])
+        self.assertIn("Orders", result.files["backend/srv/catalog-service.cds"])
+
+    def test_prompt_only_picks_sap_cap_without_chip(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="sap3",
+                intent=Intent(kind="new", stack="fullstack", summary="Fiori catalog"),
+                prompt="Build a Fiori catalog app with SAP CAP OData mock data",
+            )
+        )
+        self.assertIn("frontend/webapp/index.html", result.files)
+        self.assertIn("backend/srv/catalog-service.cds", result.files)
+
 
 if __name__ == "__main__":
     unittest.main()
