@@ -11,6 +11,15 @@ from pathlib import Path
 from typing import Callable, Literal
 
 from terrarium_contracts import AgentJob, AgentResult, BackendStack, FileMap, FrontendStack, Intent, Stack
+from terrarium_agents.stacks import (
+    BACKEND_STACKS,
+    FRONTEND_STACKS,
+    build_stack_files,
+    compatible_backend,
+    infer_backend_stack,
+    infer_frontend_stack,
+    uses_react_per_file_path,
+)
 
 _SAFE_PATH = re.compile(r"^(?!\.)[a-zA-Z0-9._/-]+$")
 _ALLOWED_SUFFIX = {".html", ".css", ".js", ".jsx", ".json", ".md", ".svg", ".txt"}
@@ -44,7 +53,8 @@ _LIST_RE = re.compile(
 _BACKEND_NEEDED_RE = re.compile(
     r"\b(auth|logins?|sign[- ]?up|users?|shared|database|db|backend|server|"
     r"api keys?|secrets?|payments?|email|upload|file processing|multi[- ]?user|"
-    r"roles?|permissions?|websocket|real[- ]?time)\b",
+    r"roles?|permissions?|websocket|real[- ]?time|"
+    r"express|node[- ]?express|odata|cap|sap\s*cap)\b",
     re.I,
 )
 _CDN_RE = re.compile(
@@ -160,10 +170,10 @@ def session_plan_from_payload(raw: dict[str, object]) -> SessionPlan:
     )
     theme: ThemeName = raw["theme"] if raw.get("theme") in _THEMES else "maroon"  # type: ignore[assignment]
     frontend: FrontendStack = (
-        raw["frontendStack"] if raw.get("frontendStack") in {"vanilla", "react"} else "react"  # type: ignore[assignment]
+        raw["frontendStack"] if raw.get("frontendStack") in FRONTEND_STACKS else "react"  # type: ignore[assignment]
     )
     backend: BackendStack = (
-        raw["backendStack"] if raw.get("backendStack") in {"none", "node-express"} else "none"  # type: ignore[assignment]
+        raw["backendStack"] if raw.get("backendStack") in BACKEND_STACKS else "none"  # type: ignore[assignment]
     )
 
     def _tuple(key: str) -> tuple[str, ...]:
@@ -523,20 +533,18 @@ def detect_complexity(job: AgentJob) -> Complexity:
 
 def resolve_frontend_stack(job: AgentJob) -> FrontendStack:
     selected = job.frontendStack or job.intent.frontendStack
-    return selected if selected in {"vanilla", "react"} else "react"
+    return infer_frontend_stack(f"{job.intent.summary} {job.prompt}", selected)
 
 
 def resolve_backend_stack(job: AgentJob) -> BackendStack:
-    if job.backendStack in {"none", "node-express"}:
-        return job.backendStack
-    if job.backendNeed == "yes":
-        return "node-express"
-    if job.backendNeed == "no":
-        return "none"
-    if job.intent.backendStack in {"none", "node-express"}:
-        return job.intent.backendStack
+    frontend = resolve_frontend_stack(job)
     blob = f"{job.intent.summary} {job.prompt}"
-    return "node-express" if _BACKEND_NEEDED_RE.search(blob) else "none"
+    return infer_backend_stack(
+        blob,
+        frontend,
+        selected=job.backendStack or job.intent.backendStack,
+        need=job.backendNeed,
+    )
 
 
 def build_session_plan(job: AgentJob) -> SessionPlan:
@@ -603,7 +611,11 @@ def generate(
     if blocked:
         raise DemoBlocked(blocked, retry=False)
     decision = record_shadow(job.sessionId, job.prompt)
-    if demo_mode() or canary_per_file(job.sessionId, job.prompt):
+    frontend = resolve_frontend_stack(job)
+    backend = resolve_backend_stack(job)
+    if uses_react_per_file_path(frontend, backend) and (
+        demo_mode() or canary_per_file(job.sessionId, job.prompt)
+    ):
         logger.info(
             "Generate %s canary per-file archetype=%s confidence=%.2f",
             job.sessionId,
@@ -611,6 +623,32 @@ def generate(
             decision.confidence,
         )
         return generate_per_file(job, plan, on_file=on_file)
+    if frontend in {"angular", "sapui5"}:
+        logger.info(
+            "Generate %s stack scaffold frontend=%s backend=%s (skip React per-file path)",
+            job.sessionId,
+            frontend,
+            backend,
+        )
+        resolved = plan or build_session_plan(job)
+        raw_title = (
+            (job.intent.summary or job.prompt or "New tool").strip().split("\n")[0][:80]
+            or "New tool"
+        )
+        files = build_stack_files(
+            title=raw_title,
+            prompt=job.prompt,
+            frontend=frontend,
+            backend=backend,
+        )
+        files = _finalize_files(files)
+        if not _has_html_document(_entry_html(files)):
+            raise CodeGeneratorError("Generator output is missing a valid index.html")
+        _assert_file_sizes(files)
+        return AgentResult(
+            files=files,
+            commitMessage=f"Generate {resolved.stack} app: {job.intent.summary[:72]}",
+        )
     logger.info(
         "Generate %s monolith archetype=%s confidence=%.2f",
         job.sessionId,
@@ -675,6 +713,13 @@ def _stub_generated_files(job: AgentJob, plan: SessionPlan) -> FileMap:
     )
     summary = html.escape((job.intent.summary or title).strip()[:400], quote=True)
     raw_title = (job.intent.summary or job.prompt or "New tool").strip().split("\n")[0][:80] or "New tool"
+    if plan.frontend_stack in {"angular", "sapui5"}:
+        return build_stack_files(
+            title=raw_title,
+            prompt=job.prompt,
+            frontend=plan.frontend_stack,
+            backend=plan.backend_stack,
+        )
     if plan.frontend_stack == "react" and plan.backend_stack == "node-express":
         return _stub_react_node_files(raw_title, job.prompt, plan)
     if plan.frontend_stack == "react":
@@ -924,7 +969,7 @@ def _stub_react_files(title: str, prompt: str, plan: SessionPlan | None = None) 
         ),
         "src/utils/helpers.js": "export function clampText(value, max = 120) { return String(value || '').slice(0, max); }\n",
         "src/styles/global.css": (
-            ":root { font-family: system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; color: #101827; background: #f7f8fa; }\n"
+            ":root { font-family: \"Segoe UI\", system-ui, sans-serif; color: #14151a; background: #f4f1ea; }\n"
             "* { box-sizing: border-box; }\nbody { margin: 0; }\n"
             "body { background: linear-gradient(135deg, #f8fafc, #eef1f5 52%, #f7f8fa); }\n"
             ".app-shell { min-height: 100vh; padding: clamp(24px, 5vw, 60px); max-width: 1180px; margin: 0 auto; }\n"
@@ -1027,6 +1072,32 @@ def _heuristic_plan(job: AgentJob, complexity: Complexity, stack: Stack) -> Sess
     theme = pick_theme(job)
     frontend_stack = resolve_frontend_stack(job)
     backend_stack = resolve_backend_stack(job)
+    if frontend_stack in {"angular", "sapui5"}:
+        files = (
+            (
+                "frontend/package.json",
+                "frontend/src/index.html" if frontend_stack == "angular" else "frontend/webapp/index.html",
+                "backend/package.json",
+            )
+            if backend_stack != "none"
+            else (
+                ("package.json", "src/index.html")
+                if frontend_stack == "angular"
+                else ("package.json", "webapp/index.html", "ui5.yaml")
+            )
+        )
+        return SessionPlan(
+            complexity="complex" if backend_stack != "none" else complexity,
+            stack="fullstack" if backend_stack != "none" else "react",
+            screens=("main", "api") if backend_stack != "none" else ("main",),
+            data=("server state and API routes",) if backend_stack != "none" else ("local UI state",),
+            files=files,
+            notes=f"{frontend_stack} + {backend_stack} ({theme}) for: {summary}",
+            layout=layout,
+            theme=theme,
+            frontend_stack=frontend_stack,
+            backend_stack=backend_stack,
+        )
     if backend_stack != "none":
         return SessionPlan(
             complexity="complex",
@@ -1575,7 +1646,15 @@ def _has_html_document(body: str) -> bool:
 
 
 def _entry_html(files: FileMap) -> str:
-    return files.get("index.html") or files.get("frontend/index.html") or ""
+    return (
+        files.get("index.html")
+        or files.get("frontend/index.html")
+        or files.get("src/index.html")
+        or files.get("frontend/src/index.html")
+        or files.get("webapp/index.html")
+        or files.get("frontend/webapp/index.html")
+        or ""
+    )
 
 
 def _is_static_preview(files: FileMap) -> bool:
@@ -1619,6 +1698,8 @@ def _resolve_relative_import(source_path: str, specifier: str, files: FileMap) -
     if target in files:
         return target
     target_suffix = Path(target).suffix.lower()
+    if target_suffix not in _RESOLVABLE_IMPORT_SUFFIXES:
+        target_suffix = ""
     candidates = [target] if target_suffix else []
     if not target_suffix:
         candidates.extend(f"{target}{suffix}" for suffix in _RESOLVABLE_IMPORT_SUFFIXES)

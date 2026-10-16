@@ -61,6 +61,9 @@ function eventAction(event: SessionEvent): string {
 }
 
 function iframeSrc(previewUrl: string): string {
+  if (/\.[a-zA-Z0-9]+$/.test(previewUrl.split("?")[0] ?? "")) {
+    return previewUrl;
+  }
   if (previewUrl.startsWith("/")) {
     return previewUrl.endsWith("/") ? previewUrl : `${previewUrl}/`;
   }
