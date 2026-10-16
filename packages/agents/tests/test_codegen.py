@@ -593,6 +593,9 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("frontend/angular.json", result.files)
         self.assertIn("backend/src/server.js", result.files)
         self.assertIn("/api/items", result.files["backend/src/server.js"])
+        self.assertIn("proxyConfig", result.files["frontend/angular.json"])
+        self.assertIn("frontend/proxy.conf.json", result.files)
+        self.assertIn("--proxy-config proxy.conf.json", result.files["frontend/package.json"])
 
     def test_sapui5_frontend_only_scaffold(self) -> None:
         result = generate(
@@ -623,6 +626,27 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("backend/srv/catalog-service.cds", result.files)
         self.assertIn("Whole milk", result.files["backend/srv/catalog-service.js"])
         self.assertIn("Orders", result.files["backend/srv/catalog-service.cds"])
+        self.assertIn("frontend/odata-proxy.mjs", result.files)
+        self.assertIn("/odata", result.files["frontend/odata-proxy.mjs"])
+        self.assertIn("node odata-proxy.mjs", result.files["frontend/package.json"])
+
+    def test_react_express_keeps_current_generator_path(self) -> None:
+        from unittest.mock import patch
+
+        from terrarium_agents.codegen import generate
+
+        job = AgentJob(
+            sessionId="react-node-live",
+            intent=Intent(kind="new", stack="fullstack", summary="Team notes"),
+            prompt="build shared team notes with login",
+            frontendStack="react",
+            backendStack="node-express",
+        )
+        with patch("terrarium_agents.codegen._maybe_llm_overlay", return_value=None) as overlay:
+            result = generate(job)
+        overlay.assert_called_once()
+        self.assertIn("frontend/src/App.jsx", result.files)
+        self.assertIn("backend/src/server.js", result.files)
 
     def test_prompt_only_picks_sap_cap_without_chip(self) -> None:
         result = generate(

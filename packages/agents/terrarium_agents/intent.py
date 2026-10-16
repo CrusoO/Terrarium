@@ -23,6 +23,7 @@ from terrarium_agents.llm import (
     DEFAULT_GEMINI_JSON_TIMEOUT_MS,
     agents_mode,
     fast_model,
+    gemini_api_key,
     gemini_client,
     intent_model,
     invoke_bedrock_text,
@@ -63,7 +64,7 @@ INTENT_JSON_SCHEMA: dict[str, object] = {
 
 SYSTEM_PROMPT = """You are Terrarium's Intent Agent — a friendly product partner.
 
-You do not write application code, file trees, Docker, or shell. You help everyday people describe what they want. Many users are not technical (sales, HR, operations, teachers). Talk like a helpful colleague, never like an engineer. Ask about their business, never about software.
+You do not write application code, file trees, Docker, or shell. You help everyday people describe what they want. Many users are not technical (sales, HR, operations, teachers). Talk like a helpful colleague, never like an engineer. Ask about their business. The UI also asks them to pick React, Angular, or SAP Fiori — you must not guess that pick from words in the first prompt.
 
 Return JSON only matching the schema. Decide phase first, then fill the rest.
 
@@ -92,8 +93,8 @@ Prefer concrete examples over abstract categories. Never ask generic "tell me mo
 KIND / STACK
 - modify ONLY if an existing FileMap or toolId is in context. Otherwise new.
 - fullstack only if they clearly need sign-in, shared users, saved data for a team, payments, email, or file uploads to a server. Else react.
-- Infer stack from their plain answers. Do not ask them to pick a technology.
-- React/Vite is the default frontend stack unless they ask for Angular, SAPUI5/Fiori, or plain HTML/CSS/JS.
+- Do not infer React, Angular, or SAP Fiori from the first prompt. Stay in clarify until they pick a stack in the chips (or say React / Angular / SAP Fiori in an answer).
+- If they have not picked a stack yet, phase is clarify. Never default to React and start a build.
 
 SUMMARY
 - One line, <= 160 chars, the tool itself. Greeting → "Chat greeting".
@@ -101,7 +102,7 @@ SUMMARY
 REPLY STYLE
 - Direct, warm, no filler, no "As an AI", no "Great question!".
 - Greeting: "Hey — what should we build?" Then the UI shows starter chips.
-- Clarify: "I can make that. Six simple questions so it matches what you have in mind."
+- Clarify: "I can make that. A few questions, including which kind of app to build."
 - Ready: confirm the plan in plain language, including any default you assumed.
 
 SAFETY
@@ -205,10 +206,16 @@ class IntentAgent:
     def classify(self, inp: IntentAgentInput) -> IntentAgentOutput:
         if agents_mode() == "stub":
             raw = self._classify_stub(inp)
-        elif os.environ.get("TERRARIUM_ALLOW_FREE_GEMINI") == "1":
+        elif os.environ.get("TERRARIUM_ALLOW_FREE_GEMINI") == "1" or intent_model().lower().startswith("gemini"):
             raw = self._classify_gemini(inp)
         else:
-            raw = self._classify_bedrock(inp)
+            try:
+                raw = self._classify_bedrock(inp)
+            except IntentError:
+                if not gemini_api_key():
+                    raise
+                logger.warning("Intent Bedrock failed; falling back to Gemini")
+                raw = self._classify_gemini(inp)
         return _enforce_rules(raw, inp)
 
     def _classify_stub(self, inp: IntentAgentInput) -> IntentAgentOutput:
@@ -422,6 +429,14 @@ def _question_answered(question: str, answer: str) -> bool:
         return True
     if "history" in q and re.search(r"yes|no|history|keep", a):
         return True
+    if re.search(r"kind of app|which screens|react|angular|fiori", q) and _STACK_PICK_RE.search(a):
+        return True
+    if re.search(r"shared data|keep on a server", q) and (
+        _BACKEND_NEEDED_RE.search(a)
+        or _BACKEND_NOT_NEEDED_RE.search(a)
+        or re.search(r"just this screen|no server|sap cap|shared data", a)
+    ):
+        return True
     if re.search(r"frontend|backend|server|auth|database|shared", q) and (
         _BACKEND_NEEDED_RE.search(a) or _BACKEND_NOT_NEEDED_RE.search(a)
     ):
@@ -434,6 +449,12 @@ def _question_answered(question: str, answer: str) -> bool:
 def _spec_enough(inp: IntentAgentInput) -> bool:
     prompt = inp.prompt.strip()
     if _PROCEED_RE.search(prompt):
+        return True
+    if _stack_picked(inp) and re.search(
+        r"\b(just\s+build(?:\s+it)?|go\s+ahead|skip(?:\s+the)?\s+questions?)\b",
+        prompt,
+        re.I,
+    ):
         return True
     if _is_detailed_spec(prompt):
         return True
@@ -528,24 +549,61 @@ def _stub_intent(inp: IntentAgentInput) -> IntentAgentOutput:
     )
 
 
+_STACK_PICK_RE = re.compile(
+    r"\b(react|angular|sapui5|sap\s*ui5|fiori|vanilla|plain html|simple web page)\b",
+    re.I,
+)
+
+
+def _user_picks_text(inp: IntentAgentInput) -> str:
+    """Answers after the first build request. The opening prompt is not a stack pick."""
+    turns = [turn.text.strip() for turn in (inp.conversation or []) if turn.role == "user"]
+    latest = inp.prompt.strip()
+    if turns and turns[-1] != latest:
+        turns.append(latest)
+    elif not turns and latest:
+        turns = [latest]
+    if len(turns) <= 1:
+        return ""
+    return "\n".join(turns[1:])
+
+
+def _stack_picked(inp: IntentAgentInput) -> bool:
+    if inp.frontendStack:
+        return True
+    return bool(_STACK_PICK_RE.search(_user_picks_text(inp)))
+
+
 def _selected_frontend(inp: IntentAgentInput, intent: IntentAgentOutput | None = None) -> FrontendStack:
     from terrarium_agents.stacks import infer_frontend_stack
 
-    selected = inp.frontendStack or (intent.frontendStack if intent else None)
-    return infer_frontend_stack(_stack_decision_text(inp), selected)
+    _ = intent
+    if inp.frontendStack:
+        return infer_frontend_stack("", inp.frontendStack)
+    picks = _user_picks_text(inp)
+    if picks:
+        return infer_frontend_stack(picks, None)
+    return "react"
 
 
 def _selected_backend(inp: IntentAgentInput, intent: IntentAgentOutput | None = None) -> BackendStack:
     from terrarium_agents.stacks import infer_backend_stack
 
+    _ = intent
     frontend = _selected_frontend(inp, intent)
-    selected = inp.backendStack or (intent.backendStack if intent else None)
-    return infer_backend_stack(
-        _stack_decision_text(inp),
-        frontend,
-        selected=selected,
-        need=inp.backendNeed,
-    )
+    if inp.backendNeed in {"yes", "no"}:
+        return infer_backend_stack("", frontend, selected=inp.backendStack, need=inp.backendNeed)
+    picks = _user_picks_text(inp)
+    if picks:
+        return infer_backend_stack(picks, frontend, selected=inp.backendStack, need=inp.backendNeed)
+    if inp.frontendStack:
+        return infer_backend_stack(
+            _stack_decision_text(inp),
+            frontend,
+            selected=inp.backendStack,
+            need=inp.backendNeed,
+        )
+    return infer_backend_stack("", frontend, selected=inp.backendStack, need=inp.backendNeed)
 
 
 def _stack_decision_text(inp: IntentAgentInput) -> str:
@@ -564,13 +622,39 @@ def _thread_idea(inp: IntentAgentInput) -> str:
 def _clarify_lead_in(idea: str) -> str:
     lower = idea.lower()
     if "convert" in lower or "json" in lower or "csv" in lower or "excel" in lower:
-        return "I can make that converter. Six simple questions so it matches what you have in mind."
+        return "I can make that converter. A few questions, including which kind of app to build."
     if "calc" in lower:
-        return "I can make that calculator. Six simple questions so we don't overbuild it."
+        return "I can make that calculator. A few questions, including which kind of app to build."
     if "website" in lower or "web site" in lower or "landing" in lower:
-        return "I can make that site. Six simple questions so the first look matches what you meant."
-    return "I can make that. Six simple questions so the first look matches what you meant."
+        return "I can make that site. A few questions, including which kind of app to build."
+    return "I can make that. A few questions, including which kind of app to build."
 
+
+_STACK_ONBOARDING: tuple[dict[str, object], ...] = (
+    {
+        "text": "Which kind of app should we build?",
+        "helperText": "Pick one. We will not guess from your first message.",
+        "allowMultiple": False,
+        "inputPlaceholder": "e.g. React",
+        "suggestions": (
+            "React",
+            "Angular",
+            "SAP Fiori",
+            "Simple web page",
+        ),
+    },
+    {
+        "text": "Should this keep shared data on a server?",
+        "helperText": "Frontend-only stays on this screen. A server is for logins and team data.",
+        "allowMultiple": False,
+        "inputPlaceholder": "e.g. Just this screen",
+        "suggestions": (
+            "Just this screen — no server",
+            "Yes — keep shared data on a server",
+            "Yes — SAP CAP OData",
+        ),
+    },
+)
 
 _BUSINESS_ONBOARDING: tuple[dict[str, object], ...] = (
     {
@@ -676,7 +760,9 @@ def _business_question_item(spec: dict[str, object]) -> ClarifyQuestion:
 
 def build_clarify_question_items(questions: list[str], idea: str) -> list[ClarifyQuestion]:
     _ = questions, idea
-    return [_business_question_item(spec) for spec in _BUSINESS_ONBOARDING]
+    return [
+        _business_question_item(spec) for spec in (*_STACK_ONBOARDING, *_BUSINESS_ONBOARDING)
+    ]
 
 
 def clarify_reply_after_plan(idea: str, architecture: str) -> str:
@@ -818,6 +904,17 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
         phase = "clarify"
         questions = _live_or_stub_questions(questions, inp.prompt)
 
+    if (
+        phase == "ready"
+        and kind == "new"
+        and not _has_existing_app(inp)
+        and not _stack_picked(inp)
+    ):
+        phase = "clarify"
+        questions = _live_or_stub_questions(questions, _thread_idea(inp)) or _exactly_six(
+            [], _thread_idea(inp)
+        )
+
     if phase == "clarify" and agents_mode() == "stub":
         questions = _exactly_six(questions, _thread_idea(inp))
         if len(questions) < _MIN_QUESTIONS:
@@ -863,7 +960,7 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
 
     question_items = (
         build_clarify_question_items(questions, _thread_idea(inp))
-        if phase == "clarify" and questions
+        if phase == "clarify"
         else None
     )
     return IntentAgentOutput(

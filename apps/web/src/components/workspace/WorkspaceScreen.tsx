@@ -28,7 +28,6 @@ type WorkspaceScreenProps = {
   events: SessionEvent[];
   files: FileMap | null;
   streamFiles: FileMap | null;
-  sessionId?: string | null;
 };
 
 export function WorkspaceScreen(props: WorkspaceScreenProps) {
@@ -96,7 +95,6 @@ export function WorkspaceScreen(props: WorkspaceScreenProps) {
         previewUrl={props.previewUrl}
         previewStatus={props.previewStatus}
         previewKey={props.previewKey}
-        sessionId={props.sessionId}
       />
     </main>
   );

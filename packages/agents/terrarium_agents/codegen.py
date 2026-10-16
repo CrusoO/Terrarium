@@ -623,7 +623,7 @@ def generate(
             decision.confidence,
         )
         return generate_per_file(job, plan, on_file=on_file)
-    if not uses_react_per_file_path(frontend, backend):
+    if frontend in {"angular", "sapui5"}:
         logger.info(
             "Generate %s stack scaffold frontend=%s backend=%s (skip React per-file path)",
             job.sessionId,
@@ -635,17 +635,12 @@ def generate(
             (job.intent.summary or job.prompt or "New tool").strip().split("\n")[0][:80]
             or "New tool"
         )
-        if frontend in {"angular", "sapui5"}:
-            files = build_stack_files(
-                title=raw_title,
-                prompt=job.prompt,
-                frontend=frontend,
-                backend=backend,
-            )
-        elif backend == "node-express":
-            files = _stub_react_node_files(raw_title, job.prompt, resolved)
-        else:
-            files = _stub_generated_files(job, resolved)
+        files = build_stack_files(
+            title=raw_title,
+            prompt=job.prompt,
+            frontend=frontend,
+            backend=backend,
+        )
         files = _finalize_files(files)
         if not _has_html_document(_entry_html(files)):
             raise CodeGeneratorError("Generator output is missing a valid index.html")

@@ -9,7 +9,7 @@ from html import escape
 from terrarium_contracts import BackendStack, FileMap, FrontendStack
 
 _ANGULAR_RE = re.compile(r"\bangular\b", re.I)
-_SAP_RE = re.compile(r"\b(sapui5|sap\s*ui5|fiori|sap\s*cap|odata|sap)\b", re.I)
+_SAP_RE = re.compile(r"\b(sapui5|sap\s*ui5|sap\s*fiori|fiori)\b", re.I)
 _CAP_RE = re.compile(r"\b(sap\s*cap|odata|cds|cap)\b", re.I)
 _FRONTEND_ONLY_RE = re.compile(
     r"\b(frontend[- ]?only|client[- ]?only|browser[- ]?only|no backend|without backend)\b",
@@ -28,12 +28,16 @@ BACKEND_STACKS = frozenset({"none", "node-express", "sap-cap"})
 
 
 def infer_frontend_stack(text: str, selected: str | None = None) -> FrontendStack:
+    if selected in FRONTEND_STACKS:
+        return selected  # type: ignore[return-value]
     if _SAP_RE.search(text):
         return "sapui5"
     if _ANGULAR_RE.search(text):
         return "angular"
-    if selected in FRONTEND_STACKS:
-        return selected  # type: ignore[return-value]
+    if re.search(r"\b(vanilla|plain html|simple web page)\b", text, re.I):
+        return "vanilla"
+    if re.search(r"\breact\b", text, re.I):
+        return "react"
     return "react"
 
 
@@ -45,16 +49,22 @@ def infer_backend_stack(
 ) -> BackendStack:
     if need == "no":
         return "none"
-    if _FRONTEND_ONLY_RE.search(text):
+    if selected in BACKEND_STACKS:
+        return compatible_backend(frontend, selected)  # type: ignore[arg-type]
+    if _FRONTEND_ONLY_RE.search(text) or re.search(
+        r"\b(just this screen|no server|frontend only)\b", text, re.I
+    ):
         return "none"
     if frontend == "sapui5" and _CAP_RE.search(text):
         return "sap-cap"
-    if _BACKEND_PROMPT_RE.search(text):
+    if re.search(r"\bsap\s*cap\b", text, re.I):
+        return compatible_backend(frontend, "sap-cap")
+    if _BACKEND_PROMPT_RE.search(text) or re.search(
+        r"\bkeep shared data on a server\b", text, re.I
+    ):
         return compatible_backend(frontend, "node-express")
     if need == "yes":
         return compatible_backend(frontend, "node-express")
-    if selected in BACKEND_STACKS:
-        return compatible_backend(frontend, selected)  # type: ignore[arg-type]
     return "none"
 
 
@@ -114,13 +124,19 @@ def angular_files(title: str, *, with_api: bool = False) -> FileMap:
     )
     http_import = "import { HttpClient } from '@angular/common/http';\n" if with_api else ""
     http_inject = "private http: HttpClient" if with_api else ""
-    return {
+    ng_dev = "ng serve --host 0.0.0.0 --port 5173 --disable-host-check"
+    if with_api:
+        ng_dev += " --proxy-config proxy.conf.json"
+    serve_options: dict[str, object] = {"port": 5173, "host": "0.0.0.0"}
+    if with_api:
+        serve_options["proxyConfig"] = "proxy.conf.json"
+    files: FileMap = {
         "package.json": json.dumps(
             {
                 "name": "terrarium-angular-app",
                 "private": True,
                 "version": "0.0.0",
-                "scripts": {"dev": "ng serve --host 0.0.0.0 --port 5173 --disable-host-check"},
+                "scripts": {"dev": ng_dev},
                 "dependencies": {
                     "@angular/common": "19.2.14",
                     "@angular/compiler": "19.2.14",
@@ -165,7 +181,7 @@ def angular_files(title: str, *, with_api: bool = False) -> FileMap:
                             },
                             "serve": {
                                 "builder": "@angular/build:dev-server",
-                                "options": {"port": 5173, "host": "0.0.0.0"},
+                                "options": serve_options,
                             },
                         },
                     }
@@ -233,6 +249,12 @@ def angular_files(title: str, *, with_api: bool = False) -> FileMap:
         "src/styles.css": modern_css("#c2410c"),
         "README.md": f"# {title}\n\nGenerated Angular frontend. Framework packages are installed locally.\n",
     }
+    if with_api:
+        files["proxy.conf.json"] = json.dumps(
+            {"/api": {"target": "http://127.0.0.1:3000", "secure": False, "changeOrigin": True}},
+            indent=2,
+        )
+    return files
 
 
 def sapui5_files(title: str, *, with_odata: bool = False) -> FileMap:
@@ -265,13 +287,14 @@ def sapui5_files(title: str, *, with_odata: bool = False) -> FileMap:
         else "Local SAPUI5 / Fiori catalog. OpenUI5 is served from the sandbox."
     )
     catalog_path = "/Items" if with_odata else "/items"
-    return {
+    ui5_dev = "node odata-proxy.mjs" if with_odata else "ui5 serve --port 5173 --accept-remote-connections"
+    files: FileMap = {
         "package.json": json.dumps(
             {
                 "name": "terrarium-sapui5-app",
                 "private": True,
                 "version": "0.0.0",
-                "scripts": {"dev": "ui5 serve --port 5173 --accept-remote-connections"},
+                "scripts": {"dev": ui5_dev},
                 "devDependencies": {"@ui5/cli": "4.0.25"},
             },
             indent=2,
@@ -369,6 +392,32 @@ def sapui5_files(title: str, *, with_odata: bool = False) -> FileMap:
         "webapp/css/style.css": modern_css("#0f828f"),
         "README.md": f"# {title}\n\nGenerated SAPUI5/Fiori frontend. OpenUI5 is resolved locally.\n",
     }
+    if with_odata:
+        files["odata-proxy.mjs"] = (
+            "import { createServer, request } from 'node:http';\n"
+            "import { spawn } from 'node:child_process';\n"
+            "const ui5Port = 5174;\n"
+            "const capPort = 4004;\n"
+            "const listenPort = Number(process.env.PORT || 5173);\n"
+            "const child = spawn('ui5', ['serve', '--port', String(ui5Port), '--accept-remote-connections'], "
+            "{ stdio: 'inherit', env: process.env });\n"
+            "child.on('exit', (code) => process.exit(code ?? 1));\n"
+            "function forward(req, res, port) {\n"
+            "  const headers = { ...req.headers, host: `127.0.0.1:${port}` };\n"
+            "  const upstream = request({ hostname: '127.0.0.1', port, path: req.url, method: req.method, headers }, (incoming) => {\n"
+            "    res.writeHead(incoming.statusCode ?? 502, incoming.headers);\n"
+            "    incoming.pipe(res);\n"
+            "  });\n"
+            "  upstream.on('error', () => { if (!res.headersSent) res.writeHead(502); res.end('Upstream is not ready'); });\n"
+            "  req.pipe(upstream);\n"
+            "}\n"
+            "createServer((req, res) => {\n"
+            "  const url = req.url || '/';\n"
+            "  if (url === '/odata' || url.startsWith('/odata/')) { forward(req, res, capPort); return; }\n"
+            "  forward(req, res, ui5Port);\n"
+            "}).listen(listenPort, '0.0.0.0');\n"
+        )
+    return files
 
 
 def express_backend_files() -> FileMap:
