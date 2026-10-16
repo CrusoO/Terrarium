@@ -1,25 +1,6 @@
 import { useMemo, useState, type CSSProperties } from "react";
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Typography,
-} from "@mui/material";
-import type { CheckStep, FileMap, SessionEvent } from "@terrarium/contracts";
-import type { Group } from "../../api/groups";
-import { listGroups } from "../../api/groups";
-import { publishSession } from "../../api/sessions";
-import { runSessionPublishCheck } from "../../api/trust";
-import { useAuth } from "../../hooks/useAuth";
+import type { FileMap, SessionEvent } from "@terrarium/contracts";
 import type { PreviewStatus } from "../canvas/PreviewPanel";
-import { PrePublishPanel } from "../trust/PrePublishPanel";
 import { fileMapToPreviewDocument } from "../../utils/previewDocument";
 
 function Icon({ path }: { path: string }) {
@@ -182,7 +163,6 @@ export function PreviewPanel({
   previewUrl = null,
   previewStatus = "idle",
   previewKey = 0,
-  sessionId = null,
 }: {
   tab?: "preview" | "code" | "events";
   onTabChange?: (tab: "preview" | "code" | "events") => void;
@@ -193,55 +173,9 @@ export function PreviewPanel({
   previewUrl?: string | null;
   previewStatus?: PreviewStatus;
   previewKey?: number;
-  sessionId?: string | null;
 }) {
   const [openEventKey, setOpenEventKey] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [publishing, setPublishing] = useState(false);
-  const [publishOpen, setPublishOpen] = useState(false);
-  const [trustOpen, setTrustOpen] = useState(false);
-  const [checking, setChecking] = useState(false);
-  const [checkHealth, setCheckHealth] = useState<Awaited<ReturnType<typeof runSessionPublishCheck>> | null>(null);
-  const [acknowledgeWarnings, setAcknowledgeWarnings] = useState(false);
-  const [visibility, setVisibility] = useState<"all" | "group">("all");
-  const [groupId, setGroupId] = useState("");
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [publishNote, setPublishNote] = useState<string | null>(null);
-  const auth = useAuth();
-  const userEmail = auth.state.status === "authenticated" ? auth.state.user.email ?? "" : "";
-  const canPublish = Boolean(sessionId) && previewStatus === "live" && Boolean(previewUrl) && !publishing;
-  const stepStatus = useMemo(() => {
-    const map: Partial<Record<CheckStep, "running" | "passed" | "failed" | "skipped">> = {};
-    for (const event of events) {
-      if (event.name !== "check.step" || !event.payload) {
-        continue;
-      }
-      const step = event.payload.step;
-      const status = event.payload.status;
-      if (typeof step === "string" && typeof status === "string") {
-        map[step as CheckStep] = status as "running" | "passed" | "failed" | "skipped";
-      }
-    }
-    return map;
-  }, [events]);
-
-  async function beginTrustCheck() {
-    if (!sessionId) {
-      setPublishNote("Build an app first, then publish.");
-      return;
-    }
-    setTrustOpen(true);
-    setChecking(true);
-    setCheckHealth(null);
-    try {
-      setCheckHealth(await runSessionPublishCheck(sessionId));
-    } catch (error) {
-      setPublishNote(error instanceof Error ? error.message : "Publish check failed.");
-      setTrustOpen(false);
-    } finally {
-      setChecking(false);
-    }
-  }
   const visibleFiles = streamFiles ?? files ?? {};
   const fileEntries = Object.entries(visibleFiles).sort(([left], [right]) => left.localeCompare(right));
   const selectedFilePath = selectedFile && visibleFiles[selectedFile] !== undefined ? selectedFile : fileEntries[0]?.[0] ?? null;
@@ -256,7 +190,6 @@ export function PreviewPanel({
     "No preview";
 
   return (
-    <>
     <section className="tw-preview" aria-label="Generated app preview">
       <header className="tw-preview-head">
         <div className="tw-preview-left"><span className="tw-preview-title">Generated app</span><span className="tw-preview-status"><span className="tw-green-dot" />{previewLabel}</span></div>
@@ -265,23 +198,7 @@ export function PreviewPanel({
           <button className={`tw-tool ${tab === "code" ? "active" : ""}`} aria-label="Code" data-tooltip="Code" type="button" onClick={() => onTabChange?.("code")}><Icon path="M16 18l6-6-6-6M8 6l-6 6 6 6" /></button>
           <button className="tw-tool" aria-label="Git" data-tooltip={appBuilt ? "Git" : "Git is available after build"} type="button" disabled={!appBuilt}><GitHubIcon /></button>
           <button className="tw-stale" aria-label="Out of date" data-tooltip="Out of date"><Icon path="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 7v5l3 2" />Out of date</button>
-          <button
-            className="tw-rocket"
-            aria-label="Publish"
-            data-tooltip={canPublish ? "Publish" : publishNote || "Publish is available after a live preview"}
-            type="button"
-            disabled={!canPublish}
-            onClick={() => {
-              setPublishNote(null);
-              void beginTrustCheck();
-              if (userEmail) {
-                void listGroups(userEmail).then(setGroups).catch(() => setGroups([]));
-              }
-            }}
-          >
-            <Icon path="M5 15c5-7 8-10 14-10-1 6-3 9-10 14l-4-4z M9 19l-4 2 2-4 M14 7l3 3 M9 14l1 1" />
-          </button>
-          {publishNote ? <span className="tw-preview-status" title={publishNote}>{publishNote}</span> : null}
+          <button className="tw-rocket" aria-label="Publish" data-tooltip={appBuilt ? "Publish" : "Publish is available after build"} type="button" disabled={!appBuilt}><Icon path="M5 15c5-7 8-10 14-10-1 6-3 9-10 14l-4-4z M9 19l-4 2 2-4 M14 7l3 3 M9 14l1 1" /></button>
           <button className={`tw-tool ${tab === "events" ? "active" : ""}`} aria-label="Events" data-tooltip="Events" type="button" onClick={() => onTabChange?.("events")}><Icon path="M3 12h4l2-6 4 12 2-6h6" /></button>
         </div>
       </header>
@@ -393,106 +310,5 @@ export function PreviewPanel({
         )}
       </div>
     </section>
-      <PrePublishPanel
-        open={trustOpen}
-        onClose={() => !checking && setTrustOpen(false)}
-        health={checkHealth}
-        stepStatus={stepStatus}
-        publishing={publishing}
-        checking={checking}
-        onFixAutomatically={() => {
-          setPublishNote("Auto-fix is available after the app is saved as a draft.");
-        }}
-        onPublish={(ackWarnings) => {
-          setAcknowledgeWarnings(ackWarnings);
-          setTrustOpen(false);
-          setPublishOpen(true);
-        }}
-      />
-      <Dialog open={publishOpen} onClose={() => !publishing && setPublishOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Publish</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Who can use this app?
-          </Typography>
-          <FormControl>
-            <RadioGroup
-              value={visibility}
-              onChange={(event) => setVisibility(event.target.value as "all" | "group")}
-            >
-              <FormControlLabel value="all" control={<Radio />} label="Everyone" />
-              <FormControlLabel value="group" control={<Radio />} label="Your team" />
-            </RadioGroup>
-          </FormControl>
-          {visibility === "group" ? (
-            <FormControl fullWidth sx={{ mt: 2 }}>
-              {groups.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  Create a team first.
-                </Typography>
-              ) : (
-                <Box
-                  component="select"
-                  value={groupId}
-                  onChange={(event) => setGroupId(event.target.value)}
-                  sx={{
-                    mt: 0.5,
-                    p: 1.25,
-                    borderRadius: 1,
-                    border: 1,
-                    borderColor: "divider",
-                    font: "inherit",
-                    bgcolor: "background.paper",
-                  }}
-                >
-                  <option value="">Select a team</option>
-                  {groups.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name}
-                    </option>
-                  ))}
-                </Box>
-              )}
-            </FormControl>
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPublishOpen(false)} disabled={publishing}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            disabled={publishing || (visibility === "group" && !groupId)}
-            onClick={() => {
-              if (!sessionId) {
-                return;
-              }
-              const selected = groups.find((group) => group.id === groupId);
-              setPublishing(true);
-              void publishSession(sessionId, {
-                visibility,
-                groupId: visibility === "group" ? groupId : undefined,
-                groupName: visibility === "group" ? selected?.name : undefined,
-                acknowledgeWarnings: acknowledgeWarnings || undefined,
-              })
-                .then((result) => {
-                  setPublishNote(
-                    result.tool.visibility === "group"
-                      ? `Saved “${result.tool.name}” for ${result.tool.groupName ?? "your team"}`
-                      : `Saved “${result.tool.name}” for everyone`,
-                  );
-                  setPublishOpen(false);
-                })
-                .catch((error: unknown) =>
-                  setPublishNote(error instanceof Error ? error.message : "Publish failed."),
-                )
-                .finally(() => setPublishing(false));
-            }}
-          >
-            {publishing ? "Publishing…" : "Publish"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
   );
 }
