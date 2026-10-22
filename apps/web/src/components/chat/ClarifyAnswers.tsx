@@ -11,6 +11,7 @@ import {
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import { Box, Button, IconButton, Link, Paper, Stack, TextField, Typography } from "@mui/material";
 import type { ClarifyChoice, ClarifyQuestion } from "@terrarium/contracts";
+import { StackSelectorStep, type StackSelection } from "./StackSelectorStep";
 
 const SKIPPED = "Skip — use a sensible default";
 const MAROON = "var(--tt-accent-fill)";
@@ -25,6 +26,7 @@ type ClarifyAnswersProps = {
   questionItems?: ClarifyQuestion[];
   disabled?: boolean;
   onSend: (text: string) => void;
+  onStackSelect?: (selection: StackSelection) => void;
 };
 
 function fallbackSteps(questions: string[]): ClarifyQuestion[] {
@@ -132,6 +134,7 @@ export function ClarifyAnswers({
   questionItems,
   disabled = false,
   onSend,
+  onStackSelect,
 }: ClarifyAnswersProps) {
   const steps = useMemo(() => normalizeSteps(questions, questionItems), [questions, questionItems]);
   const [step, setStep] = useState(0);
@@ -140,6 +143,8 @@ export function ClarifyAnswers({
   const [selectedIndexes, setSelectedIndexes] = useState<number[][]>(() => steps.map(() => []));
   const [selectedValues, setSelectedValues] = useState<string[][]>(() => steps.map(() => []));
   const [customText, setCustomText] = useState<string[]>(() => steps.map(() => ""));
+  const [stackJson, setStackJson] = useState<string[]>(() => steps.map(() => "{}"));
+  const [stackDisplay, setStackDisplay] = useState<string[]>(() => steps.map(() => ""));
   const [ideaOffset, setIdeaOffset] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const customRef = useRef<HTMLTextAreaElement>(null);
@@ -166,6 +171,7 @@ export function ClarifyAnswers({
   const acceptsFiles = customSelected || current?.acceptsFiles === true || current?.dataSource === true;
 
   const canContinue = useMemo(() => {
+    if (current?.isStackSelector) return true;
     if (skipped[step]) {
       return true;
     }
@@ -176,7 +182,7 @@ export function ClarifyAnswers({
       hasRegularChoice ||
       hasCustomContext
     );
-  }, [step, skipped, selectedValues, customText, fileAnswers]);
+  }, [step, skipped, selectedValues, customText, fileAnswers, current]);
 
   useEffect(() => {
     customRef.current?.blur();
@@ -218,6 +224,7 @@ export function ClarifyAnswers({
   function compose(extraSkip?: number): string {
     const nextSkipped = skipped.map((item, index) => item || extraSkip === index);
     const answerFor = (index: number): string => {
+      if (steps[index]?.isStackSelector) return stackDisplay[index]?.trim() || "React / Vite — Frontend only";
       const picked = (selectedValues[index] ?? []).filter((value) => value !== CUSTOM_VALUE);
       return [picked.join(", "), customText[index]?.trim(), fileAnswers[index]?.trim()]
         .filter(Boolean)
@@ -243,6 +250,10 @@ export function ClarifyAnswers({
     if (options?.skipAll) {
       onSend("Skip the questions");
       return;
+    }
+    if (onStackSelect) {
+      const idx = steps.findIndex(s => s.isStackSelector);
+      if (idx >= 0) { try { const sel = JSON.parse(stackJson[idx]??"{}") as StackSelection; if (sel.frontendStack) onStackSelect(sel); } catch {} }
     }
     onSend(compose(options?.skipIndex));
   }
