@@ -6,6 +6,7 @@ import { AgentTrace } from "./AgentTrace";
 import { ClarifyAnswers } from "./ClarifyAnswers";
 import { SmartMatchOffer } from "./SmartMatchOffer";
 import { ThinkingIndicator } from "./ThinkingIndicator";
+import type { StackSelection } from "./StackSelectorStep";
 
 type ThreadBlock =
   | { kind: "item"; item: ChatItem }
@@ -35,6 +36,7 @@ type ChatThreadProps = {
   onRetryAnyway?: () => void;
   onAcceptMatch?: (toolId: string) => void;
   onRejectMatch?: () => void;
+  onStackSelect?: (selection: StackSelection) => void;
 };
 
 function latestUnansweredAssistantId(chat: ChatItem[]): string | null {
@@ -159,6 +161,7 @@ export function ChatThread({
   onRetryAnyway,
   onAcceptMatch,
   onRejectMatch,
+  onStackSelect,
 }: ChatThreadProps) {
   if (chat.length === 0) {
     return null;
@@ -339,6 +342,7 @@ export function ChatThread({
                       questions={item.questions}
                       questionItems={item.questionItems}
                       onSend={(text) => onSendChoice?.(text)}
+                      onStackSelect={onStackSelect}
                     />
                   ) : (
                     <Stack spacing={1} sx={{ mt: 1.5, opacity: 0.7 }}>

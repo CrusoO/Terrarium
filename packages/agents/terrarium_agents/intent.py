@@ -7,6 +7,9 @@ import logging
 import os
 import re
 
+_SAP_RE = re.compile(r"\b(sap|sapui5|fiori|btp|abap|s/4|hana|odata|cap)\b", re.IGNORECASE)
+_ANGULAR_RE = re.compile(r"\b(angular|ng[\s-]?app|rxjs|ngrx|angular[\s-]?material)\b", re.IGNORECASE)
+
 from terrarium_contracts import (
     BackendStack,
     ClarifyChoice,
@@ -673,9 +676,49 @@ def _business_question_item(spec: dict[str, object]) -> ClarifyQuestion:
     )
 
 
+_STACK_FRONTEND_CHOICES: tuple[dict[str, str], ...] = (
+    {"value": "react",   "title": "React / Vite",   "subtitle": "Modern web tool — works everywhere"},
+    {"value": "angular", "title": "Angular",         "subtitle": "Component-based — great for enterprise teams"},
+    {"value": "sapui5",  "title": "SAPUI5 / Fiori",  "subtitle": "SAP look-and-feel — uses local mock data"},
+    {"value": "custom",  "title": "Custom / Other",  "subtitle": "Describe a different stack below"},
+)
+
+
+def _detect_recommended_frontend(prompt: str) -> str:
+    if _SAP_RE.search(prompt):
+        return "sapui5"
+    if _ANGULAR_RE.search(prompt):
+        return "angular"
+    return "react"
+
+
+def _stack_selector_item(recommended_frontend: str = "react") -> ClarifyQuestion:
+    choices = [
+        ClarifyChoice(
+            title=opt["title"],
+            subtitle=opt["subtitle"],
+            value=opt["value"],
+            recommended=(opt["value"] == recommended_frontend),
+        )
+        for opt in _STACK_FRONTEND_CHOICES
+    ]
+    return ClarifyQuestion(
+        text="Which technology should the tool use?",
+        helperText="Pick the framework your team already knows. One option is recommended based on your prompt.",
+        allowMultiple=False,
+        inputPlaceholder="e.g. We use SAP internally — describe your stack",
+        isStackSelector=True,
+        choices=choices,
+        options=[opt["value"] for opt in _STACK_FRONTEND_CHOICES],
+    )
+
+
 def build_clarify_question_items(questions: list[str], idea: str) -> list[ClarifyQuestion]:
-    _ = questions, idea
-    return [_business_question_item(spec) for spec in _BUSINESS_ONBOARDING]
+    recommended = _detect_recommended_frontend(idea)
+    # First 5 business onboarding questions, then the stack selector as step 6
+    result = [_business_question_item(spec) for spec in _BUSINESS_ONBOARDING[:5]]
+    result.append(_stack_selector_item(recommended))
+    return result
 
 
 def clarify_reply_after_plan(idea: str, architecture: str) -> str:

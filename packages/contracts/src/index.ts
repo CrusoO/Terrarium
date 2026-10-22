@@ -6,13 +6,13 @@ export const DEV_USER = "dev-user" as const;
 export const stackSchema = z.enum(["react", "fullstack"]);
 export type Stack = z.infer<typeof stackSchema>;
 
-export const frontendStackSchema = z.enum(["vanilla", "react"]);
+export const frontendStackSchema = z.enum(["vanilla", "react", "angular", "sapui5"]);
 export type FrontendStack = z.infer<typeof frontendStackSchema>;
 
 export const backendNeedSchema = z.enum(["auto", "yes", "no"]);
 export type BackendNeed = z.infer<typeof backendNeedSchema>;
 
-export const backendStackSchema = z.enum(["none", "node-express"]);
+export const backendStackSchema = z.enum(["none", "node-express", "angular-express", "sap-cap"]);
 export type BackendStack = z.infer<typeof backendStackSchema>;
 
 export const intentKindSchema = z.enum(["new", "modify"]);
@@ -130,6 +130,8 @@ export const clarifyChoiceSchema = z.object({
   subtitle: z.string(),
   value: z.string(),
   variant: z.enum(["default", "upload", "custom"]).optional(),
+  /** True when the Intent Agent recommends this option based on the prompt. */
+  recommended: z.boolean().optional(),
 });
 export type ClarifyChoice = z.infer<typeof clarifyChoiceSchema>;
 
@@ -144,6 +146,8 @@ export const clarifyQuestionSchema = z.object({
   options: z.array(z.string()).min(3).max(6).optional(),
   choices: z.array(clarifyChoiceSchema).min(3).max(6).optional(),
   dataSource: z.boolean().optional(),
+  /** When true the UI renders StackSelectorStep instead of the generic radio list. */
+  isStackSelector: z.boolean().optional(),
 });
 export type ClarifyQuestion = z.infer<typeof clarifyQuestionSchema>;
 

@@ -6,6 +6,7 @@ import type { ChatItem } from "../../types/chat";
 import type { FileMap, SessionEvent } from "@terrarium/contracts";
 import type { PreviewStatus } from "../canvas/PreviewPanel";
 import type { ViewType } from "../layout/IconRail";
+import type { StackSelection } from "../chat/StackSelectorStep";
 
 type WorkspaceScreenProps = {
   userName: string;
@@ -19,6 +20,7 @@ type WorkspaceScreenProps = {
   onRetryAnyway?: () => void;
   onAcceptMatch?: (toolId: string) => void;
   onRejectMatch?: () => void;
+  onStackSelect?: (selection: StackSelection) => void;
   view?: ViewType;
   onViewChange?: (view: ViewType) => void;
   onLogout?: () => Promise<void>;
@@ -77,7 +79,7 @@ export function WorkspaceScreen(props: WorkspaceScreenProps) {
       style={{ "--chat-width": `${chatWidth}px` } as CSSProperties}
     >
       <Rail view={props.view} onViewChange={props.onViewChange} onLogout={props.onLogout} />
-      <ChatPanel {...props} />
+      <ChatPanel {...props} onStackSelect={props.onStackSelect} />
       <div
         className="tw-split-bar"
         role="separator"

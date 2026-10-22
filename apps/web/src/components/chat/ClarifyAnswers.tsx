@@ -11,6 +11,7 @@ import {
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import { Box, Button, IconButton, Link, Paper, Stack, TextField, Typography } from "@mui/material";
 import type { ClarifyChoice, ClarifyQuestion } from "@terrarium/contracts";
+import { StackSelectorStep, type StackSelection } from "./StackSelectorStep";
 
 const SKIPPED = "Skip — use a sensible default";
 const MAROON = "var(--tt-accent-fill)";
@@ -25,6 +26,7 @@ type ClarifyAnswersProps = {
   questionItems?: ClarifyQuestion[];
   disabled?: boolean;
   onSend: (text: string) => void;
+  onStackSelect?: (selection: StackSelection) => void;
 };
 
 function fallbackSteps(questions: string[]): ClarifyQuestion[] {
@@ -132,6 +134,7 @@ export function ClarifyAnswers({
   questionItems,
   disabled = false,
   onSend,
+  onStackSelect,
 }: ClarifyAnswersProps) {
   const steps = useMemo(() => normalizeSteps(questions, questionItems), [questions, questionItems]);
   const [step, setStep] = useState(0);
@@ -140,6 +143,9 @@ export function ClarifyAnswers({
   const [selectedIndexes, setSelectedIndexes] = useState<number[][]>(() => steps.map(() => []));
   const [selectedValues, setSelectedValues] = useState<string[][]>(() => steps.map(() => []));
   const [customText, setCustomText] = useState<string[]>(() => steps.map(() => ""));
+  // Stack selector state (step 6)
+  const [stackJson, setStackJson] = useState<string[]>(() => steps.map(() => "{}"));
+  const [stackDisplay, setStackDisplay] = useState<string[]>(() => steps.map(() => ""));
   const [ideaOffset, setIdeaOffset] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const customRef = useRef<HTMLTextAreaElement>(null);
@@ -166,17 +172,14 @@ export function ClarifyAnswers({
   const acceptsFiles = customSelected || current?.acceptsFiles === true || current?.dataSource === true;
 
   const canContinue = useMemo(() => {
-    if (skipped[step]) {
-      return true;
-    }
+    // Stack selector always has a pre-selected default
+    if (current?.isStackSelector) return true;
+    if (skipped[step]) return true;
     const picked = selectedValues[step] ?? [];
     const hasRegularChoice = picked.some((value) => value !== CUSTOM_VALUE);
     const hasCustomContext = Boolean(customText[step]?.trim()) || Boolean(fileAnswers[step]?.trim());
-    return (
-      hasRegularChoice ||
-      hasCustomContext
-    );
-  }, [step, skipped, selectedValues, customText, fileAnswers]);
+    return hasRegularChoice || hasCustomContext;
+  }, [step, skipped, selectedValues, customText, fileAnswers, current]);
 
   useEffect(() => {
     customRef.current?.blur();
@@ -218,6 +221,10 @@ export function ClarifyAnswers({
   function compose(extraSkip?: number): string {
     const nextSkipped = skipped.map((item, index) => item || extraSkip === index);
     const answerFor = (index: number): string => {
+      // Stack selector step uses human-readable display label
+      if (steps[index]?.isStackSelector) {
+        return stackDisplay[index]?.trim() || "React / Vite — Frontend only";
+      }
       const picked = (selectedValues[index] ?? []).filter((value) => value !== CUSTOM_VALUE);
       return [picked.join(", "), customText[index]?.trim(), fileAnswers[index]?.trim()]
         .filter(Boolean)
@@ -237,12 +244,22 @@ export function ClarifyAnswers({
   }
 
   function submit(options?: { skipAll?: boolean; skipIndex?: number }) {
-    if (disabled) {
-      return;
-    }
+    if (disabled) return;
     if (options?.skipAll) {
       onSend("Skip the questions");
       return;
+    }
+    // Notify parent of structured stack selection before sending text
+    if (onStackSelect) {
+      const stackIdx = steps.findIndex((s) => s.isStackSelector);
+      if (stackIdx >= 0) {
+        try {
+          const sel = JSON.parse(stackJson[stackIdx] ?? "{}") as StackSelection;
+          if (sel.frontendStack) onStackSelect(sel);
+        } catch {
+          // ignore
+        }
+      }
     }
     onSend(compose(options?.skipIndex));
   }
@@ -381,84 +398,99 @@ export function ClarifyAnswers({
         </Typography>
       </Box>
 
-      <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
-        <Typography
-          sx={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            fontWeight: 500,
-            letterSpacing: "0.08em",
-            color: "text.secondary",
+      {current?.isStackSelector ? (
+        /* ── Step 6: structured stack selector ── */
+        <StackSelectorStep
+          step={current}
+          disabled={disabled}
+          onSelect={(json, display) => {
+            setStackJson((prev) => prev.map((v, i) => (i === step ? json : v)));
+            setStackDisplay((prev) => prev.map((v, i) => (i === step ? display : v)));
           }}
-        >
-          SUGGESTED ANSWERS
-        </Typography>
-        <Button
-          size="small"
-          onClick={() => {
-            setIdeaOffset((value) => value + 1);
-            setSelectedIndexes((prev) => prev.map((items, i) => (i === step ? [] : items)));
-            setSelectedValues((prev) => prev.map((items, i) => (i === step ? [] : items)));
-          }}
-          sx={{ color: "var(--tt-accent-text)", minHeight: 44, textTransform: "none", fontWeight: 600 }}
-        >
-          More ideas
-        </Button>
-      </Stack>
+        />
+      ) : (
+        /* ── Steps 1-5: generic radio list ── */
+        <>
+          <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
+            <Typography
+              sx={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: "0.08em",
+                color: "text.secondary",
+              }}
+            >
+              SUGGESTED ANSWERS
+            </Typography>
+            <Button
+              size="small"
+              onClick={() => {
+                setIdeaOffset((value) => value + 1);
+                setSelectedIndexes((prev) => prev.map((items, i) => (i === step ? [] : items)));
+                setSelectedValues((prev) => prev.map((items, i) => (i === step ? [] : items)));
+              }}
+              sx={{ color: "var(--tt-accent-text)", minHeight: 44, textTransform: "none", fontWeight: 600 }}
+            >
+              More ideas
+            </Button>
+          </Stack>
 
-      <Box role={allowMultiple ? "group" : "radiogroup"} aria-label={prompt}>
-        <Stack spacing={1}>
-          {displayedChoices.map((choice, index) => {
-            const selected = selectedValueSet.has(choice.value);
-            return (
-              <Box
-                key={`${choice.title}-${index}`}
-                ref={(node: HTMLDivElement | null) => {
-                  radioRefs.current[index] = node;
-                }}
-                role={allowMultiple ? "checkbox" : "radio"}
-                tabIndex={selected || (selectedForStep.length === 0 && index === 0) ? 0 : -1}
-                aria-checked={selected}
-                onKeyDown={(event) => onRadioKeyDown(event, index)}
-                onClick={() => selectChoice(index)}
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 1,
-                  width: "100%",
-                  minHeight: 58,
-                  px: "14px",
-                  py: "10px",
-                  borderRadius: "12px",
-                  border: "1.5px solid",
-                  borderColor: selected ? "var(--tt-accent-text)" : BORDER,
-                  bgcolor: selected ? SELECTED_BG : "var(--tt-surface)",
-                  cursor: disabled ? "not-allowed" : "pointer",
-                  boxSizing: "border-box",
-                  outline: "none",
-                  "&:focus-visible": {
-                    boxShadow: "0 0 0 3px color-mix(in srgb, var(--tt-accent-text) 26%, transparent)",
-                  },
-                }}
-              >
-                <RadioDot selected={selected} />
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25 }}>
-                    {choice.title}
-                  </Typography>
-                  {choice.subtitle ? (
-                    <Typography sx={{ fontSize: 13, color: MUTED, mt: 0.35, lineHeight: 1.35 }}>
-                      {choice.subtitle}
-                    </Typography>
-                  ) : null}
-                </Box>
-              </Box>
-            );
-          })}
-        </Stack>
-      </Box>
+          <Box role={allowMultiple ? "group" : "radiogroup"} aria-label={prompt}>
+            <Stack spacing={1}>
+              {displayedChoices.map((choice, index) => {
+                const selected = selectedValueSet.has(choice.value);
+                return (
+                  <Box
+                    key={`${choice.title}-${index}`}
+                    ref={(node: HTMLDivElement | null) => {
+                      radioRefs.current[index] = node;
+                    }}
+                    role={allowMultiple ? "checkbox" : "radio"}
+                    tabIndex={selected || (selectedForStep.length === 0 && index === 0) ? 0 : -1}
+                    aria-checked={selected}
+                    onKeyDown={(event) => onRadioKeyDown(event, index)}
+                    onClick={() => selectChoice(index)}
+                    sx={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 1,
+                      width: "100%",
+                      minHeight: 58,
+                      px: "14px",
+                      py: "10px",
+                      borderRadius: "12px",
+                      border: "1.5px solid",
+                      borderColor: selected ? "var(--tt-accent-text)" : BORDER,
+                      bgcolor: selected ? SELECTED_BG : "var(--tt-surface)",
+                      cursor: disabled ? "not-allowed" : "pointer",
+                      boxSizing: "border-box",
+                      outline: "none",
+                      "&:focus-visible": {
+                        boxShadow: "0 0 0 3px color-mix(in srgb, var(--tt-accent-text) 26%, transparent)",
+                      },
+                    }}
+                  >
+                    <RadioDot selected={selected} />
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25 }}>
+                        {choice.title}
+                      </Typography>
+                      {choice.subtitle ? (
+                        <Typography sx={{ fontSize: 13, color: MUTED, mt: 0.35, lineHeight: 1.35 }}>
+                          {choice.subtitle}
+                        </Typography>
+                      ) : null}
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Stack>
+          </Box>
+        </>
+      )}
 
-      {customSelected ? (
+      {customSelected && !current?.isStackSelector ? (
         <Stack spacing={1.5}>
           <Box sx={{ position: "relative" }} onDragOver={(event) => event.preventDefault()} onDrop={onDrop}>
             <TextField
