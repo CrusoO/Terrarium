@@ -99,6 +99,7 @@ function MainApp({
       events={session.events}
       files={session.files}
       streamFiles={session.streamFiles}
+      sessionId={session.sessionId}
     />
   );
 }
