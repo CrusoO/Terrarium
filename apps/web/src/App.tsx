@@ -1,13 +1,16 @@
-import { useState } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { LoginPage } from "./components/auth/LoginPage";
 import { AppShell } from "./components/layout/AppShell";
+import { ModeFooter } from "./components/layout/ModeFooter";
 import { type ViewType } from "./components/layout/IconRail";
-import { ChatPane } from "./components/chat/ChatPane";
-import { LiveCanvas } from "./components/canvas/LiveCanvas";
 import { WorkspaceDashboard } from "./components/workspace/WorkspaceDashboard";
 import { GroupsPanel } from "./components/groups/GroupsPanel";
 import { ApprovalsPanel } from "./components/groups/ApprovalsPanel";
+import { SecurityPage } from "./components/security/SecurityPage";
+import { WorkspaceScreen } from "./components/workspace/WorkspaceScreen";
+import { fetchWorkspaceTools } from "./api/sessions";
+import { useEffect, useState } from "react";
+import type { ToolSummary } from "@terrarium/contracts";
 import { useAuth } from "./hooks/useAuth";
 import { useCreateSession } from "./hooks/useCreateSession";
 import { useAccessRequests } from "./hooks/useAccessRequests";
@@ -35,7 +38,15 @@ function MainApp({
 }) {
   const session = useCreateSession();
   const [view, setView] = useState<ViewType>("chat");
+  const [securityTools, setSecurityTools] = useState<ToolSummary[]>([]);
   const { pending, approve, deny } = useAccessRequests(userId);
+
+  useEffect(() => {
+    if (view !== "security") {
+      return;
+    }
+    void fetchWorkspaceTools().then(setSecurityTools).catch(() => setSecurityTools([]));
+  }, [view]);
 
   async function handleOpenTool(toolId: string) {
     const opened = await openWorkspaceTool(toolId);
@@ -50,6 +61,8 @@ function MainApp({
       <ApprovalsPanel pending={pending} onApprove={approve} onDeny={deny} />
     ) : view === "workspace" ? (
       <WorkspaceDashboard onOpenTool={handleOpenTool} currentUserId={userId} currentUserEmail={userEmail} />
+    ) : view === "security" ? (
+      <SecurityPage tools={securityTools} />
     ) : null;
 
   if (view !== "chat") {
@@ -60,51 +73,33 @@ function MainApp({
         view={view}
         onViewChange={setView}
         onLogout={onLogout}
-        pendingApprovals={pending.length}
-        userName={userName}
       />
     );
   }
 
   return (
-    <AppShell
-      chat={
-        <ChatPane
-          userName={userName}
-          chat={session.chat}
-          prompt={session.prompt}
-          busy={session.busy}
-          status={session.status}
-          onPromptChange={session.setPrompt}
-          onSubmit={session.onSubmit}
-          onSendChoice={session.sendPrompt}
-          onRetryAnyway={session.retryAnyway}
-          onAcceptMatch={session.acceptMatch}
-          onRejectMatch={session.rejectMatch}
-          canEdit={session.toolRole !== "viewer"}
-          editRequestStatus={session.editRequestStatus}
-          onRequestEdit={() => void session.requestEdit(userId, userEmail)}
-        />
-      }
-      canvas={
-        <LiveCanvas
-          events={session.events}
-          previewUrl={session.previewUrl}
-          previewStatus={session.previewStatus}
-          files={session.files}
-          streamFiles={session.streamFiles}
-          sessionId={session.sessionId}
-          tab={session.canvasTab}
-          onTabChange={session.setCanvasTab}
-          onRuntimeError={session.onPreviewRuntimeError}
-          refreshKey={session.previewKey}
-        />
-      }
+    <WorkspaceScreen
+      userName={userName}
+      chat={session.chat}
+      prompt={session.prompt}
+      busy={session.busy}
+      status={session.status}
+      onPromptChange={session.setPrompt}
+      onSubmit={session.onSubmit}
+      onSendChoice={session.sendPrompt}
+      onRetryAnyway={session.retryAnyway}
+      onAcceptMatch={session.acceptMatch}
+      onRejectMatch={session.rejectMatch}
       view={view}
       onViewChange={setView}
       onLogout={onLogout}
-      pendingApprovals={pending.length}
-      userName={userName}
+      previewStatus={session.previewStatus}
+      previewUrl={session.previewUrl}
+      previewKey={session.previewKey}
+      events={session.events}
+      files={session.files}
+      streamFiles={session.streamFiles}
+      sessionId={session.sessionId}
     />
   );
 }
@@ -116,21 +111,30 @@ export default function App() {
     return (
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
         <CircularProgress />
+        <ModeFooter />
       </Box>
     );
   }
 
   if (auth.state.status === "unauthenticated") {
-    return <LoginPage onLogin={auth.login} onSignup={auth.signup} />;
+    return (
+      <>
+        <LoginPage onLogin={auth.login} onSignup={auth.signup} />
+        <ModeFooter />
+      </>
+    );
   }
 
   const user = auth.state.status === "authenticated" ? auth.state.user : null;
   return (
-    <MainApp
-      onLogout={auth.logout}
-      userId={user?.uid ?? ""}
-      userEmail={user?.email ?? ""}
-      userName={displayNameFromEmail(user?.email ?? "")}
-    />
+    <>
+      <MainApp
+        onLogout={auth.logout}
+        userId={user?.uid ?? ""}
+        userEmail={user?.email ?? ""}
+        userName={displayNameFromEmail(user?.email ?? "")}
+      />
+      <ModeFooter />
+    </>
   );
 }

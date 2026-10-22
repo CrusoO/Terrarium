@@ -1,0 +1,19 @@
+{
+  "file": "src/components/PlantCard.tsx",
+  "tscErrors": [
+    "src/components/PlantCard.tsx(1,15): error TS2459: Module '\"../hooks/useData.ts\"' declares 'Plant' locally, but it is not exported.",
+    "src/components/PlantCard.tsx(14,15): error TS2322: Type 'string | number | symbol' is not assignable to type 'Key | null | undefined'.",
+    "src/components/PlantCard.tsx(15,41): error TS2322: Type 'string | number | symbol' is not assignable to type 'ReactNode'."
+  ],
+  "repairPrompt": "Return JSON only: {\"patches\":[{\"path\":\"...\",\"search\":\"exact text\",\"replace\":\"new text\"}]}\nPatch the caller or the callee. Keep the contract's array-versus-single return types.\n\n\n\nDiagnostics:\nsrc/components/PlantCard.tsx(1,15): error TS2459: Module '\"../hooks/useData.ts\"' declares 'Plant' locally, but it is not exported.\nsrc/components/PlantCard.tsx(14,15): error TS2322: Type 'string | number | symbol' is not assignable to type 'Key | null | undefined'.\nsrc/components/PlantCard.tsx(15,41): error TS2322: Type 'string | number | symbol' is not assignable to type 'ReactNode'.",
+  "attempts": [
+    "```json\n{\n  \"patches\": [\n    {\n      \"path\": \"src/hooks/useData.ts\",\n      \"search\": \"type Plant = {\",\n      \"replace\": \"export type Plant = {\"\n    },\n    {\n      \"path\": \"src/components/PlantCard.tsx\",\n      \"search\": \"import { Plant } from '../hooks/useData';\",\n      \"replace\": \"import type { Plant } from '../hooks/useData';\"\n    },\n    {\n      \"path\": \"src/components/PlantCard.tsx\",\n      \"search\": \"  return (\\n    <div className=\\\"entity-card\\\" key={item.id} onClick={() => onSelect(item.id)}>\",\n      \"replace\": \"  return (\\n    <div className=\\\"entity-card\\\" onClick={() => onSelect(item.id)}>\"\n    },\n    {\n      \"path\": \"src/components/PlantCard.tsx\",\n      \"search\": \"      <h3>{item.name}</h3>\\n      <p>{item.bed}</p>\",\n      \"replace\": \"      <h3>{String(item.name)}</h3>\\n      <p>{String(item.bed)}</p>\"\n    }\n  ]\n}\n```",
+    "```json\n{\n  \"patches\": [\n    {\n      \"path\": \"src/hooks/useData.ts\",\n      \"search\": \"type Plant = {\",\n      \"replace\": \"export type Plant = {\"\n    },\n    {\n      \"path\": \"src/components/PlantCard.tsx\",\n      \"search\": \"import { Plant } from '../hooks/useData';\",\n      \"replace\": \"import type { Plant } from '../hooks/useData';\"\n    },\n    {\n      \"path\": \"src/components/PlantCard.tsx\",\n      \"search\": \"  return (\\n    <div className=\\\"entity-card\\\" key={item.id} onClick={() => onSelect(item.id)}>\",\n      \"replace\": \"  return (\\n    <div className=\\\"entity-card\\\" onClick={() => onSelect(item.id)}>\"\n    },\n    {\n      \"path\": \"src/components/PlantCard.tsx\",\n      \"search\": \"      <h3>{item.name}</h3>\\n      <p>{item.bed}</p>\",\n      \"replace\": \"      <h3>{String(item.name)}</h3>\\n      <p>{String(item.bed)}</p>\"\n    }\n  ]\n}\n```"
+  ],
+  "appliedPatches": [
+    [],
+    []
+  ],
+  "whyFailed": "Both attempts replayed the same repair response because the prompt hash was unchanged. Every search string targeted code that was not in PlantCard.tsx (a useData type declaration, an extensionless import, a div wrapper, and h3/p fields), so apply_patches applied nothing. The prompt included broad file context instead of isolating the exact failing PlantCard lines.",
+  "deterministicFix": "Rewrite the Plant type import to ../types.ts, use key={String(field)}, and render String(field). Replay result: 3 errors before, 0 after."
+}

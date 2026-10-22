@@ -1,0 +1,33 @@
+{
+  "durationMs": 3084,
+  "events": [],
+  "finishedAtMs": 1791747495937,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 3054,
+      "inputTokens": 1082,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 146,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "Equipment booking: book a device for a date and time, upcoming bookings, status filter, booking details.",
+  "runId": "2e2b8f4ebc274502b4c17eaa64360e68-1791747492853",
+  "runType": "new",
+  "sessionId": "2e2b8f4ebc274502b4c17eaa64360e68",
+  "stages": [
+    {
+      "durationMs": 3080,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791747492854
+    }
+  ],
+  "startedAtMs": 1791747492853,
+  "status": "clarify"
+}

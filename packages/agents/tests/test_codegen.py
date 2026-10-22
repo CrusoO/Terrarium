@@ -10,6 +10,13 @@ from terrarium_contracts import AgentJob, Intent
 
 class CodeGeneratorTests(unittest.TestCase):
     def setUp(self) -> None:
+        # These tests stub complete_json, which is the JSON FileMap path. Pin the format so
+        # the result never depends on which provider credentials the machine happens to have.
+        from unittest.mock import patch
+
+        env_patch = patch.dict(os.environ, {"TERRARIUM_CODEGEN_FORMAT": "json"})
+        env_patch.start()
+        self.addCleanup(env_patch.stop)
         os.environ["TERRARIUM_AGENTS"] = "stub"
         os.environ.pop("GROQ_API_KEY", None)
         os.environ.pop("TERRARIUM_LLM_API_KEY", None)
@@ -554,6 +561,103 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("backend/package.json", result.files)
         self.assertIn("backend/src/server.js", result.files)
         self.assertIn("shared/constants.js", result.files)
+
+    def test_angular_frontend_only_scaffold(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="ang1",
+                intent=Intent(kind="new", stack="react", summary="Movie posters", frontendStack="angular"),
+                prompt="build an angular movie poster gallery",
+                frontendStack="angular",
+                backendStack="none",
+            )
+        )
+        self.assertIn("angular.json", result.files)
+        self.assertIn("src/main.ts", result.files)
+        self.assertIn("<html", result.files["src/index.html"])
+        blob = "\n".join(result.files.values()).lower()
+        self.assertNotIn("unpkg.com", blob)
+        self.assertNotIn("cdn.jsdelivr", blob)
+        self.assertNotIn("frontend/package.json", result.files)
+
+    def test_angular_express_has_both_folders(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="ang2",
+                intent=Intent(kind="new", stack="fullstack", summary="Movie posters", frontendStack="angular"),
+                prompt="angular app with a shared team api",
+                frontendStack="angular",
+                backendStack="node-express",
+            )
+        )
+        self.assertIn("frontend/angular.json", result.files)
+        self.assertIn("backend/src/server.js", result.files)
+        self.assertIn("/api/items", result.files["backend/src/server.js"])
+        self.assertIn("proxyConfig", result.files["frontend/angular.json"])
+        self.assertIn("frontend/proxy.conf.json", result.files)
+        self.assertIn("--proxy-config proxy.conf.json", result.files["frontend/package.json"])
+
+    def test_sapui5_frontend_only_scaffold(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="sap1",
+                intent=Intent(kind="new", stack="react", summary="Fiori launchpad", frontendStack="sapui5"),
+                prompt="sapui5 fiori goods receipt app",
+                frontendStack="sapui5",
+                backendStack="none",
+            )
+        )
+        self.assertIn("ui5.yaml", result.files)
+        self.assertIn("webapp/index.html", result.files)
+        self.assertIn("sap.m", result.files["webapp/index.html"])
+        self.assertNotIn("hana.ondemand", "\n".join(result.files.values()))
+
+    def test_sapui5_cap_has_mock_odata(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="sap2",
+                intent=Intent(kind="new", stack="fullstack", summary="Fiori catalog", frontendStack="sapui5"),
+                prompt="fiori app with sap cap odata",
+                frontendStack="sapui5",
+                backendStack="sap-cap",
+            )
+        )
+        self.assertIn("frontend/webapp/index.html", result.files)
+        self.assertIn("backend/srv/catalog-service.cds", result.files)
+        self.assertIn("Whole milk", result.files["backend/srv/catalog-service.js"])
+        self.assertIn("Orders", result.files["backend/srv/catalog-service.cds"])
+        self.assertIn("frontend/odata-proxy.mjs", result.files)
+        self.assertIn("/odata", result.files["frontend/odata-proxy.mjs"])
+        self.assertIn("node odata-proxy.mjs", result.files["frontend/package.json"])
+
+    def test_react_express_keeps_current_generator_path(self) -> None:
+        from unittest.mock import patch
+
+        from terrarium_agents.codegen import generate
+
+        job = AgentJob(
+            sessionId="react-node-live",
+            intent=Intent(kind="new", stack="fullstack", summary="Team notes"),
+            prompt="build shared team notes with login",
+            frontendStack="react",
+            backendStack="node-express",
+        )
+        with patch("terrarium_agents.codegen._maybe_llm_overlay", return_value=None) as overlay:
+            result = generate(job)
+        overlay.assert_called_once()
+        self.assertIn("frontend/src/App.jsx", result.files)
+        self.assertIn("backend/src/server.js", result.files)
+
+    def test_prompt_only_picks_sap_cap_without_chip(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="sap3",
+                intent=Intent(kind="new", stack="fullstack", summary="Fiori catalog"),
+                prompt="Build a Fiori catalog app with SAP CAP OData mock data",
+            )
+        )
+        self.assertIn("frontend/webapp/index.html", result.files)
+        self.assertIn("backend/srv/catalog-service.cds", result.files)
 
 
 if __name__ == "__main__":

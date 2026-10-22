@@ -1,0 +1,41 @@
+{
+  "durationMs": 4188,
+  "events": [],
+  "finishedAtMs": 1791734954125,
+  "headline": {
+    "generationSource": "fallback",
+    "healAttempts": 0,
+    "infrastructureStageSeconds": 0.0,
+    "modelStageSeconds": 4.162,
+    "timeToFirstFileSeconds": null,
+    "timeToHealthyPreviewSeconds": null
+  },
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 3513,
+      "inputTokens": 1062,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 211,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "build me a hiringl platform",
+  "runId": "10ae8fcd75444832a14d370d482bd010-1791734949937",
+  "runType": "new",
+  "sessionId": "10ae8fcd75444832a14d370d482bd010",
+  "stages": [
+    {
+      "durationMs": 4162,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791734949942
+    }
+  ],
+  "startedAtMs": 1791734949937,
+  "status": "clarify"
+}

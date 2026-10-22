@@ -1,0 +1,36 @@
+{
+  "apiBase": "http://127.0.0.1:3010",
+  "auth": "Bearer TERRARIUM_TEST_TOKEN (Firebase ID token; no API bypass)",
+  "excludedFromBaseline": [
+    "whatsapp",
+    "pen-testing",
+    "trust-attack-pass"
+  ],
+  "requires": "Run API/worker with CODEGEN_METRICS=1",
+  "runs": [
+    {
+      "clarified": false,
+      "durationSeconds": 108.732,
+      "eventCount": 35,
+      "generationSource": "model-generated",
+      "label": "sample-customer-order-tracker",
+      "llmModel": "eu.anthropic.claude-sonnet-4-6",
+      "llmProvider": "bedrock",
+      "prompt": "Build a customer/order tracker web app. Staff enter customer name, order items, pickup date, and payment status. Show a searchable order list, order detail panel, and a dashboard that displays daily totals. Use Vite React, in-memory mock data, no backend, web UI only. Go ahead and build it.",
+      "scope": "web-flow-only",
+      "sessionId": "e4594a9540e549ce938a6c4c12d4b2b6",
+      "terminalEvent": "preview.ready",
+      "timeToFirstFileEventAt": "2026-10-10T21:12:49.554739Z"
+    },
+    {
+      "durationSeconds": 1.104,
+      "eventCount": 35,
+      "filesRegeneratedOrChanged": [],
+      "label": "follow-up-edit-status-filter",
+      "prompt": "Add a status filter to the main list. Go ahead and build it.",
+      "scope": "web-flow-only",
+      "sessionId": "e4594a9540e549ce938a6c4c12d4b2b6",
+      "terminalEvent": "preview.ready"
+    }
+  ]
+}

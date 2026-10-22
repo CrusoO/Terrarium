@@ -15,6 +15,7 @@ from terrarium_api.routes.groups import router as groups_router
 from terrarium_api.routes.health import router as health_router
 from terrarium_api.routes.preview import router as preview_router
 from terrarium_api.routes.sessions import router as sessions_router
+from terrarium_api.routes.trust import router as trust_router
 from terrarium_api.routes.workspace import router as workspace_router
 from terrarium_api.db import init_db
 from terrarium_api.settings import redis_settings
@@ -52,6 +53,7 @@ def create_app() -> FastAPI:
     app.include_router(preview_router)
     app.include_router(sessions_router)
     app.include_router(workspace_router)
+    app.include_router(trust_router)
     app.include_router(groups_router)
     app.include_router(auth_router)
     app.include_router(github_router)

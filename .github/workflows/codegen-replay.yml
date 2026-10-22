@@ -1,0 +1,91 @@
+name: codegen-replay
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      live:
+        description: "Run a staged live sweep. Leave false. Replay is the only CI path."
+        type: boolean
+        default: false
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  workspace-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install JavaScript workspace
+        run: pnpm install --frozen-lockfile
+      - name: Build JavaScript workspace
+        run: pnpm build
+      - name: Type-check JavaScript workspace
+        run: pnpm typecheck
+
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: browser-actions/setup-chrome@v1
+        id: setup-chrome
+      - name: Install Python workspace
+        run: uv sync --frozen --dev --all-packages
+      - name: Install replay browser dependencies
+        working-directory: docs/codegen-metrics/browser-cache
+        run: npm ci --no-audit --no-fund
+      - name: Build sandbox test image
+        run: docker build -t terrarium-node-sandbox:p1-s3 packages/sandbox/terrarium_sandbox/node_fixture
+      - name: Replay tests at $0
+        env:
+          CODEGEN_LLM_MODE: replay
+          TERRARIUM_AGENTS: stub
+          PYTHONPATH: packages/agents:packages/py-contracts
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+        run: |
+          uv run python scripts/codegen-fixtures.py
+          uv run python scripts/codegen-sweep.py --model haiku
+          uv run pytest apps/api/tests apps/relay/tests packages/py-contracts/tests packages/sandbox/tests packages/agents/tests -q
+
+  nightly-dry-run:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install Python workspace
+        run: uv sync --frozen --dev
+      - name: Print estimated cost and stop
+        env:
+          CODEGEN_LLM_MODE: replay
+          PYTHONPATH: packages/agents:packages/py-contracts
+        run: uv run python scripts/codegen-sweep.py --model haiku
+      - name: Keep CI on replay
+        if: github.event.inputs.live == 'true'
+        run: |
+          echo "CI stays on replay ($0). A live sweep is manual: CODEGEN_LLM_MODE=record-missing CODEGEN_MAX_SPEND_USD=... python scripts/codegen-sweep.py --live"
+          exit 1

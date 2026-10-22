@@ -1,0 +1,33 @@
+{
+  "durationMs": 2240,
+  "events": [],
+  "finishedAtMs": 1791747479051,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 2220,
+      "inputTokens": 1081,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 130,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "Operations dashboard for failed integration messages: owners, status chips, overdue items, daily totals and a report view.",
+  "runId": "22e7d3c16a36481697892507d41ac00d-1791747476811",
+  "runType": "new",
+  "sessionId": "22e7d3c16a36481697892507d41ac00d",
+  "stages": [
+    {
+      "durationMs": 2238,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791747476812
+    }
+  ],
+  "startedAtMs": 1791747476811,
+  "status": "clarify"
+}

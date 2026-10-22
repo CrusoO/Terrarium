@@ -1,0 +1,138 @@
+{
+  "apps": 22,
+  "loadOk": 19,
+  "rows": [
+    {
+      "slug": "auth-14",
+      "loadOk": true,
+      "seconds": 7.469,
+      "tail": "dist/index.html                   0.57 kB \u00e2\u201d\u201a gzip:  0.38 kB\ndist/assets/index-CCr9FGac.css    7.40 kB \u00e2\u201d\u201a gzip:  2.05 kB\ndist/assets/index-BY5PpPRo.js   272.75 kB \u00e2\u201d\u201a gzip: 86.39 kB\n\u00e2\u0153\u201c built in 4.17s"
+    },
+    {
+      "slug": "auth-15",
+      "loadOk": true,
+      "seconds": 8.52,
+      "tail": "dist/index.html                   0.60 kB \u00e2\u201d\u201a gzip:  0.40 kB\ndist/assets/index-hoNJtuBy.css    8.28 kB \u00e2\u201d\u201a gzip:  2.17 kB\ndist/assets/index-SXSdJNQN.js   279.52 kB \u00e2\u201d\u201a gzip: 88.38 kB\n\u00e2\u0153\u201c built in 3.60s"
+    },
+    {
+      "slug": "auth-16",
+      "loadOk": true,
+      "seconds": 6.059,
+      "tail": "dist/index.html                   0.40 kB \u00e2\u201d\u201a gzip:  0.27 kB\ndist/assets/index-DSWwQyb-.css    7.20 kB \u00e2\u201d\u201a gzip:  1.92 kB\ndist/assets/index-CRJmsvBF.js   228.70 kB \u00e2\u201d\u201a gzip: 71.73 kB\n\u00e2\u0153\u201c built in 3.26s"
+    },
+    {
+      "slug": "charts-10",
+      "loadOk": true,
+      "seconds": 6.185,
+      "tail": "dist/index.html                   0.40 kB \u00e2\u201d\u201a gzip:  0.27 kB\ndist/assets/index-CpPbawsD.css    6.29 kB \u00e2\u201d\u201a gzip:  1.81 kB\ndist/assets/index-BcW6tIGn.js   232.76 kB \u00e2\u201d\u201a gzip: 72.79 kB\n\u00e2\u0153\u201c built in 3.24s"
+    },
+    {
+      "slug": "charts-11",
+      "loadOk": false,
+      "seconds": 5.146,
+      "tail": "    at file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:21917:32\n    at Object.logger [as onLog] (file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:23911:9)\n    at ModuleLoader.handleInvalidResolvedId (file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:22656:26)\n    at file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:22614:26"
+    },
+    {
+      "slug": "charts-12",
+      "loadOk": true,
+      "seconds": 6.727,
+      "tail": "dist/index.html                   0.40 kB \u00e2\u201d\u201a gzip:  0.27 kB\ndist/assets/index-ZrjxeVRA.css    4.91 kB \u00e2\u201d\u201a gzip:  1.51 kB\ndist/assets/index-Mu_hrihU.js   234.40 kB \u00e2\u201d\u201a gzip: 73.43 kB\n\u00e2\u0153\u201c built in 3.24s"
+    },
+    {
+      "slug": "charts-13",
+      "loadOk": true,
+      "seconds": 6.127,
+      "tail": "dist/index.html                   0.58 kB \u00e2\u201d\u201a gzip:  0.39 kB\ndist/assets/index-DrrFNQKP.css    5.60 kB \u00e2\u201d\u201a gzip:  1.60 kB\ndist/assets/index-X77-_kAP.js   233.24 kB \u00e2\u201d\u201a gzip: 73.00 kB\n\u00e2\u0153\u201c built in 2.82s"
+    },
+    {
+      "slug": "file-upload-17",
+      "loadOk": true,
+      "seconds": 6.322,
+      "tail": "dist/index.html                   0.58 kB \u00e2\u201d\u201a gzip:  0.39 kB\ndist/assets/index-BUf34Ei2.css   12.17 kB \u00e2\u201d\u201a gzip:  3.05 kB\ndist/assets/index-BNFJWz98.js   237.70 kB \u00e2\u201d\u201a gzip: 74.35 kB\n\u00e2\u0153\u201c built in 3.55s"
+    },
+    {
+      "slug": "file-upload-18",
+      "loadOk": true,
+      "seconds": 5.421,
+      "tail": "dist/index.html                   0.58 kB \u00e2\u201d\u201a gzip:  0.39 kB\ndist/assets/index-CPejcGSP.css   13.88 kB \u00e2\u201d\u201a gzip:  2.81 kB\ndist/assets/index-5b40QNd_.js   238.07 kB \u00e2\u201d\u201a gzip: 74.21 kB\n\u00e2\u0153\u201c built in 3.20s"
+    },
+    {
+      "slug": "file-upload-19",
+      "loadOk": true,
+      "seconds": 5.76,
+      "tail": "dist/index.html                   0.58 kB \u00e2\u201d\u201a gzip:  0.39 kB\ndist/assets/index-CM2olmL9.css    9.84 kB \u00e2\u201d\u201a gzip:  2.57 kB\ndist/assets/index-L6O5DzTS.js   231.74 kB \u00e2\u201d\u201a gzip: 72.46 kB\n\u00e2\u0153\u201c built in 3.35s"
+    },
+    {
+      "slug": "game-20",
+      "loadOk": true,
+      "seconds": 4.515,
+      "tail": "dist/index.html                   0.40 kB \u00e2\u201d\u201a gzip:  0.27 kB\ndist/assets/index-BdQHpDFb.css    8.01 kB \u00e2\u201d\u201a gzip:  2.15 kB\ndist/assets/index-Cw-HCi5J.js   229.06 kB \u00e2\u201d\u201a gzip: 71.59 kB\n\u00e2\u0153\u201c built in 2.15s"
+    },
+    {
+      "slug": "game-21",
+      "loadOk": true,
+      "seconds": 6.366,
+      "tail": "dist/index.html                   0.58 kB \u00e2\u201d\u201a gzip:  0.39 kB\ndist/assets/index-z_pPYa5d.css    9.53 kB \u00e2\u201d\u201a gzip:  2.31 kB\ndist/assets/index-DRdlkIre.js   235.52 kB \u00e2\u201d\u201a gzip: 74.06 kB\n\u00e2\u0153\u201c built in 3.26s"
+    },
+    {
+      "slug": "game-22",
+      "loadOk": true,
+      "seconds": 5.206,
+      "tail": "dist/index.html                   0.58 kB \u00e2\u201d\u201a gzip:  0.38 kB\ndist/assets/index-CkW8_LZ6.css    7.55 kB \u00e2\u201d\u201a gzip:  2.04 kB\ndist/assets/index-DrEI1gpp.js   228.09 kB \u00e2\u201d\u201a gzip: 71.28 kB\n\u00e2\u0153\u201c built in 2.18s"
+    },
+    {
+      "slug": "landing-1",
+      "loadOk": true,
+      "seconds": 6.318,
+      "tail": "dist/index.html                   0.60 kB \u00e2\u201d\u201a gzip:  0.38 kB\ndist/assets/index-Q50DQ9hP.css   13.75 kB \u00e2\u201d\u201a gzip:  3.25 kB\ndist/assets/index-DzvSztrE.js   235.03 kB \u00e2\u201d\u201a gzip: 73.44 kB\n\u00e2\u0153\u201c built in 3.10s"
+    },
+    {
+      "slug": "landing-2",
+      "loadOk": false,
+      "seconds": 3.269,
+      "tail": "    at addChunk (node:internal/streams/readable:561:12)\n    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)\n    at Readable.push (node:internal/streams/readable:392:5)\n    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)"
+    },
+    {
+      "slug": "landing-3",
+      "loadOk": true,
+      "seconds": 4.769,
+      "tail": "dist/index.html                   0.76 kB \u00e2\u201d\u201a gzip:  0.47 kB\ndist/assets/index-CjY0IfQz.css   10.82 kB \u00e2\u201d\u201a gzip:  2.67 kB\ndist/assets/index-BremMoRU.js   230.04 kB \u00e2\u201d\u201a gzip: 71.81 kB\n\u00e2\u0153\u201c built in 1.81s"
+    },
+    {
+      "slug": "landing-4",
+      "loadOk": true,
+      "seconds": 4.559,
+      "tail": "dist/index.html                   0.81 kB \u00e2\u201d\u201a gzip:  0.50 kB\ndist/assets/index-B0Qu_QpN.css    3.97 kB \u00e2\u201d\u201a gzip:  1.34 kB\ndist/assets/index-D_Mj8Pg9.js   244.82 kB \u00e2\u201d\u201a gzip: 75.18 kB\n\u00e2\u0153\u201c built in 2.04s"
+    },
+    {
+      "slug": "landing-5",
+      "loadOk": false,
+      "seconds": 5.134,
+      "tail": "    at convertNode (file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:17253:10)\n    at convertProgram (file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:16489:12)\n    at Module.setSource (file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:18234:24)\n    at async ModuleLoader.addModuleSource (file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:22434:9)"
+    },
+    {
+      "slug": "multi-step-form-6",
+      "loadOk": true,
+      "seconds": 6.132,
+      "tail": "dist/index.html                   0.59 kB \u00e2\u201d\u201a gzip:  0.39 kB\ndist/assets/index-DIbaF0VK.css    9.67 kB \u00e2\u201d\u201a gzip:  2.32 kB\ndist/assets/index-DgkeolGl.js   240.03 kB \u00e2\u201d\u201a gzip: 74.69 kB\n\u00e2\u0153\u201c built in 2.95s"
+    },
+    {
+      "slug": "multi-step-form-7",
+      "loadOk": true,
+      "seconds": 4.482,
+      "tail": "dist/index.html                   0.41 kB \u00e2\u201d\u201a gzip:  0.28 kB\ndist/assets/index-BTIqBPBX.css    8.22 kB \u00e2\u201d\u201a gzip:  2.13 kB\ndist/assets/index-BLFxdA9o.js   231.00 kB \u00e2\u201d\u201a gzip: 71.54 kB\n\u00e2\u0153\u201c built in 1.98s"
+    },
+    {
+      "slug": "multi-step-form-8",
+      "loadOk": true,
+      "seconds": 4.559,
+      "tail": "dist/index.html                   0.58 kB \u00e2\u201d\u201a gzip:  0.39 kB\ndist/assets/index-CLSJ1Px0.css    9.17 kB \u00e2\u201d\u201a gzip:  2.23 kB\ndist/assets/index-DQ_gdUKg.js   232.58 kB \u00e2\u201d\u201a gzip: 71.88 kB\n\u00e2\u0153\u201c built in 1.95s"
+    },
+    {
+      "slug": "multi-step-form-9",
+      "loadOk": true,
+      "seconds": 5.138,
+      "tail": "dist/index.html                   0.59 kB \u00e2\u201d\u201a gzip:  0.39 kB\ndist/assets/index-NJM0EGri.css   12.80 kB \u00e2\u201d\u201a gzip:  2.88 kB\ndist/assets/index-geCQHKke.js   242.05 kB \u00e2\u201d\u201a gzip: 75.15 kB\n\u00e2\u0153\u201c built in 1.77s"
+    }
+  ]
+}

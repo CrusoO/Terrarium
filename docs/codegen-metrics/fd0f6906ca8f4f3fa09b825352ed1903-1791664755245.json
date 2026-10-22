@@ -1,0 +1,357 @@
+{
+  "durationMs": 298917,
+  "events": [
+    {
+      "atMs": 1791664792346,
+      "name": "codegen.first_file",
+      "payload": {
+        "path": "package.json",
+        "secondsSinceCodegenStage": 19.897
+      }
+    },
+    {
+      "atMs": 1791664852750,
+      "name": "codegen.streamed_files",
+      "payload": {
+        "count": 16,
+        "paths": [
+          "package.json",
+          "index.html",
+          "vite.config.js",
+          "src/main.jsx",
+          "src/App.jsx",
+          "src/context/JobsContext.jsx",
+          "src/utils/helpers.js",
+          "src/components/Sidebar.jsx",
+          "src/components/Header.jsx",
+          "src/components/StatusChip.jsx",
+          "src/components/OverduePanel.jsx",
+          "src/components/Dashboard.jsx",
+          "src/components/JobsTable.jsx",
+          "src/components/JobModal.jsx",
+          "src/components/Reports.jsx",
+          "src/styles/global.css"
+        ]
+      }
+    },
+    {
+      "atMs": 1791664852774,
+      "name": "heal.attempt",
+      "payload": {
+        "attempt": 1
+      }
+    },
+    {
+      "atMs": 1791664952089,
+      "name": "heal.attempt",
+      "payload": {
+        "attempt": 2
+      }
+    },
+    {
+      "atMs": 1791664957480,
+      "name": "heal.attempt",
+      "payload": {
+        "attempt": 3
+      }
+    }
+  ],
+  "fileMap": {
+    "boilerplate": {
+      "estimatedBoilerplateShare": 0.176,
+      "estimatedBoilerplateTokens": 2151,
+      "estimatedTokensByCategory": {
+        "business-logic": 1255,
+        "config": 382,
+        "layout": 1373,
+        "ui": 8838,
+        "ui-primitives": 396
+      }
+    },
+    "fileCount": 17,
+    "jsonOverheadEstimatedTokens": 981,
+    "jsonWrappedBytes": 52911,
+    "jsonWrappedEstimatedTokens": 13228,
+    "rawCodeBytes": 49642,
+    "rawCodeEstimatedTokens": 12247,
+    "tokensPerFileEstimated": {
+      "index.html": {
+        "bytes": 782,
+        "category": "config",
+        "estimatedTokens": 195
+      },
+      "package.json": {
+        "bytes": 363,
+        "category": "config",
+        "estimatedTokens": 91
+      },
+      "src/App.jsx": {
+        "bytes": 1716,
+        "category": "ui",
+        "estimatedTokens": 429
+      },
+      "src/components/Dashboard.jsx": {
+        "bytes": 4901,
+        "category": "ui",
+        "estimatedTokens": 1225
+      },
+      "src/components/Header.jsx": {
+        "bytes": 1196,
+        "category": "ui",
+        "estimatedTokens": 299
+      },
+      "src/components/JobModal.jsx": {
+        "bytes": 4545,
+        "category": "ui",
+        "estimatedTokens": 1136
+      },
+      "src/components/JobsTable.jsx": {
+        "bytes": 7736,
+        "category": "ui",
+        "estimatedTokens": 1934
+      },
+      "src/components/OverduePanel.jsx": {
+        "bytes": 2099,
+        "category": "ui",
+        "estimatedTokens": 524
+      },
+      "src/components/Reports.jsx": {
+        "bytes": 10769,
+        "category": "ui",
+        "estimatedTokens": 2692
+      },
+      "src/components/Sidebar.jsx": {
+        "bytes": 1752,
+        "category": "ui",
+        "estimatedTokens": 438
+      },
+      "src/components/StatusChip.jsx": {
+        "bytes": 644,
+        "category": "ui",
+        "estimatedTokens": 161
+      },
+      "src/context/JobsContext.jsx": {
+        "bytes": 5026,
+        "category": "business-logic",
+        "estimatedTokens": 1255
+      },
+      "src/main.jsx": {
+        "bytes": 247,
+        "category": "config",
+        "estimatedTokens": 62
+      },
+      "src/styles/global.css": {
+        "bytes": 6036,
+        "category": "layout",
+        "estimatedTokens": 1350
+      },
+      "src/utils/helpers.js": {
+        "bytes": 1586,
+        "category": "ui-primitives",
+        "estimatedTokens": 396
+      },
+      "styles.css": {
+        "bytes": 92,
+        "category": "layout",
+        "estimatedTokens": 23
+      },
+      "vite.config.js": {
+        "bytes": 136,
+        "category": "config",
+        "estimatedTokens": 34
+      }
+    }
+  },
+  "finishedAtMs": 1791665054162,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 12300,
+      "inputTokens": 612,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1037,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 1649,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 13066,
+      "inputTokens": 608,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1342,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "codegen",
+      "totalTokens": 1950,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "chunkCount": 2802,
+      "durationMs": 80271,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 16000,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "codegen",
+      "timeToFirstTokenSeconds": 19.890449339000043,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 1604,
+      "inputTokens": 182,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 29,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "heal",
+      "totalTokens": 211,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "chunkCount": 2868,
+      "durationMs": 81785,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 16000,
+      "provider": "bedrock",
+      "purpose": "codegen",
+      "stage": "heal",
+      "timeToFirstTokenSeconds": 19.386677123999107,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "durationMs": 2400,
+      "inputTokens": 206,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 26,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "heal",
+      "totalTokens": 232,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 1447,
+      "inputTokens": 187,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 34,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "heal",
+      "totalTokens": 221,
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "Go ahead and build it. Skip remaining questions. Use Vite + React, in-memory mock data (no backend), desktop-first English UI, and ship a working MVP preview now.",
+  "runId": "fd0f6906ca8f4f3fa09b825352ed1903-1791664755245",
+  "runType": "new",
+  "sessionId": "fd0f6906ca8f4f3fa09b825352ed1903",
+  "stages": [
+    {
+      "durationMs": 1441,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791664755247
+    },
+    {
+      "durationMs": 12302,
+      "kind": "model",
+      "name": "plan",
+      "startedAtMs": 1791664756689
+    },
+    {
+      "durationMs": 3458,
+      "kind": "infrastructure",
+      "name": "preview_skeleton_stream",
+      "startedAtMs": 1791664768993
+    },
+    {
+      "durationMs": 80304,
+      "kind": "model",
+      "name": "codegen",
+      "startedAtMs": 1791664772452
+    },
+    {
+      "durationMs": 2,
+      "kind": "infrastructure",
+      "name": "save_filemap",
+      "startedAtMs": 1791664852750
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "preview_file_replay",
+      "startedAtMs": 1791664852752
+    },
+    {
+      "durationMs": 3,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791664852754
+    },
+    {
+      "durationMs": 3,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791664852758
+    },
+    {
+      "durationMs": 9,
+      "kind": "infrastructure",
+      "name": "sandbox_boot_and_health",
+      "startedAtMs": 1791664852754
+    },
+    {
+      "durationMs": 3323,
+      "kind": "model",
+      "name": "heal_decision_1",
+      "startedAtMs": 1791664852774
+    },
+    {
+      "durationMs": 95995,
+      "kind": "model",
+      "name": "heal_codegen_1",
+      "startedAtMs": 1791664856098
+    },
+    {
+      "durationMs": 3936,
+      "kind": "model",
+      "name": "heal_decision_2",
+      "startedAtMs": 1791664952089
+    },
+    {
+      "durationMs": 1452,
+      "kind": "model",
+      "name": "heal_editor_2",
+      "startedAtMs": 1791664956026
+    },
+    {
+      "durationMs": 2652,
+      "kind": "model",
+      "name": "heal_decision_3",
+      "startedAtMs": 1791664957480
+    },
+    {
+      "durationMs": 94034,
+      "kind": "model",
+      "name": "heal_codegen_3",
+      "startedAtMs": 1791664960132
+    }
+  ],
+  "startedAtMs": 1791664755245,
+  "status": "heal-exhausted"
+}

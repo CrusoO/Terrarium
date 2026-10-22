@@ -1,0 +1,1125 @@
+{
+  "apps": 17,
+  "loaded": 15,
+  "interactionValidated": 14,
+  "cold": {
+    "coldWallSeconds": 7.1,
+    "exit": 0,
+    "marks": [
+      "MARK docker-ready 1791738034528",
+      "MARK symlink 1791738034583",
+      "MARK build 1791738039471"
+    ],
+    "tail": "dist/assets/index-DsA7zASz.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-CfMyRnbq.js   230.73 kB \u00e2\u201d\u201a gzip: 72.11 kB\n\u00e2\u0153\u201c built in 4.22s\nMARK build 1791738039471"
+  },
+  "poolSeconds": 3.732,
+  "rows": [
+    {
+      "slug": "01-bakery",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\01-bakery",
+      "copySeconds": 0.254,
+      "serverReadySeconds": 6.33,
+      "buildOk": true,
+      "buildSeconds": 21.383,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 2817,
+      "timing": {
+        "browserLaunchMs": 1784,
+        "firstPaintMs": 2817,
+        "routesMs": 356,
+        "interactionMs": 2501
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Proofing",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 14.48,
+      "gateInteractiveSeconds": 9.147,
+      "gateValidatedSeconds": 21.383,
+      "poolSeconds": 3.732,
+      "buildTail": "dist/assets/index-DsA7zASz.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-CfMyRnbq.js   230.73 kB \u00e2\u201d\u201a gzip: 72.11 kB\n\u00e2\u0153\u201c built in 8.95s"
+    },
+    {
+      "slug": "02-appointment-manager",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\02-appointment-manager",
+      "copySeconds": 0.214,
+      "serverReadySeconds": 6.728,
+      "buildOk": true,
+      "buildSeconds": 18.309,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 1089,
+      "timing": {
+        "browserLaunchMs": 1496,
+        "firstPaintMs": 1089,
+        "routesMs": 243,
+        "interactionMs": 1589
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "scheduled",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 6.583,
+      "gateInteractiveSeconds": 7.817,
+      "gateValidatedSeconds": 18.309,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-D9_z0oVe.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-iHUN4_Ns.js   230.41 kB \u00e2\u201d\u201a gzip: 71.96 kB\n\u00e2\u0153\u201c built in 9.78s"
+    },
+    {
+      "slug": "03-coffee-cart-daily-sales",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\03-coffee-cart-daily-sales",
+      "copySeconds": 0.228,
+      "serverReadySeconds": 6.812,
+      "buildOk": true,
+      "buildSeconds": 22.813,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 2057,
+      "timing": {
+        "browserLaunchMs": 1502,
+        "firstPaintMs": 2057,
+        "routesMs": 274,
+        "interactionMs": 1633
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "completed",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 14.64,
+      "gateInteractiveSeconds": 8.869,
+      "gateValidatedSeconds": 22.813,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-iofW9C-h.css    1.93 kB \u00e2\u201d\u201a gzip:  0.79 kB\ndist/assets/index-B7NCgP5h.js   230.38 kB \u00e2\u201d\u201a gzip: 71.98 kB\n\u00e2\u0153\u201c built in 10.46s"
+    },
+    {
+      "slug": "04-tailoring-job-tracker",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\04-tailoring-job-tracker",
+      "copySeconds": 0.277,
+      "serverReadySeconds": 6.719,
+      "buildOk": true,
+      "buildSeconds": 22.688,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 1031,
+      "timing": {
+        "browserLaunchMs": 1493,
+        "firstPaintMs": 1031,
+        "routesMs": 2539,
+        "interactionMs": 2426
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "pending",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 15.53,
+      "gateInteractiveSeconds": 7.75,
+      "gateValidatedSeconds": 22.688,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-BMDiB07f.css    1.94 kB \u00e2\u201d\u201a gzip:  0.81 kB\ndist/assets/index-C7UdHi5U.js   230.37 kB \u00e2\u201d\u201a gzip: 71.85 kB\n\u00e2\u0153\u201c built in 10.42s"
+    },
+    {
+      "slug": "05-yoga-studio-class-booking",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\05-yoga-studio-class-booking",
+      "copySeconds": 0.316,
+      "serverReadySeconds": 7.393,
+      "buildOk": true,
+      "buildSeconds": 21.159,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 2487,
+      "timing": {
+        "browserLaunchMs": 1488,
+        "firstPaintMs": 2487,
+        "routesMs": 340,
+        "interactionMs": 1629
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "reserved",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 13.248,
+      "gateInteractiveSeconds": 9.88,
+      "gateValidatedSeconds": 21.159,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DsA7zASz.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-CQ0exTMz.js   230.74 kB \u00e2\u201d\u201a gzip: 71.88 kB\n\u00e2\u0153\u201c built in 9.54s"
+    },
+    {
+      "slug": "06-dog-walking-booking",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\06-dog-walking-booking",
+      "copySeconds": 0.218,
+      "serverReadySeconds": 6.155,
+      "buildOk": true,
+      "buildSeconds": 17.643,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 761,
+      "timing": {
+        "browserLaunchMs": 1615,
+        "firstPaintMs": 761,
+        "routesMs": 961,
+        "interactionMs": 1571
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "available",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 6.931,
+      "gateInteractiveSeconds": 6.916,
+      "gateValidatedSeconds": 17.643,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-BMDiB07f.css    1.94 kB \u00e2\u201d\u201a gzip:  0.81 kB\ndist/assets/index-f6WGbbSU.js   231.59 kB \u00e2\u201d\u201a gzip: 72.16 kB\n\u00e2\u0153\u201c built in 9.01s"
+    },
+    {
+      "slug": "07-yearly-electricity-usage",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\07-yearly-electricity-usage",
+      "copySeconds": 0.206,
+      "serverReadySeconds": 7.074,
+      "buildOk": true,
+      "buildSeconds": 19.834,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 1882,
+      "timing": {
+        "browserLaunchMs": 1480,
+        "firstPaintMs": 1882,
+        "routesMs": 385,
+        "interactionMs": 1571
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "January",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 11.467,
+      "gateInteractiveSeconds": 8.956,
+      "gateValidatedSeconds": 19.834,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DsA7zASz.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-B00KVXtK.js   230.20 kB \u00e2\u201d\u201a gzip: 71.90 kB\n\u00e2\u0153\u201c built in 10.45s"
+    },
+    {
+      "slug": "08-unsupported-08-unknown",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\08-unsupported-08-unknown",
+      "copySeconds": 0.284,
+      "serverReadySeconds": 6.021,
+      "buildOk": true,
+      "buildSeconds": 26.001,
+      "loaded": null,
+      "interactionValidated": false,
+      "relevanceOk": null,
+      "validated": false,
+      "firstPaintMs": null,
+      "timing": null,
+      "behaviour": null,
+      "errors": null,
+      "browserProcessSeconds": 19.401,
+      "gateInteractiveSeconds": 6.021,
+      "gateValidatedSeconds": null,
+      "poolSeconds": 0,
+      "buildTail": "    at convertProgram (file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:16489:12)\n    at Module.setSource (file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:18237:24)\n    at async ModuleLoader.addModuleSource (file:///opt/terrarium/node_modules/rollup/dist/es/shared/node-entry.js:22484:9)"
+    },
+    {
+      "slug": "09-wedding-venue-request",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\09-wedding-venue-request",
+      "copySeconds": 0.158,
+      "serverReadySeconds": 6.733,
+      "buildOk": true,
+      "buildSeconds": 22.961,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 911,
+      "timing": {
+        "browserLaunchMs": 7581,
+        "firstPaintMs": 911,
+        "routesMs": 225,
+        "interactionMs": 1674
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "date-selection",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 15.909,
+      "gateInteractiveSeconds": 7.644,
+      "gateValidatedSeconds": 22.961,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-Cnd1uCxR.css    1.93 kB \u00e2\u201d\u201a gzip:  0.79 kB\ndist/assets/index-utdUGEjM.js   230.90 kB \u00e2\u201d\u201a gzip: 71.96 kB\n\u00e2\u0153\u201c built in 8.69s"
+    },
+    {
+      "slug": "10-taquer-a-takeout-orders",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\10-taquer-a-takeout-orders",
+      "copySeconds": 0.246,
+      "serverReadySeconds": 6.677,
+      "buildOk": true,
+      "buildSeconds": 18.891,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 2075,
+      "timing": {
+        "browserLaunchMs": 1489,
+        "firstPaintMs": 2075,
+        "routesMs": 330,
+        "interactionMs": 1417
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Pending",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 7.363,
+      "gateInteractiveSeconds": 8.752,
+      "gateValidatedSeconds": 18.891,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DsA7zASz.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-Lml4BQSV.js   230.30 kB \u00e2\u201d\u201a gzip: 71.88 kB\n\u00e2\u0153\u201c built in 10.32s"
+    },
+    {
+      "slug": "11-haircut-booking",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\11-haircut-booking",
+      "copySeconds": 0.222,
+      "serverReadySeconds": 6.585,
+      "buildOk": true,
+      "buildSeconds": 19.651,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 2031,
+      "timing": {
+        "browserLaunchMs": 1688,
+        "firstPaintMs": 2031,
+        "routesMs": 363,
+        "interactionMs": 1805
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "available",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 12.23,
+      "gateInteractiveSeconds": 8.616,
+      "gateValidatedSeconds": 19.651,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DsA7zASz.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-Dn38Ga_F.js   229.75 kB \u00e2\u201d\u201a gzip: 71.76 kB\n\u00e2\u0153\u201c built in 9.00s"
+    },
+    {
+      "slug": "12-car-wash-bay-monitor",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\12-car-wash-bay-monitor",
+      "copySeconds": 0.396,
+      "serverReadySeconds": 6.594,
+      "buildOk": false,
+      "buildSeconds": 20.063,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": false,
+      "firstPaintMs": 2072,
+      "timing": {
+        "browserLaunchMs": 1772,
+        "firstPaintMs": 2072,
+        "routesMs": 484,
+        "interactionMs": 1562
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "available",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 12.431,
+      "gateInteractiveSeconds": 8.666,
+      "gateValidatedSeconds": null,
+      "poolSeconds": 0,
+      "buildTail": "src/views/DashboardPage.tsx(6,63): error TS2322: Type 'DailyTotal[]' is not assignable to type 'TotalRow[]'.\n  Type 'DailyTotal' is not assignable to type 'TotalRow'.\n    Index signature for type 'string' is missing in type 'DailyTotal'."
+    },
+    {
+      "slug": "13-monthly-sales-dashboard",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\13-monthly-sales-dashboard",
+      "copySeconds": 0.208,
+      "serverReadySeconds": 7.354,
+      "buildOk": true,
+      "buildSeconds": 21.48,
+      "loaded": true,
+      "interactionValidated": false,
+      "relevanceOk": true,
+      "validated": false,
+      "firstPaintMs": 3273,
+      "timing": {
+        "browserLaunchMs": 1785,
+        "firstPaintMs": 3273,
+        "routesMs": 389,
+        "interactionMs": 1969
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "January",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": false,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 13.744,
+      "gateInteractiveSeconds": 10.627,
+      "gateValidatedSeconds": null,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DOy8Mc8J.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-CbJYcWqi.js   230.48 kB \u00e2\u201d\u201a gzip: 72.00 kB\n\u00e2\u0153\u201c built in 8.85s"
+    },
+    {
+      "slug": "14-climbing-gym-member-signup",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\14-climbing-gym-member-signup",
+      "copySeconds": 0.214,
+      "serverReadySeconds": 6.997,
+      "buildOk": true,
+      "buildSeconds": 20.22,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 1450,
+      "timing": {
+        "browserLaunchMs": 1520,
+        "firstPaintMs": 1450,
+        "routesMs": 202,
+        "interactionMs": 1806
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "started",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 11.917,
+      "gateInteractiveSeconds": 8.447,
+      "gateValidatedSeconds": 20.22,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-D9_z0oVe.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-mCc01BgP.js   231.77 kB \u00e2\u201d\u201a gzip: 72.06 kB\n\u00e2\u0153\u201c built in 9.52s"
+    },
+    {
+      "slug": "15-recipe-test-log",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20\\15-recipe-test-log",
+      "copySeconds": 0.296,
+      "serverReadySeconds": 6.773,
+      "buildOk": false,
+      "buildSeconds": 23.001,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": false,
+      "firstPaintMs": 908,
+      "timing": {
+        "browserLaunchMs": 1555,
+        "firstPaintMs": 908,
+        "routesMs": 4573,
+        "interactionMs": 1834
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 1,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "1",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 15.814,
+      "gateInteractiveSeconds": 7.681,
+      "gateValidatedSeconds": null,
+      "poolSeconds": 0,
+      "buildTail": "src/data/seed.ts(21,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/data/seed.ts(28,5): error TS2322: Type 'string' is not assignable to type 'number'.\nsrc/types.ts(15,3): error TS2322: Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "slug": "01-unsupported-01-unknown",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20-part2\\01-unsupported-01-unknown",
+      "copySeconds": 0.164,
+      "serverReadySeconds": 6.699,
+      "buildOk": true,
+      "buildSeconds": 27.699,
+      "loaded": null,
+      "interactionValidated": false,
+      "relevanceOk": null,
+      "validated": false,
+      "firstPaintMs": null,
+      "timing": null,
+      "behaviour": null,
+      "errors": null,
+      "browserProcessSeconds": 20.579,
+      "gateInteractiveSeconds": 6.699,
+      "gateValidatedSeconds": null,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-BmYqRXuj.css    6.17 kB \u00e2\u201d\u201a gzip:  1.89 kB\ndist/assets/index-DwDCknHF.js   227.98 kB \u00e2\u201d\u201a gzip: 71.13 kB\n\u00e2\u0153\u201c built in 4.04s"
+    },
+    {
+      "slug": "02-tennis-court-reservations",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2-20-part2\\02-tennis-court-reservations",
+      "copySeconds": 0.135,
+      "serverReadySeconds": 8.379,
+      "buildOk": true,
+      "buildSeconds": 23.51,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 2449,
+      "timing": {
+        "browserLaunchMs": 1678,
+        "firstPaintMs": 2449,
+        "routesMs": 233,
+        "interactionMs": 1868
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "available",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 14.824,
+      "gateInteractiveSeconds": 10.828,
+      "gateValidatedSeconds": 23.51,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-DOy8Mc8J.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-7lDPQpcs.js   230.33 kB \u00e2\u201d\u201a gzip: 71.78 kB\n\u00e2\u0153\u201c built in 8.87s"
+    }
+  ]
+}

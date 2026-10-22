@@ -1,0 +1,36 @@
+{
+  "model": "eu.anthropic.claude-sonnet-4-6",
+  "events": [
+    {
+      "t": 19.661,
+      "type": "message_start",
+      "deltaType": null,
+      "textChars": 0,
+      "usage": {
+        "input_tokens": 82,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 6,
+        "service_tier": "standard"
+      }
+    },
+    {
+      "t": 19.662,
+      "type": "content_block_start",
+      "deltaType": null,
+      "textChars": 0,
+      "usage": null
+    },
+    {
+      "t": 19.662,
+      "type": "content_block_delta",
+      "deltaType": "text_delta",
+      "textChars": 15,
+      "usage": null
+    }
+  ]
+}

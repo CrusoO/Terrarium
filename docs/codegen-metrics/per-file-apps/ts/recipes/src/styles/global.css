@@ -1,0 +1,13 @@
+@import './tokens.css';
+body { margin: 0; font-family: Georgia, serif; background: var(--paper); color: var(--ink); }
+.app-shell { max-width: 960px; margin: 0 auto; padding: 24px; }
+.navbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+.page { display: grid; gap: 12px; margin-bottom: 28px; }
+.order-card, .entity-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-row button, button { border: 1px solid var(--line); background: white; border-radius: 999px; padding: 6px 12px; }
+.status-paid, .status-yes, .status-ok, .status-present, .status-done, .status-booked { color: var(--ok); }
+.status-unpaid, .status-open, .status-low, .status-waiting { color: var(--warn); }
+.status-partial, .status-overdue, .status-out, .status-no, .status-cancelled { color: var(--bad); }
+input, select { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.totals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }

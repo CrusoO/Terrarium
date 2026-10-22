@@ -1,0 +1,253 @@
+{
+  "configured": {
+    "DEFAULT_CODEGEN_FIRST_TOKEN_TIMEOUT_S": 25.0,
+    "DEFAULT_CODEGEN_TOTAL_TIMEOUT_S": 120.0,
+    "DEFAULT_GEMINI_JSON_TIMEOUT_MS": 180000,
+    "note_260s": "Step0 codegen stage ~260s is NOT equal to DEFAULT_GEMINI_JSON_TIMEOUT_MS (180s). Observed ~263s was a stalled non-stream generate_content call that outlived/ignored the intended 180s HTTP timeout (SDK behavior, retries/backoff, and/or thinking delay before first byte)."
+  },
+  "model": "gemini-3.8-flash",
+  "results": [
+    {
+      "chunkCount": 139,
+      "chunkTimeline": [
+        {
+          "chars": 3,
+          "cumulativeChars": 3,
+          "delta": "<<<",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.247
+        },
+        {
+          "chars": 52,
+          "cumulativeChars": 55,
+          "delta": "FILE path=\"index.html\">>>\n<!DOCTYPE html>\n<html lang",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.2476
+        },
+        {
+          "chars": 59,
+          "cumulativeChars": 114,
+          "delta": "=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.2478
+        },
+        {
+          "chars": 73,
+          "cumulativeChars": 187,
+          "delta": "=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.248
+        },
+        {
+          "chars": 76,
+          "cumulativeChars": 263,
+          "delta": ">Customer Order Tracker</title>\n  </head>\n  <body>\n    <div id=\"root\"></div>",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.2907
+        },
+        {
+          "chars": 81,
+          "cumulativeChars": 344,
+          "delta": "\n    <script type=\"module\" src=\"/src/main.jsx\"></script>\n  </body>\n</html>\n<<<END",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.2914
+        },
+        {
+          "chars": 98,
+          "cumulativeChars": 442,
+          "delta": " FILE>>>\n\n<<<FILE path=\"src/main.jsx\">>>\nimport React from 'react'\nimport ReactDOM from 'react-dom",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.292
+        },
+        {
+          "chars": 105,
+          "cumulativeChars": 547,
+          "delta": "/client'\nimport App from './App'\nimport './styles.css'\n\nReactDOM.createRoot(document.getElementById('root",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.2926
+        },
+        {
+          "chars": 75,
+          "cumulativeChars": 622,
+          "delta": "')).render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n)\n<<<END",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.293
+        },
+        {
+          "chars": 78,
+          "cumulativeChars": 700,
+          "delta": " FILE>>>\n\n<<<FILE path=\"src/App.jsx\">>>\nimport React, { useState } from 'react",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.2935
+        },
+        {
+          "chars": 65,
+          "cumulativeChars": 765,
+          "delta": "'\n\nconst INITIAL_ORDERS = [\n  {\n    id: 'ORD-9821',\n    customer:",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.2939
+        },
+        {
+          "chars": 78,
+          "cumulativeChars": 843,
+          "delta": " 'Alice Freeman',\n    items: ['Ergonomic Chair', 'USB-C Cable'],\n    total: 21",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 4.2942
+        }
+      ],
+      "durationSeconds": 19.751,
+      "failReason": null,
+      "json_mode": true,
+      "ok": true,
+      "outputChars": 10072,
+      "thinking_level": "low",
+      "timeToFirstTokenSeconds": 4.247025329997996,
+      "wallSeconds": 20.525
+    },
+    {
+      "chunkCount": 0,
+      "chunkTimeline": [],
+      "durationSeconds": 104.205,
+      "failReason": "first_token_timeout",
+      "json_mode": false,
+      "ok": false,
+      "outputChars": 0,
+      "thinking_level": "low",
+      "timeToFirstTokenSeconds": null,
+      "wallSeconds": 104.206
+    },
+    {
+      "chunkCount": 131,
+      "chunkTimeline": [
+        {
+          "chars": 63,
+          "cumulativeChars": 63,
+          "delta": "{\n  \"index.html\": \"<!doctype html>\\n<html lang=\\\"en\\\">\\n  <head",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 17.3241
+        },
+        {
+          "chars": 92,
+          "cumulativeChars": 155,
+          "delta": ">\\n    <meta charset=\\\"UTF-8\\\" />\\n    <meta name=\\\"viewport\\\" content=\\\"width=device-width,",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 17.4295
+        },
+        {
+          "chars": 72,
+          "cumulativeChars": 227,
+          "delta": " initial-scale=1.0\\\" />\\n    <title>Customer Order Tracker</title>\\n  </",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 17.5322
+        },
+        {
+          "chars": 73,
+          "cumulativeChars": 300,
+          "delta": "head>\\n  <body>\\n    <div id=\\\"root\\\"></div>\\n    <script type=\\\"module\\\"",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 17.6597
+        },
+        {
+          "chars": 66,
+          "cumulativeChars": 366,
+          "delta": " src=\\\"/src/main.jsx\\\"></script>\\n  </body>\\n</html>\",\n  \"src/main",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 17.8151
+        },
+        {
+          "chars": 88,
+          "cumulativeChars": 454,
+          "delta": ".jsx\": \"import React from 'react';\\nimport ReactDOM from 'react-dom/client';\\nimport App",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 17.9614
+        },
+        {
+          "chars": 74,
+          "cumulativeChars": 528,
+          "delta": " from './App.jsx';\\nimport './styles.css';\\n\\nReactDOM.createRoot(document",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 18.0706
+        },
+        {
+          "chars": 79,
+          "cumulativeChars": 607,
+          "delta": ".getElementById('root')).render(\\n  <React.StrictMode>\\n    <App />\\n  </React.",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 18.2188
+        },
+        {
+          "chars": 80,
+          "cumulativeChars": 687,
+          "delta": "StrictMode>\\n);\",\n  \"src/App.jsx\": \"import React, { useState } from 'react';\\n\\n",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 18.3975
+        },
+        {
+          "chars": 65,
+          "cumulativeChars": 752,
+          "delta": "const INITIAL_ORDERS = [\\n  {\\n    id: 'ORD-7821',\\n    customer:",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 18.5556
+        },
+        {
+          "chars": 54,
+          "cumulativeChars": 806,
+          "delta": " 'Sarah Jenkins',\\n    date: '2025-05-12',\\n    items:",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 18.6491
+        },
+        {
+          "chars": 76,
+          "cumulativeChars": 882,
+          "delta": " ['Ergonomic Chair', 'Lumbar Cushion'],\\n    total: '$289.00',\\n    carrier:",
+          "model": "gemini-3.8-flash",
+          "provider": "gemini",
+          "t": 18.9386
+        }
+      ],
+      "durationSeconds": 35.901,
+      "failReason": "ServerError:503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "json_mode": true,
+      "ok": false,
+      "outputChars": 11138,
+      "thinking_level": null,
+      "timeToFirstTokenSeconds": 17.324118914999417,
+      "wallSeconds": 35.902
+    },
+    {
+      "chunkCount": 0,
+      "chunkTimeline": [],
+      "durationSeconds": 1.856,
+      "failReason": "ServerError:503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "json_mode": false,
+      "ok": false,
+      "outputChars": 0,
+      "thinking_level": null,
+      "timeToFirstTokenSeconds": null,
+      "wallSeconds": 1.856
+    }
+  ]
+}

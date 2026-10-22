@@ -1,0 +1,20 @@
+{
+  "durationMs": 1637,
+  "events": [],
+  "finishedAtMs": 1791664468295,
+  "modelCalls": [],
+  "prompt": "Build an ecommerce catalogue web app. Shoppers browse a product grid, filter by category, open product detail, add items to a cart, and see a checkout summary output. Use Vite React, in-memory mock catalogue data, no backend, web UI only. Go ahead and build it.",
+  "runId": "af2015a93ddf4a78a19ba19a30d8e5f9-1791664466658",
+  "runType": "new",
+  "sessionId": "af2015a93ddf4a78a19ba19a30d8e5f9",
+  "stages": [
+    {
+      "durationMs": 1632,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791664466659
+    }
+  ],
+  "startedAtMs": 1791664466658,
+  "status": "clarify"
+}

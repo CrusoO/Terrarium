@@ -1,0 +1,438 @@
+/* ── CSS Custom Properties ─────────────────────────────────────────── */
+:root {
+  --color-bg:            #0f1117;
+  --color-surface:       #1a1d27;
+  --color-surface-2:     #22263a;
+  --color-border:        #2e3350;
+  --color-text:          #e8eaf6;
+  --color-text-muted:    #8b90b8;
+  --color-text-dim:      #555a7a;
+
+  --color-square-idle:   #2e3350;
+  --color-square-wait:   #7c1a1a;
+  --color-square-green:  #1a7c3e;
+  --color-square-result: #1a3a7c;
+  --color-square-false:  #7c4a1a;
+
+  --color-accent-blue:   #5b8dee;
+  --color-accent-green:  #3ecf6e;
+  --color-accent-purple: #a78bfa;
+  --color-accent-red:    #f87171;
+  --color-accent-orange: #fb923c;
+
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  18px;
+
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.35);
+  --shadow-sq:   0 8px 48px rgba(0,0,0,0.5);
+
+  --transition-sq: background-color 0.12s ease, box-shadow 0.12s ease, transform 0.08s ease;
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── App Layout ────────────────────────────────────────────────────── */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.app-logo { font-size: 1.4rem; }
+
+.app-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.app-subtitle {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+
+.app-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 0;
+  align-items: start;
+}
+
+/* ── GameBoard ─────────────────────────────────────────────────────── */
+.gameboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 48px 24px;
+  min-height: calc(100vh - 65px);
+}
+
+/* The reactive square */
+.game-square {
+  width: min(320px, 80vw);
+  height: min(320px, 80vw);
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: var(--transition-sq);
+  box-shadow: var(--shadow-sq);
+  outline: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-square:focus-visible {
+  outline: 3px solid var(--color-accent-blue);
+  outline-offset: 4px;
+}
+
+/* Phase colours */
+.phase-idle        { background: var(--color-square-idle); }
+.phase-waiting     { background: #c0392b; box-shadow: 0 8px 48px rgba(192,57,43,0.4); }
+.phase-green       { background: #27ae60; box-shadow: 0 8px 64px rgba(39,174,96,0.55); transform: scale(1.03); }
+.phase-result      { background: #2563eb; box-shadow: 0 8px 48px rgba(37,99,235,0.4); }
+.phase-false-start { background: #d97706; box-shadow: 0 8px 48px rgba(217,119,6,0.4); }
+
+.game-square:hover.phase-idle        { background: #363b5e; }
+.game-square:hover.phase-result      { background: #1d4ed8; }
+.game-square:hover.phase-false-start { background: #b45309; }
+.game-square:active { transform: scale(0.97); }
+.game-square:active.phase-green { transform: scale(1.0); }
+
+.square-label {
+  font-size: clamp(1.4rem, 5vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: rgba(255,255,255,0.92);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.square-sublabel {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.6);
+  margin-top: 2px;
+}
+
+/* Status text */
+.status-block {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-sub {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.status-hint {
+  font-size: 0.8rem;
+  color: var(--color-accent-orange);
+  font-weight: 600;
+}
+
+/* Reset button */
+.btn-reset {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.btn-reset:hover {
+  border-color: var(--color-accent-red);
+  color: var(--color-accent-red);
+  background: rgba(248,113,113,0.06);
+}
+
+/* ── ScorePanel ────────────────────────────────────────────────────── */
+.score-panel {
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  min-height: calc(100vh - 65px);
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stats-grid .stat-card:last-child {
+  grid-column: 1 / -1;
+}
+
+.stat-card {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.2s;
+}
+
+.stat-card--highlight {
+  border-color: var(--color-accent-blue);
+  box-shadow: 0 0 0 1px var(--color-accent-blue);
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.stat-unit {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 2px;
+  opacity: 0.7;
+}
+
+/* Rating */
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rating-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.rating-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+}
+
+.rating-legendary { color: #fbbf24; border-color: #fbbf24; background: rgba(251,191,36,0.08); }
+.rating-excellent  { color: #f59e0b; border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+.rating-great      { color: var(--color-accent-green); border-color: var(--color-accent-green); background: rgba(62,207,110,0.08); }
+.rating-good       { color: var(--color-accent-blue); border-color: var(--color-accent-blue); background: rgba(91,141,238,0.08); }
+.rating-average    { color: var(--color-text-muted); }
+.rating-slow       { color: var(--color-accent-orange); border-color: var(--color-accent-orange); background: rgba(251,146,60,0.08); }
+.rating-veryslow   { color: var(--color-accent-red); border-color: var(--color-accent-red); background: rgba(248,113,113,0.08); }
+
+/* False-start notice */
+.false-start-notice {
+  background: rgba(217,119,6,0.12);
+  border: 1px solid rgba(217,119,6,0.4);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fb923c;
+}
+
+/* Attempts list */
+.attempts-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attempts-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attempts-count {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-size: 0.65rem;
+  color: var(--color-text-dim);
+  font-weight: 600;
+}
+
+.attempts-empty {
+  font-size: 0.82rem;
+  color: var(--color-text-dim);
+  padding: 12px 0;
+}
+
+.attempts-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attempt-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s;
+}
+
+.attempt-item.attempt-best {
+  border-color: var(--color-accent-green);
+  background: rgba(62,207,110,0.05);
+}
+
+.attempt-rank {
+  font-size: 0.65rem;
+  color: var(--color-text-dim);
+  font-weight: 700;
+  min-width: 24px;
+}
+
+.attempt-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.attempt-bar {
+  height: 100%;
+  background: var(--color-accent-blue);
+  border-radius: 2px;
+  min-width: 4px;
+  transition: width 0.3s ease;
+}
+
+.attempt-best .attempt-bar { background: var(--color-accent-green); }
+
+.attempt-time {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text);
+  min-width: 70px;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+.best-tag {
+  font-size: 0.6rem;
+  font-weight: 800;
+  background: var(--color-accent-green);
+  color: #0f1117;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-main {
+    grid-template-columns: 1fr;
+  }
+
+  .score-panel {
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    min-height: unset;
+    padding: 20px 16px;
+  }
+
+  .gameboard {
+    min-height: unset;
+    padding: 32px 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .stats-grid .stat-card:last-child {
+    grid-column: unset;
+  }
+
+  .app-subtitle { display: none; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stats-grid .stat-card:last-child {
+    grid-column: 1 / -1;
+  }
+}

@@ -1,0 +1,1365 @@
+<<<FILE path="package.json">>>
+{
+  "name": "appointment-book",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "date-fns": "^3.3.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.1.0"
+  }
+}
+<<<END FILE>>>
+<<<FILE path="vite.config.js">>>
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+<<<END FILE>>>
+<<<FILE path="index.html">>>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appointment Book</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+<<<END FILE>>>
+<<<FILE path="src/main.jsx">>>
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+<<<END FILE>>>
+<<<FILE path="src/index.css">>>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --border: #dde3ec;
+  --primary: #3b6ef8;
+  --primary-dark: #2a55d6;
+  --primary-light: #eef2ff;
+  --text: #1a202c;
+  --text-muted: #64748b;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --info: #06b6d4;
+  --radius: 10px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+<<<END FILE>>>
+<<<FILE path="src/data/seed.js">>>
+import { v4 as uuid } from 'uuid'
+import { subDays, addDays, setHours, setMinutes } from 'date-fns'
+
+const now = new Date()
+
+const dt = (daysOffset, h, m) => {
+  const d = daysOffset >= 0 ? addDays(now, daysOffset) : subDays(now, -daysOffset)
+  return setMinutes(setHours(d, h), m).toISOString()
+}
+
+export const STATUSES = ['Scheduled', 'Confirmed', 'In Progress', 'Completed', 'Cancelled', 'No Show']
+
+export const STATUS_COLOR = {
+  Scheduled:   { bg: '#e0e7ff', text: '#3730a3' },
+  Confirmed:   { bg: '#dcfce7', text: '#166534' },
+  'In Progress':{ bg: '#fef9c3', text: '#854d0e' },
+  Completed:   { bg: '#f0fdf4', text: '#15803d' },
+  Cancelled:   { bg: '#fee2e2', text: '#991b1b' },
+  'No Show':   { bg: '#fce7f3', text: '#9d174d' },
+}
+
+export const PROVIDERS = [
+  { id: 'p1', name: 'Dr. Sarah Chen', specialty: 'General Practice' },
+  { id: 'p2', name: 'Dr. Marcus Webb', specialty: 'Cardiology' },
+  { id: 'p3', name: 'Dr. Priya Nair', specialty: 'Dermatology' },
+  { id: 'p4', name: 'Dr. James Okafor', specialty: 'Orthopedics' },
+]
+
+export const VISIT_TYPES = ['New Patient', 'Follow-Up', 'Annual Physical', 'Urgent Care', 'Consultation', 'Procedure']
+
+const PATIENTS = [
+  { name: 'Alice Johnson', dob: '1985-03-12', phone: '555-0101', email: 'alice@example.com' },
+  { name: 'Bob Martinez', dob: '1972-07-24', phone: '555-0102', email: 'bob@example.com' },
+  { name: 'Carol White', dob: '1990-11-05', phone: '555-0103', email: 'carol@example.com' },
+  { name: 'David Kim', dob: '1968-01-30', phone: '555-0104', email: 'david@example.com' },
+  { name: 'Eva Brown', dob: '2001-09-18', phone: '555-0105', email: 'eva@example.com' },
+  { name: 'Frank Lee', dob: '1955-06-22', phone: '555-0106', email: 'frank@example.com' },
+  { name: 'Grace Patel', dob: '1995-12-01', phone: '555-0107', email: 'grace@example.com' },
+  { name: 'Henry Nguyen', dob: '1980-04-14', phone: '555-0108', email: 'henry@example.com' },
+]
+
+const raw = [
+  { days: -3, h: 9,  m: 0,  pi: 0, pr: 'p1', type: 'Follow-Up',       status: 'Completed',   notes: 'Patient reported improvement. Continue current medication.' },
+  { days: -2, h: 10, m: 30, pi: 1, pr: 'p2', type: 'Consultation',    status: 'Completed',   notes: 'EKG normal. Schedule stress test in 3 months.' },
+  { days: -1, h: 14, m: 0,  pi: 2, pr: 'p3', type: 'Annual Physical', status: 'No Show',     notes: 'Patient did not arrive. Left voicemail.' },
+  { days: 0,  h: 8,  m: 30, pi: 3, pr: 'p1', type: 'Urgent Care',     status: 'In Progress', notes: 'Presenting with acute knee pain.' },
+  { days: 0,  h: 9,  m: 0,  pi: 4, pr: 'p4', type: 'New Patient',     status: 'Confirmed',   notes: 'First visit. Bring prior imaging.' },
+  { days: 0,  h: 11, m: 0,  pi: 5, pr: 'p2', type: 'Follow-Up',       status: 'Scheduled',   notes: 'Review lab results.' },
+  { days: 0,  h: 13, m: 30, pi: 6, pr: 'p3', type: 'Procedure',       status: 'Confirmed',   notes: 'Mole removal. Consent form signed.' },
+  { days: 1,  h: 9,  m: 30, pi: 7, pr: 'p1', type: 'Annual Physical', status: 'Scheduled',   notes: '' },
+  { days: 1,  h: 10, m: 0,  pi: 0, pr: 'p4', type: 'Consultation',    status: 'Scheduled',   notes: 'Second opinion on surgery.' },
+  { days: 2,  h: 15, m: 0,  pi: 1, pr: 'p3', type: 'Follow-Up',       status: 'Scheduled',   notes: 'Post-procedure check.' },
+  { days: 3,  h: 8,  m: 0,  pi: 2, pr: 'p2', type: 'New Patient',     status: 'Scheduled',   notes: '' },
+  { days: 4,  h: 14, m: 30, pi: 3, pr: 'p1', type: 'Urgent Care',     status: 'Cancelled',   notes: 'Patient cancelled due to travel.' },
+]
+
+export const seedVisits = raw.map(r => ({
+  id: uuid(),
+  patientName: PATIENTS[r.pi].name,
+  patientDob:  PATIENTS[r.pi].dob,
+  patientPhone:PATIENTS[r.pi].phone,
+  patientEmail:PATIENTS[r.pi].email,
+  providerId:  r.pr,
+  providerName: PROVIDERS.find(p => p.id === r.pr).name,
+  providerSpecialty: PROVIDERS.find(p => p.id === r.pr).specialty,
+  visitType:   r.type,
+  status:      r.status,
+  dateTime:    dt(r.days, r.h, r.m),
+  duration:    30,
+  notes:       r.notes,
+  createdAt:   new Date().toISOString(),
+}))
+<<<END FILE>>>
+<<<FILE path="src/store/useStore.js">>>
+import { create } from 'zustand'
+import { seedVisits } from '../data/seed'
+
+const load = () => {
+  try {
+    const s = localStorage.getItem('appt-visits')
+    return s ? JSON.parse(s) : seedVisits
+  } catch { return seedVisits }
+}
+
+const save = visits => {
+  try { localStorage.setItem('appt-visits', JSON.stringify(visits)) } catch {}
+}
+
+export const useStore = create((set, get) => ({
+  visits: load(),
+  addVisit: visit => {
+    const next = [visit, ...get().visits]
+    save(next)
+    set({ visits: next })
+  },
+  updateVisit: updated => {
+    const next = get().visits.map(v => v.id === updated.id ? updated : v)
+    save(next)
+    set({ visits: next })
+  },
+  deleteVisit: id => {
+    const next = get().visits.filter(v => v.id !== id)
+    save(next)
+    set({ visits: next })
+  },
+}))
+<<<END FILE>>>
+<<<FILE path="src/App.jsx">>>
+import React, { useState } from 'react'
+import AppShell from './components/AppShell'
+import ListView from './views/ListView'
+import DetailView from './views/DetailView'
+import CreateModal from './components/CreateModal'
+
+export default function App() {
+  const [selectedId, setSelectedId] = useState(null)
+  const [showCreate, setShowCreate] = useState(false)
+
+  return (
+    <AppShell onNew={() => setShowCreate(true)}>
+      {selectedId ? (
+        <DetailView id={selectedId} onBack={() => setSelectedId(null)} />
+      ) : (
+        <ListView onSelect={setSelectedId} onNew={() => setShowCreate(true)} />
+      )}
+      {showCreate && (
+        <CreateModal
+          onClose={() => setShowCreate(false)}
+          onCreated={id => { setShowCreate(false); setSelectedId(id) }}
+        />
+      )}
+    </AppShell>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/components/AppShell.jsx">>>
+import React from 'react'
+import styles from './AppShell.module.css'
+
+export default function AppShell({ children, onNew }) {
+  return (
+    <div className={styles.shell}>
+      <header className={styles.header}>
+        <div className={styles.brand}>
+          <span className={styles.icon}>📅</span>
+          <span className={styles.title}>AppointmentBook</span>
+        </div>
+        <button className={styles.newBtn} onClick={onNew}>
+          + New Visit
+        </button>
+      </header>
+      <main className={styles.main}>{children}</main>
+    </div>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/components/AppShell.module.css">>>
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon { font-size: 22px; }
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.3px;
+}
+
+.newBtn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.newBtn:hover { background: var(--primary-dark); }
+
+.main {
+  flex: 1;
+  padding: 28px 24px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  .main { padding: 16px 12px; }
+  .header { padding: 0 12px; }
+}
+<<<END FILE>>>
+<<<FILE path="src/views/ListView.jsx">>>
+import React, { useState, useMemo } from 'react'
+import { useStore } from '../store/useStore'
+import { STATUSES, STATUS_COLOR } from '../data/seed'
+import { format, isToday, isTomorrow, isYesterday, parseISO } from 'date-fns'
+import StatusBadge from '../components/StatusBadge'
+import styles from './ListView.module.css'
+
+const ALL = 'All'
+
+function friendlyDate(iso) {
+  const d = parseISO(iso)
+  const time = format(d, 'h:mm a')
+  if (isToday(d)) return `Today, ${time}`
+  if (isTomorrow(d)) return `Tomorrow, ${time}`
+  if (isYesterday(d)) return `Yesterday, ${time}`
+  return format(d, 'MMM d, yyyy · h:mm a')
+}
+
+export default function ListView({ onSelect, onNew }) {
+  const visits = useStore(s => s.visits)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState(ALL)
+  const [sort, setSort] = useState('dateAsc')
+
+  const filtered = useMemo(() => {
+    let list = [...visits]
+    if (statusFilter !== ALL) list = list.filter(v => v.status === statusFilter)
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(v =>
+        v.patientName.toLowerCase().includes(q) ||
+        v.providerName.toLowerCase().includes(q) ||
+        v.visitType.toLowerCase().includes(q) ||
+        v.patientPhone.includes(q)
+      )
+    }
+    list.sort((a, b) => {
+      if (sort === 'dateAsc')  return new Date(a.dateTime) - new Date(b.dateTime)
+      if (sort === 'dateDesc') return new Date(b.dateTime) - new Date(a.dateTime)
+      if (sort === 'patient')  return a.patientName.localeCompare(b.patientName)
+      if (sort === 'provider') return a.providerName.localeCompare(b.providerName)
+      return 0
+    })
+    return list
+  }, [visits, search, statusFilter, sort])
+
+  const counts = useMemo(() => {
+    const c = { All: visits.length }
+    STATUSES.forEach(s => { c[s] = visits.filter(v => v.status === s).length })
+    return c
+  }, [visits])
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.topBar}>
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon}>🔍</span>
+          <input
+            className={styles.search}
+            placeholder="Search patient, provider, visit type…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className={styles.clearBtn} onClick={() => setSearch('')}>✕</button>
+          )}
+        </div>
+        <select className={styles.sortSelect} value={sort} onChange={e => setSort(e.target.value)}>
+          <option value="dateAsc">Date ↑</option>
+          <option value="dateDesc">Date ↓</option>
+          <option value="patient">Patient A–Z</option>
+          <option value="provider">Provider A–Z</option>
+        </select>
+      </div>
+
+      <div className={styles.filterRow}>
+        {[ALL, ...STATUSES].map(s => (
+          <button
+            key={s}
+            className={`${styles.filterChip} ${statusFilter === s ? styles.active : ''}`}
+            style={statusFilter === s && s !== ALL ? {
+              background: STATUS_COLOR[s]?.bg,
+              color: STATUS_COLOR[s]?.text,
+              borderColor: STATUS_COLOR[s]?.text + '55',
+            } : {}}
+            onClick={() => setStatusFilter(s)}
+          >
+            {s}
+            <span className={styles.chipCount}>{counts[s] ?? 0}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className={styles.resultMeta}>
+        {filtered.length} visit{filtered.length !== 1 ? 's' : ''}
+        {statusFilter !== ALL && ` · ${statusFilter}`}
+        {search && ` · "${search}"`}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className={styles.empty}>
+          <div className={styles.emptyIcon}>🗓️</div>
+          <p>No visits found</p>
+          <button className={styles.emptyBtn} onClick={onNew}>Create a visit</button>
+        </div>
+      ) : (
+        <div className={styles.list}>
+          {filtered.map(v => (
+            <button key={v.id} className={styles.card} onClick={() => onSelect(v.id)}>
+              <div className={styles.cardLeft}>
+                <div className={styles.dateBlock}>
+                  <span className={styles.dateDay}>{format(parseISO(v.dateTime), 'd')}</span>
+                  <span className={styles.dateMon}>{format(parseISO(v.dateTime), 'MMM')}</span>
+                </div>
+              </div>
+              <div className={styles.cardBody}>
+                <div className={styles.cardTop}>
+                  <span className={styles.patientName}>{v.patientName}</span>
+                  <StatusBadge status={v.status} />
+                </div>
+                <div className={styles.cardMeta}>
+                  <span className={styles.metaItem}>🕐 {friendlyDate(v.dateTime)}</span>
+                  <span className={styles.metaItem}>👨‍⚕️ {v.providerName}</span>
+                  <span className={styles.metaItem}>📋 {v.visitType}</span>
+                </div>
+                {v.notes && <p className={styles.cardNotes}>{v.notes}</p>}
+              </div>
+              <span className={styles.chevron}>›</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/views/ListView.module.css">>>
+.container { display: flex; flex-direction: column; gap: 16px; }
+
+.topBar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.searchWrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  padding: 10px 36px 10px 38px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.15s;
+  outline: none;
+}
+.search:focus { border-color: var(--primary); }
+
+.clearBtn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 2px 4px;
+}
+.clearBtn:hover { color: var(--text); }
+
+.sortSelect {
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+}
+.sortSelect:focus { border-color: var(--primary); }
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filterChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.filterChip:hover { border-color: var(--primary); color: var(--primary); }
+.filterChip.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+.chipCount {
+  background: rgba(0,0,0,0.08);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.resultMeta {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.list { display: flex; flex-direction: column; gap: 10px; }
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  text-align: left;
+  width: 100%;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+}
+.card:hover {
+  box-shadow: var(--shadow);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.cardLeft { flex-shrink: 0; }
+
+.dateBlock {
+  width: 44px;
+  height: 48px;
+  background: var(--primary-light);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.dateDay { font-size: 18px; font-weight: 700; color: var(--primary); line-height: 1; }
+.dateMon { font-size: 10px; font-weight: 600; color: var(--primary); text-transform: uppercase; }
+
+.cardBody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+
+.cardTop { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.patientName { font-size: 15px; font-weight: 600; color: var(--text); }
+
+.cardMeta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.metaItem { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+
+.cardNotes {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 500px;
+}
+
+.chevron { font-size: 22px; color: var(--text-muted); flex-shrink: 0; }
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.emptyIcon { font-size: 48px; }
+.emptyBtn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.emptyBtn:hover { background: var(--primary-dark); }
+
+@media (max-width: 600px) {
+  .topBar { flex-direction: column; }
+  .sortSelect { width: 100%; }
+  .cardMeta { gap: 8px; }
+}
+<<<END FILE>>>
+<<<FILE path="src/views/DetailView.jsx">>>
+import React, { useState } from 'react'
+import { useStore } from '../store/useStore'
+import { STATUSES, STATUS_COLOR, PROVIDERS, VISIT_TYPES } from '../data/seed'
+import { format, parseISO } from 'date-fns'
+import StatusBadge from '../components/StatusBadge'
+import styles from './DetailView.module.css'
+
+export default function DetailView({ id, onBack }) {
+  const visits = useStore(s => s.visits)
+  const updateVisit = useStore(s => s.updateVisit)
+  const deleteVisit = useStore(s => s.deleteVisit)
+
+  const visit = visits.find(v => v.id === id)
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  if (!visit) return (
+    <div className={styles.notFound}>
+      <p>Visit not found.</p>
+      <button onClick={onBack}>← Back</button>
+    </div>
+  )
+
+  const startEdit = () => {
+    setForm({
+      patientName: visit.patientName,
+      patientDob: visit.patientDob,
+      patientPhone: visit.patientPhone,
+      patientEmail: visit.patientEmail,
+      providerId: visit.providerId,
+      visitType: visit.visitType,
+      status: visit.status,
+      dateTime: visit.dateTime.slice(0, 16),
+      duration: visit.duration,
+      notes: visit.notes,
+    })
+    setEditing(true)
+  }
+
+  const cancelEdit = () => { setEditing(false); setForm(null) }
+
+  const saveEdit = () => {
+    const provider = PROVIDERS.find(p => p.id === form.providerId)
+    updateVisit({
+      ...visit,
+      ...form,
+      providerName: provider.name,
+      providerSpecialty: provider.specialty,
+      dateTime: new Date(form.dateTime).toISOString(),
+      duration: Number(form.duration),
+    })
+    setEditing(false)
+    setForm(null)
+  }
+
+  const handleDelete = () => {
+    deleteVisit(id)
+    onBack()
+  }
+
+  const f = form || {}
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.breadcrumb}>
+        <button className={styles.backBtn} onClick={onBack}>← All Visits</button>
+        <span className={styles.sep}>/</span>
+        <span className={styles.crumb}>{visit.patientName}</span>
+      </div>
+
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.headerLeft}>
+            <div className={styles.avatar}>{visit.patientName.split(' ').map(n => n[0]).join('').slice(0,2)}</div>
+            <div>
+              <h1 className={styles.patientName}>{visit.patientName}</h1>
+              <p className={styles.subLine}>
+                DOB: {visit.patientDob} &nbsp;·&nbsp; {visit.visitType}
+              </p>
+            </div>
+          </div>
+          <div className={styles.headerRight}>
+            <StatusBadge status={visit.status} large />
+            {!editing && (
+              <div className={styles.headerActions}>
+                <button className={styles.editBtn} onClick={startEdit}>✏️ Edit</button>
+                <button className={styles.deleteBtn} onClick={() => setConfirmDelete(true)}>🗑️ Delete</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {editing ? (
+          <EditForm form={f} setForm={setForm} onSave={saveEdit} onCancel={cancelEdit} />
+        ) : (
+          <ReadView visit={visit} />
+        )}
+      </div>
+
+      {confirmDelete && (
+        <div className={styles.overlay}>
+          <div className={styles.dialog}>
+            <h3>Delete this visit?</h3>
+            <p>This action cannot be undone.</p>
+            <div className={styles.dialogActions}>
+              <button className={styles.cancelBtn} onClick={() => setConfirmDelete(false)}>Cancel</button>
+              <button className={styles.confirmDeleteBtn} onClick={handleDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ReadView({ visit }) {
+  return (
+    <div className={styles.sections}>
+      <Section title="Appointment">
+        <Field label="Date & Time" value={format(parseISO(visit.dateTime), 'EEEE, MMMM d, yyyy · h:mm a')} />
+        <Field label="Duration" value={`${visit.duration} minutes`} />
+        <Field label="Visit Type" value={visit.visitType} />
+        <Field label="Status" value={<StatusBadge status={visit.status} />} />
+      </Section>
+      <Section title="Provider">
+        <Field label="Name" value={visit.providerName} />
+        <Field label="Specialty" value={visit.providerSpecialty} />
+      </Section>
+      <Section title="Patient">
+        <Field label="Name" value={visit.patientName} />
+        <Field label="Date of Birth" value={visit.patientDob} />
+        <Field label="Phone" value={visit.patientPhone} />
+        <Field label="Email" value={visit.patientEmail} />
+      </Section>
+      <Section title="Notes">
+        <p className={styles.notes}>{visit.notes || <em style={{color:'var(--text-muted)'}}>No notes recorded.</em>}</p>
+      </Section>
+    </div>
+  )
+}
+
+function Section({ title, children }) {
+  return (
+    <div className={styles.section}>
+      <h2 className={styles.sectionTitle}>{title}</h2>
+      <div className={styles.fields}>{children}</div>
+    </div>
+  )
+}
+
+function Field({ label, value }) {
+  return (
+    <div className={styles.field}>
+      <span className={styles.fieldLabel}>{label}</span>
+      <span className={styles.fieldValue}>{value}</span>
+    </div>
+  )
+}
+
+function EditForm({ form, setForm, onSave, onCancel }) {
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  return (
+    <div className={styles.editForm}>
+      <div className={styles.formGrid}>
+        <label className={styles.formGroup}>
+          <span>Patient Name</span>
+          <input value={form.patientName || ''} onChange={e => set('patientName', e.target.value)} />
+        </label>
+        <label className={styles.formGroup}>
+          <span>Date of Birth</span>
+          <input type="date" value={form.patientDob || ''} onChange={e => set('patientDob', e.target.value)} />
+        </label>
+        <label className={styles.formGroup}>
+          <span>Phone</span>
+          <input value={form.patientPhone || ''} onChange={e => set('patientPhone', e.target.value)} />
+        </label>
+        <label className={styles.formGroup}>
+          <span>Email</span>
+          <input type="email" value={form.patientEmail || ''} onChange={e => set('patientEmail', e.target.value)} />
+        </label>
+        <label className={styles.formGroup}>
+          <span>Provider</span>
+          <select value={form.providerId || ''} onChange={e => set('providerId', e.target.value)}>
+            {PROVIDERS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </label>
+        <label className={styles.formGroup}>
+          <span>Visit Type</span>
+          <select value={form.visitType || ''} onChange={e => set('visitType', e.target.value)}>
+            {VISIT_TYPES.map(t => <option key={t}>{t}</option>)}
+          </select>
+        </label>
+        <label className={styles.formGroup}>
+          <span>Status</span>
+          <select value={form.status || ''} onChange={e => set('status', e.target.value)}>
+            {STATUSES.map(s => <option key={s}>{s}</option>)}
+          </select>
+        </label>
+        <label className={styles.formGroup}>
+          <span>Date & Time</span>
+          <input type="datetime-local" value={form.dateTime || ''} onChange={e => set('dateTime', e.target.value)} />
+        </label>
+        <label className={styles.formGroup}>
+          <span>Duration (min)</span>
+          <input type="number" min="5" max="240" step="5" value={form.duration || 30} onChange={e => set('duration', e.target.value)} />
+        </label>
+      </div>
+      <label className={styles.formGroup} style={{marginTop: 4}}>
+        <span>Notes</span>
+        <textarea rows={4} value={form.notes || ''} onChange={e => set('notes', e.target.value)} />
+      </label>
+      <div className={styles.editActions}>
+        <button className={styles.cancelBtn} onClick={onCancel}>Cancel</button>
+        <button className={styles.saveBtn} onClick={onSave}>Save Changes</button>
+      </div>
+    </div>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/views/DetailView.module.css">>>
+.container { display: flex; flex-direction: column; gap: 20px; }
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0;
+}
+.backBtn:hover { text-decoration: underline; }
+.sep { color: var(--border); }
+.crumb { color: var(--text); font-weight: 500; }
+
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+  flex-wrap: wrap;
+}
+
+.headerLeft { display: flex; align-items: center; gap: 16px; }
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.patientName { font-size: 20px; font-weight: 700; color: var(--text); }
+.subLine { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+.headerRight { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
+.headerActions { display: flex; gap: 8px; }
+
+.editBtn, .deleteBtn {
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--surface);
+  transition: all 0.15s;
+}
+.editBtn:hover { border-color: var(--primary); color: var(--primary); }
+.deleteBtn:hover { border-color: var(--danger); color: var(--danger); }
+
+.sections { padding: 24px 28px; display: flex; flex-direction: column; gap: 28px; }
+
+.section {}
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+
+.field { display: flex; flex-direction: column; gap: 3px; }
+.fieldLabel { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+.fieldValue { font-size: 14px; color: var(--text); font-weight: 500; }
+
+.notes { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+
+/* Edit form */
+.editForm { padding: 24px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+.formGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+}
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus { border-color: var(--primary); background: #fff; }
+
+.editActions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+
+.cancelBtn {
+  padding: 9px 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.cancelBtn:hover { border-color: var(--text-muted); color: var(--text); }
+
+.saveBtn {
+  padding: 9px 22px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.saveBtn:hover { background: var(--primary-dark); }
+
+/* Delete dialog */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.dialog {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dialog h3 { font-size: 17px; font-weight: 700; }
+.dialog p { font-size: 14px; color: var(--text-muted); }
+.dialogActions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+.confirmDeleteBtn {
+  padding: 9px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.confirmDeleteBtn:hover { background: #dc2626; }
+
+.notFound { padding: 40px; text-align: center; color: var(--text-muted); }
+.notFound button { margin-top: 12px; color: var(--primary); background: none; border: none; font-size: 14px; }
+
+@media (max-width: 600px) {
+  .cardHeader { padding: 16px; }
+  .sections, .editForm { padding: 16px; }
+  .headerRight { align-items: flex-start; }
+}
+<<<END FILE>>>
+<<<FILE path="src/components/StatusBadge.jsx">>>
+import React from 'react'
+import { STATUS_COLOR } from '../data/seed'
+import styles from './StatusBadge.module.css'
+
+export default function StatusBadge({ status, large }) {
+  const colors = STATUS_COLOR[status] || { bg: '#f1f5f9', text: '#475569' }
+  return (
+    <span
+      className={`${styles.badge} ${large ? styles.large : ''}`}
+      style={{ background: colors.bg, color: colors.text }}
+    >
+      {status}
+    </span>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/components/StatusBadge.module.css">>>
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.large {
+  font-size: 13px;
+  padding: 5px 14px;
+}
+<<<END FILE>>>
+<<<FILE path="src/components/CreateModal.jsx">>>
+import React, { useState } from 'react'
+import { v4 as uuid } from 'uuid'
+import { STATUSES, PROVIDERS, VISIT_TYPES } from '../data/seed'
+import { useStore } from '../store/useStore'
+import styles from './CreateModal.module.css'
+
+const defaultForm = () => {
+  const now = new Date()
+  now.setMinutes(Math.ceil(now.getMinutes() / 15) * 15, 0, 0)
+  return {
+    patientName: '',
+    patientDob: '',
+    patientPhone: '',
+    patientEmail: '',
+    providerId: PROVIDERS[0].id,
+    visitType: VISIT_TYPES[0],
+    status: 'Scheduled',
+    dateTime: now.toISOString().slice(0, 16),
+    duration: 30,
+    notes: '',
+  }
+}
+
+export default function CreateModal({ onClose, onCreated }) {
+  const addVisit = useStore(s => s.addVisit)
+  const [form, setForm] = useState(defaultForm)
+  const [errors, setErrors] = useState({})
+
+  const set = (k, v) => {
+    setForm(f => ({ ...f, [k]: v }))
+    setErrors(e => ({ ...e, [k]: undefined }))
+  }
+
+  const validate = () => {
+    const e = {}
+    if (!form.patientName.trim()) e.patientName = 'Required'
+    if (!form.dateTime) e.dateTime = 'Required'
+    return e
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length) { setErrors(errs); return }
+    const provider = PROVIDERS.find(p => p.id === form.providerId)
+    const visit = {
+      id: uuid(),
+      ...form,
+      providerName: provider.name,
+      providerSpecialty: provider.specialty,
+      dateTime: new Date(form.dateTime).toISOString(),
+      duration: Number(form.duration),
+      createdAt: new Date().toISOString(),
+    }
+    addVisit(visit)
+    onCreated(visit.id)
+  }
+
+  return (
+    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal}>
+        <div className={styles.modalHeader}>
+          <h2>New Visit</h2>
+          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        </div>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.section}>
+            <h3 className={styles.sectionTitle}>Patient</h3>
+            <div className={styles.grid}>
+              <label className={styles.group}>
+                <span>Full Name <em>*</em></span>
+                <input
+                  value={form.patientName}
+                  onChange={e => set('patientName', e.target.value)}
+                  placeholder="Jane Doe"
+                  className={errors.patientName ? styles.error : ''}
+                />
+                {errors.patientName && <span className={styles.errMsg}>{errors.patientName}</span>}
+              </label>
+              <label className={styles.group}>
+                <span>Date of Birth</span>
+                <input type="date" value={form.patientDob} onChange={e => set('patientDob', e.target.value)} />
+              </label>
+              <label className={styles.group}>
+                <span>Phone</span>
+                <input value={form.patientPhone} onChange={e => set('patientPhone', e.target.value)} placeholder="555-0100" />
+              </label>
+              <label className={styles.group}>
+                <span>Email</span>
+                <input type="email" value={form.patientEmail} onChange={e => set('patientEmail', e.target.value)} placeholder="patient@example.com" />
+              </label>
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <h3 className={styles.sectionTitle}>Appointment</h3>
+            <div className={styles.grid}>
+              <label className={styles.group}>
+                <span>Provider</span>
+                <select value={form.providerId} onChange={e => set('providerId', e.target.value)}>
+                  {PROVIDERS.map(p => <option key={p.id} value={p.id}>{p.name} — {p.specialty}</option>)}
+                </select>
+              </label>
+              <label className={styles.group}>
+                <span>Visit Type</span>
+                <select value={form.visitType} onChange={e => set('visitType', e.target.value)}>
+                  {VISIT_TYPES.map(t => <option key={t}>{t}</option>)}
+                </select>
+              </label>
+              <label className={styles.group}>
+                <span>Status</span>
+                <select value={form.status} onChange={e => set('status', e.target.value)}>
+                  {STATUSES.map(s => <option key={s}>{s}</option>)}
+                </select>
+              </label>
+              <label className={styles.group}>
+                <span>Date & Time <em>*</em></span>
+                <input
+                  type="datetime-local"
+                  value={form.dateTime}
+                  onChange={e => set('dateTime', e.target.value)}
+                  className={errors.dateTime ? styles.error : ''}
+                />
+                {errors.dateTime && <span className={styles.errMsg}>{errors.dateTime}</span>}
+              </label>
+              <label className={styles.group}>
+                <span>Duration (min)</span>
+                <select value={form.duration} onChange={e => set('duration', e.target.value)}>
+                  {[15,30,45,60,90,120].map(d => <option key={d} value={d}>{d} min</option>)}
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <h3 className={styles.sectionTitle}>Notes</h3>
+            <textarea
+              rows={3}
+              value={form.notes}
+              onChange={e => set('notes', e.target.value)}
+              placeholder="Optional notes…"
+              className={styles.textarea}
+            />
+          </div>
+
+          <div className={styles.actions}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+            <button type="submit" className={styles.submitBtn}>Create Visit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+<<<END FILE>>>
+<<<FILE path="src/components/CreateModal.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  padding: 16px;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.modalHeader h2 { font-size: 18px; font-weight: 700; }
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.closeBtn:hover { background: var(--bg); color: var(--text); }
+
+.form { padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; }
+
+.section { display: flex; flex-direction: column; gap: 12px; }
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.group em { color: var(--danger); font-style: normal; }
+
+.group input,
+.group select {
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.group input:focus,
+.group select:focus { border-color: var(--primary); background: #fff; }
+.group input.error { border-color: var(--danger); }
+
+.errMsg { font-size: 11px; color: var(--danger); font-weight: 500; }
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s;
+}
+.textarea:focus { border-color: var(--primary); background: #fff; }
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.cancelBtn {
+  padding: 10px 22px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.cancelBtn:hover { border-color: var(--text-muted); color: var(--text); }
+
+.submitBtn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.submitBtn:hover { background: var(--primary-dark); }
+
+@media (max-width: 500px) {
+  .grid { grid-template-columns: 1fr; }
+  .form { padding: 16px; }
+}
+<<<END FILE>>>

@@ -6,18 +6,29 @@ import logging
 import posixpath
 import re
 from pathlib import Path
+from uuid import uuid4
 
 from terrarium_agents import (
     CodeGeneratorError,
     EditorAgentError,
     HealAgentError,
     IntentError,
+    SessionPlan,
     build_session_plan,
     classify_intent,
     generate,
+    session_plan_from_payload,
     next_heal_attempt,
     run_editor,
     run_heal,
+)
+from terrarium_agents.llm_fixtures import MissingFixture
+from terrarium_agents.canary import (
+    DemoBlocked,
+    KILL_MESSAGE,
+    NOT_SUPPORTED_MESSAGE,
+    kill_switch_on,
+    set_canary_actor,
 )
 from terrarium_agents.llm import (
     agents_mode,
@@ -25,8 +36,10 @@ from terrarium_agents.llm import (
     bedrock_ready,
     codegen_model,
     drain_llm_calls,
+    gemini_api_key,
     intent_model,
-    nvidia_api_key,
+    llm_provider_order,
+    model_for_provider,
     plan_model,
 )
 from terrarium_contracts import (
@@ -45,9 +58,11 @@ from terrarium_contracts import (
 from terrarium_sandbox import SandboxRunner
 
 from terrarium_api.events import make_event
+from terrarium_api import codegen_metrics
 from terrarium_api.session_log import SessionEventLog
 from terrarium_api.session_lock import acquire_session_lock, release_session_lock
 from terrarium_api.settings import redis_settings
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -297,9 +312,23 @@ def _validate_filemap_structure(files: dict[str, str]) -> tuple[bool, str | None
     Static validation of generated FileMap (Gemini approach).
     Replaces runtime DOM smoke testing with fast structural checks.
     """
-    # 1. Must have index.html
-    entry_path = "index.html" if "index.html" in files else "frontend/index.html"
-    if entry_path not in files:
+    # 1. Must have an HTML entry (React root, Vite frontend, Angular, or UI5 webapp)
+    entry_path = next(
+        (
+            path
+            for path in (
+                "index.html",
+                "frontend/index.html",
+                "src/index.html",
+                "frontend/src/index.html",
+                "webapp/index.html",
+                "frontend/webapp/index.html",
+            )
+            if path in files
+        ),
+        "",
+    )
+    if not entry_path:
         return False, "Missing index.html - every app needs an entry point"
     
     # 2. Check HTML structure basics
@@ -377,8 +406,10 @@ def _resolve_relative_import(source_path: str, specifier: str, files: dict[str, 
     return None
 
 
-def _llm_fields(purpose: str) -> dict[str, object]:
+def _llm_fields(purpose: str, session_id: str | None = None) -> dict[str, object]:
     calls = drain_llm_calls()
+    if session_id:
+        codegen_metrics.record_model_calls(session_id, purpose, calls)
     live = agents_mode() == "live"
     provider, model, reason = _configured_llm_choice(purpose)
     payload: dict[str, object] = {
@@ -394,6 +425,14 @@ def _llm_fields(purpose: str) -> dict[str, object]:
         payload["llmModel"] = last.get("model") or payload["llmModel"]
         payload["llmDurationMs"] = last.get("durationMs")
         payload["llmOk"] = last.get("ok")
+        for source_key, event_key in (
+            ("inputTokens", "llmInputTokens"),
+            ("outputTokens", "llmOutputTokens"),
+            ("totalTokens", "llmTotalTokens"),
+            ("usageSource", "llmUsageSource"),
+        ):
+            if source_key in last:
+                payload[event_key] = last[source_key]
     elif purpose == "plan":
         payload["llmProvider"] = "heuristic"
         payload["llmModel"] = "none"
@@ -409,44 +448,55 @@ def _configured_llm_choice(purpose: str) -> tuple[str, str, str]:
             "Chosen for fast, low-cost intent classification and clarification questions.",
         )
     if purpose == "plan":
-        if bedrock_ready():
-            return (
-                "bedrock",
-                bedrock_model(),
-                "Chosen for architecture planning because Claude handles multi-step design reasoning well.",
-            )
-        if nvidia_api_key():
-            return (
-                "nvidia",
-                plan_model(),
-                "Chosen as the available NVIDIA planning fallback for architecture reasoning.",
-            )
+        reasons = {
+            "bedrock": "Architecture planning uses Claude on Bedrock for multi-step design reasoning.",
+            "gemini": "Bedrock is unavailable; Gemini generates the architecture JSON.",
+            "nvidia": "Optional NVIDIA fallback when TERRARIUM_ENABLE_NVIDIA=1.",
+        }
+    else:
+        reasons = {
+            "bedrock": "Code generation uses Claude on Bedrock for large structured FileMaps.",
+            "gemini": "Gemini Flash fallback when Bedrock fails or is not configured.",
+            "nvidia": "Optional NVIDIA fallback when TERRARIUM_ENABLE_NVIDIA=1.",
+        }
+    order = llm_provider_order("plan" if purpose == "plan" else "codegen")
+    if not order:
         return (
-            "gemini",
-            plan_model(),
-            "Chosen as the default planning fallback when Bedrock is unavailable.",
+            "gemini" if gemini_api_key() else "stub",
+            plan_model() if purpose == "plan" else codegen_model(),
+            "No LLM providers configured; using stub/heuristic behavior.",
         )
-    if nvidia_api_key():
-        return (
-            "nvidia",
-            codegen_model(),
-            "Chosen for code generation because Codestral is a coding-specialized model available through NVIDIA.",
-        )
-    if bedrock_ready():
-        return (
-            "bedrock",
-            bedrock_model(),
-            "Chosen for code generation because Claude is strong at larger structured code tasks.",
-        )
-    return (
-        "gemini",
-        codegen_model(),
-        "Chosen as the default code generation fallback.",
-    )
+    provider = order[0]
+    model = model_for_provider(provider, "plan" if purpose == "plan" else "codegen")
+    return (provider, model, reasons.get(provider, "Configured LLM provider."))
 
 
 async def _unhealthy(log: SessionEventLog, session_id: str, error: object) -> None:
-    await log.append(make_event("sandbox.unhealthy", session_id, {"logs": str(error)}))
+    message = str(error)
+    await log.append(
+        make_event(
+            "sandbox.unhealthy",
+            session_id,
+            {"logs": message, "message": message},
+        )
+    )
+
+
+async def _stop_unvalidated(log: SessionEventLog, session_id: str, message: str, *, offer_retry: bool) -> None:
+    """End the session without a preview. The message is what the user reads."""
+    await log.append(
+        make_event(
+            "sandbox.unhealthy",
+            session_id,
+            {
+                "logs": message,
+                "message": message,
+                "offerRetry": offer_retry,
+                "terminal": True,
+            },
+        )
+    )
+    codegen_metrics.finish_run(session_id, status="not-validated")
 
 
 def classify_session_intent(
@@ -554,7 +604,18 @@ async def _run_stub_session_locked(
     backend_need: str | None = None,
     backend_stack: str | None = None,
 ) -> None:
+    from terrarium_agents.parked import note_parked
+
+    note_parked()
     log = SessionEventLog(redis)
+    from terrarium_agents.canary import demo_block_reason, set_canary_actor
+
+    set_canary_actor(await log.load_actor_email(session_id) or "")
+    blocked = demo_block_reason(session_id, prompt)
+    if blocked:
+        await _stop_unvalidated(log, session_id, blocked, offer_retry=False)
+        return
+    codegen_metrics.start_run(session_id, prompt)
     history = [
         ConversationTurn.model_validate(item)
         for item in await log.load_conversation(session_id)
@@ -563,20 +624,23 @@ async def _run_stub_session_locked(
     tool_id = await log.load_tool_id(session_id)
     drain_llm_calls()
     try:
-        intent = await asyncio.to_thread(
-            classify_session_intent,
-            session_id,
-            prompt,
-            files=files if tool_id else None,
-            tool_id=tool_id,
-            conversation=history,
-            frontend_stack=frontend_stack,
-            backend_need=backend_need,
-            backend_stack=backend_stack,
-        )
-    except IntentError as error:
+        with codegen_metrics.stage(session_id, "intent", kind="model"):
+            intent = await asyncio.to_thread(
+                classify_session_intent,
+                session_id,
+                prompt,
+                files=files or None,
+                tool_id=tool_id,
+                conversation=history,
+                frontend_stack=frontend_stack,
+                backend_need=backend_need,
+                backend_stack=backend_stack,
+            )
+    except (IntentError, MissingFixture) as error:
         logger.exception("Intent classification failed for %s", session_id)
         await _unhealthy(log, session_id, error)
+        _llm_fields("intent", session_id)
+        codegen_metrics.finish_run(session_id, status="intent-error")
         return
 
     logger.info(
@@ -588,6 +652,10 @@ async def _run_stub_session_locked(
         len(intent.questions or []),
         intent.summary,
     )
+
+    saved_plan_raw = await log.load_session_plan(session_id)
+    if saved_plan_raw and intent.kind == "new":
+        intent = intent.model_copy(update={"phase": "ready", "questions": None})
 
     history.append(ConversationTurn(role="user", text=prompt))
     assistant_text = (intent.reply or "").strip()
@@ -605,18 +673,40 @@ async def _run_stub_session_locked(
     if intent.toolId:
         await log.save_tool_id(session_id, intent.toolId)
 
-    if intent.kind == "modify" and not (intent.toolId or tool_id):
+    if intent.kind == "modify" and not (intent.toolId or tool_id) and not files:
         logger.info(
             "Session %s coerced kind=modify without toolId to new (draft is not an edit)",
             session_id,
         )
         intent = intent.model_copy(update={"kind": "new", "toolId": None})
 
+    if intent.kind == "new" and intent.phase == "clarify" and not (intent.questions or []):
+        # Clarify with nothing to ask used to return before the plan and codegen.
+        logger.info(
+            "Session %s clarify returned no questions; continuing to the plan and codegen",
+            session_id,
+        )
+        intent = intent.model_copy(update={"phase": "ready", "questions": None, "questionItems": None})
+
+    from terrarium_agents.acceptance import propose_acceptance_checks
+
+    if intent.phase == "ready" and not intent.acceptanceChecks:
+        kind = "modify" if intent.kind == "modify" else "new"
+        intent = intent.model_copy(
+            update={
+                "acceptanceChecks": propose_acceptance_checks(intent.summary or prompt, kind=kind)
+            }
+        )
+    if intent.acceptanceChecks:
+        await log.save_acceptance_checks(
+            session_id, [c.model_dump() for c in intent.acceptanceChecks]
+        )
+
     await log.append(
         make_event(
             "intent.classified",
             session_id,
-            {**intent.model_dump(exclude_none=True), **_llm_fields("intent")},
+            {**intent.model_dump(exclude_none=True), **_llm_fields("intent", session_id)},
         )
     )
 
@@ -624,6 +714,7 @@ async def _run_stub_session_locked(
         if intent.phase == "ready" and files:
             failed = await _run_editor_step(log, session_id, prompt, intent, files)
             if failed:
+                codegen_metrics.finish_run(session_id, status="edit-unhealthy")
                 await _heal_loop(
                     log,
                     session_id,
@@ -632,33 +723,58 @@ async def _run_stub_session_locked(
                     failed,
                     intent=intent.as_intent(),
                 )
+            else:
+                codegen_metrics.finish_run(session_id, status="edited")
         else:
             logger.info("Session %s is kind=modify; Editor needs a ready FileMap", session_id)
+            codegen_metrics.finish_run(session_id, status="edit-no-filemap")
         return
+
+    generation_prompt = prompt
+    if intent.kind == "new":
+        user_context = [
+            turn.text.strip()
+            for turn in history
+            if turn.role == "user" and turn.text.strip()
+        ]
+        if user_context:
+            generation_prompt = "\n\n".join(user_context)
 
     job = AgentJob(
         sessionId=session_id,
         intent=intent.as_intent(),
-        prompt=prompt,
+        prompt=generation_prompt,
         frontendStack=frontend_stack,  # type: ignore[arg-type]
         backendNeed=backend_need,  # type: ignore[arg-type]
         backendStack=backend_stack,  # type: ignore[arg-type]
     )
     if intent.phase == "clarify":
         logger.info("Session %s clarifying — no template preview", session_id)
+        codegen_metrics.finish_run(session_id, status="clarify")
         return
     if intent.phase != "ready":
         logger.info("Session %s phase=%s — no codegen yet", session_id, intent.phase)
+        codegen_metrics.finish_run(session_id, status=f"phase-{intent.phase}")
         return
-    try:
-        plan = await asyncio.to_thread(build_session_plan, job)
-    except CodeGeneratorError as error:
-        logger.warning("Code generation rejected for %s: %s", session_id, error)
-        await _unhealthy(log, session_id, error)
-        await _heal_loop(
-            log, session_id, prompt, files, str(error), intent=intent.as_intent()
-        )
-        return
+
+    plan: SessionPlan | None = None
+    if saved_plan_raw:
+        plan = await asyncio.to_thread(session_plan_from_payload, saved_plan_raw)
+        await log.clear_session_plan(session_id)
+        logger.info("Session %s resuming codegen with saved architecture plan", session_id)
+    if plan is None:
+        try:
+            with codegen_metrics.stage(session_id, "plan", kind="model"):
+                plan = await asyncio.to_thread(build_session_plan, job)
+        except CodeGeneratorError as error:
+            logger.warning("Code generation rejected for %s: %s", session_id, error)
+            await _unhealthy(log, session_id, error)
+            _llm_fields("plan", session_id)
+            codegen_metrics.finish_run(session_id, status="plan-error")
+            await _heal_loop(
+                log, session_id, generation_prompt, files, str(error), intent=intent.as_intent()
+            )
+            return
 
     plan_payload = plan.to_payload()
     codegen_provider, selected_codegen_model, codegen_reason = _configured_llm_choice("codegen")
@@ -677,10 +793,11 @@ async def _run_stub_session_locked(
         "codegenModel": selected_codegen_model,
         "codegenReason": codegen_reason,
         "plan": plan_payload,
-        **_llm_fields("plan"),
+        **_llm_fields("plan", session_id),
     }
     await log.append(make_event("codegen.started", session_id, started_payload))
-    await _emit_preview_stream_started(log, session_id, plan_payload)
+    with codegen_metrics.stage(session_id, "preview_skeleton_stream", kind="infrastructure"):
+        await _emit_preview_stream_started(log, session_id, plan_payload)
     logger.info(
         "Codegen %s complexity=%s stack=%s layout=%s theme=%s — overlay starting",
         session_id,
@@ -689,11 +806,99 @@ async def _run_stub_session_locked(
         plan.layout,
         plan.theme,
     )
+    streamed_paths: list[str] = []
     try:
-        result = await asyncio.to_thread(generate, job, plan)
+        with codegen_metrics.stage(session_id, "codegen", kind="model"):
+            loop = asyncio.get_running_loop()
+            first_file_at = loop.time()
+            first_file_logged = {"done": False}
+
+            def _on_generated_file(path: str, content: str) -> None:
+                if not first_file_logged["done"]:
+                    first_file_logged["done"] = True
+                    codegen_metrics.event(
+                        session_id,
+                        "codegen.first_file",
+                        {
+                            "path": path,
+                            "secondsSinceCodegenStage": round(loop.time() - first_file_at, 3),
+                        },
+                    )
+                streamed_paths.append(path)
+                future = asyncio.run_coroutine_threadsafe(
+                    log.append(
+                        make_event(
+                            "preview.stream.file",
+                            session_id,
+                            PreviewStreamFilePayload(
+                                path=path,
+                                content=content,
+                                complete=False,
+                            ).model_dump(exclude_none=True),
+                        )
+                    ),
+                    loop,
+                )
+                future.result(timeout=10)
+
+            set_canary_actor(await log.load_actor_email(session_id) or "")
+            result = await asyncio.to_thread(generate, job, plan, on_file=_on_generated_file)
+            if streamed_paths:
+                codegen_metrics.event(
+                    session_id,
+                    "codegen.streamed_files",
+                    {"paths": streamed_paths, "count": len(streamed_paths)},
+                )
+    except DemoBlocked as error:
+        message = str(error)
+        terminal = (
+            not error.retry
+            or kill_switch_on()
+            or message in {KILL_MESSAGE, NOT_SUPPORTED_MESSAGE}
+        )
+        if terminal:
+            await _stop_unvalidated(
+                log,
+                session_id,
+                message,
+                offer_retry=message not in {KILL_MESSAGE, NOT_SUPPORTED_MESSAGE},
+            )
+            return
+        attempt_id = uuid4().hex
+        await log.append(
+            make_event(
+                "codegen.retry",
+                session_id,
+                {
+                    "attemptId": attempt_id,
+                    "message": f"{message} Trying once more.",
+                },
+            )
+        )
+        try:
+            result = await asyncio.to_thread(generate, job, plan, on_file=_on_generated_file)
+        except DemoBlocked as again:
+            await _stop_unvalidated(log, session_id, str(again), offer_retry=True)
+            return
+        except CodeGeneratorError as error:
+            logger.warning("Code generation rejected for %s: %s", session_id, error)
+            await _unhealthy(log, session_id, error)
+            _llm_fields("codegen", session_id)
+            codegen_metrics.finish_run(session_id, status="codegen-error")
+            await _heal_loop(log, session_id, prompt, files, str(error), intent=intent.as_intent())
+            return
+        except Exception as error:
+            logger.exception("Code generation failed for %s", session_id)
+            await _unhealthy(log, session_id, error)
+            _llm_fields("codegen", session_id)
+            codegen_metrics.finish_run(session_id, status="codegen-error")
+            await _heal_loop(log, session_id, prompt, files, str(error), intent=intent.as_intent())
+            return
     except CodeGeneratorError as error:
         logger.warning("Code generation rejected for %s: %s", session_id, error)
         await _unhealthy(log, session_id, error)
+        _llm_fields("codegen", session_id)
+        codegen_metrics.finish_run(session_id, status="codegen-error")
         await _heal_loop(
             log, session_id, prompt, files, str(error), intent=intent.as_intent()
         )
@@ -701,14 +906,33 @@ async def _run_stub_session_locked(
     except Exception as error:
         logger.exception("Code generation failed for %s", session_id)
         await _unhealthy(log, session_id, error)
+        _llm_fields("codegen", session_id)
+        codegen_metrics.finish_run(session_id, status="codegen-error")
         await _heal_loop(
             log, session_id, prompt, files, str(error), intent=intent.as_intent()
         )
         return
 
-    await log.save_files(session_id, result.files)
-    await _emit_preview_stream_files(log, session_id, result.files)
-    llm = _llm_fields("codegen")
+    with codegen_metrics.stage(session_id, "save_filemap", kind="infrastructure"):
+        await log.save_files(session_id, result.files)
+        codegen_metrics.record_filemap(session_id, result.files)
+    with codegen_metrics.stage(session_id, "preview_file_replay", kind="infrastructure"):
+        # If tagged streaming already emitted files, only send the completion event.
+        if streamed_paths:
+            await log.append(
+                make_event(
+                    "preview.stream.completed",
+                    session_id,
+                    {
+                        "files": _ordered_file_paths(result.files),
+                        "message": "Live preview files streamed during generation; verifying in Docker.",
+                        "streamedDuringCodegen": True,
+                    },
+                )
+            )
+        else:
+            await _emit_preview_stream_files(log, session_id, result.files)
+    llm = _llm_fields("codegen", session_id)
     used_provider = str(llm.get("llmProvider") or codegen_provider)
     used_model = str(llm.get("llmModel") or selected_codegen_model)
     llm_ok = llm.get("llmOk")
@@ -730,8 +954,10 @@ async def _run_stub_session_locked(
             },
         )
     )
-    failed = await _boot_preview(log, session_id, job, files=result.files, draft=False)
+    with codegen_metrics.stage(session_id, "sandbox_boot_and_health", kind="infrastructure"):
+        failed = await _boot_preview(log, session_id, job, files=result.files, draft=False)
     if failed:
+        codegen_metrics.finish_run(session_id, status="preview-unhealthy")
         await _heal_loop(
             log,
             session_id,
@@ -740,6 +966,8 @@ async def _run_stub_session_locked(
             failed,
             intent=intent.as_intent(),
         )
+    else:
+        codegen_metrics.finish_run(session_id, status="ready")
 
 
 async def _run_editor_step(
@@ -752,24 +980,40 @@ async def _run_editor_step(
     """Emit editor.started, run the editor agent, boot preview. Logs if unhealthy."""
     await log.append(make_event("editor.started", session_id))
     try:
-        result = await asyncio.to_thread(
-            run_editor,
-            AgentJob(
-                sessionId=session_id,
-                intent=intent.as_intent(),
-                prompt=prompt,
-                files=files,
-            ),
-        )
+        with codegen_metrics.stage(session_id, "editor", kind="model"):
+            result = await asyncio.to_thread(
+                run_editor,
+                AgentJob(
+                    sessionId=session_id,
+                    intent=intent.as_intent(),
+                    prompt=prompt,
+                    files=files,
+                ),
+            )
     except EditorAgentError as error:
         logger.exception("Editor agent failed for %s", session_id)
         await _unhealthy(log, session_id, error)
+        _llm_fields("editor", session_id)
         return str(error)
 
     merged = {**files, **result.files}
-    await log.save_files(session_id, merged)
-    await _emit_preview_stream_files(
-        log, session_id, merged, paths=sorted(result.files.keys())
+    with codegen_metrics.stage(session_id, "save_edit_filemap", kind="infrastructure"):
+        await log.save_files(session_id, merged)
+        codegen_metrics.record_filemap(session_id, merged)
+    with codegen_metrics.stage(session_id, "preview_edit_file_replay", kind="infrastructure"):
+        await _emit_preview_stream_files(
+            log, session_id, merged, paths=sorted(result.files.keys())
+        )
+    llm = _llm_fields("editor", session_id)
+    from terrarium_agents.edit_check import edit_matches_request
+
+    edit_check = edit_matches_request(prompt, result.files)
+    logger.info(
+        "Edit check %s ok=%s cssOnly=%s files=%s",
+        session_id,
+        edit_check["ok"],
+        edit_check["cssOnly"],
+        edit_check["evidenceFiles"],
     )
     await log.append(
         make_event(
@@ -778,11 +1022,14 @@ async def _run_editor_step(
             {
                 "commitMessage": result.commitMessage,
                 "filesChanged": sorted(result.files.keys()),
+                **llm,
             },
         )
     )
+    await log.append(make_event("edit.verified", session_id, edit_check))
     job = AgentJob(sessionId=session_id, intent=intent.as_intent(), prompt=prompt)
-    return await _boot_preview(log, session_id, job, files=merged, draft=False)
+    with codegen_metrics.stage(session_id, "sandbox_boot_and_health", kind="infrastructure"):
+        return await _boot_preview(log, session_id, job, files=merged, draft=False)
 
 
 async def _sync_github(log: SessionEventLog, session_id: str, files: dict[str, str]) -> None:
@@ -814,18 +1061,66 @@ async def _boot_preview(
         return "No FileMap to preview"
     
     # Static validation (replaces runtime smoke test - Gemini approach)
-    is_valid, validation_error = _validate_filemap_structure(files)
+    with codegen_metrics.stage(session_id, "filemap_validation", kind="infrastructure"):
+        is_valid, validation_error = _validate_filemap_structure(files)
     if not is_valid:
         logger.warning("Session %s failed static validation: %s", session_id, validation_error)
         if draft:
             return None
         await _unhealthy(log, session_id, f"File structure validation failed: {validation_error}")
         return f"File structure validation failed: {validation_error}"
+
+    from terrarium_sandbox.trust import preboot_blocks_boot, scan
+
+    with codegen_metrics.stage(session_id, "preboot_scan", kind="infrastructure"):
+        preboot_findings, preboot_secrets, _ = scan(
+            files, tool_id=session_id, version_id=session_id
+        )
+    if preboot_blocks_boot(preboot_findings, preboot_secrets):
+        blocking = [
+            item
+            for item in preboot_findings
+            if item.source == "gitleaks"
+            or (item.source == "semgrep" and item.severity in ("high", "critical"))
+        ]
+        for item in blocking:
+            logger.warning(
+                "Session %s blocked by security gate file=%s rule=%s title=%s",
+                session_id,
+                item.file,
+                item.rule,
+                item.title,
+            )
+        detail = "blocked by security gate"
+        await log.append(
+            make_event(
+                "blocked by security gate",
+                session_id,
+                {
+                    "message": detail,
+                    "findings": [
+                        {
+                            "file": item.file,
+                            "rule": item.rule,
+                            "title": item.title,
+                            "severity": item.severity,
+                            "source": item.source,
+                        }
+                        for item in blocking
+                    ],
+                },
+            )
+        )
+        if draft:
+            return detail
+        await _unhealthy(log, session_id, detail)
+        return detail
     
     filemap = files
     await log.save_files(session_id, filemap)
     if not draft:
-        await _sync_github(log, session_id, filemap)
+        with codegen_metrics.stage(session_id, "github_sync", kind="infrastructure"):
+            await _sync_github(log, session_id, filemap)
     await log.append(
         make_event(
             "sandbox.booting",
@@ -841,16 +1136,18 @@ async def _boot_preview(
     try:
         runner = SandboxRunner()
         logger.info("Session %s starting Docker sandbox (%s files)", session_id, len(filemap))
-        handle = await asyncio.to_thread(
-            lambda: runner.start(session_id, files=filemap)
-        )
+        with codegen_metrics.stage(session_id, "sandbox_start", kind="infrastructure"):
+            handle = await asyncio.to_thread(
+                lambda: runner.start(session_id, files=filemap)
+            )
         logger.info(
             "Session %s container started id=%s url=%s; waiting for health",
             session_id,
             handle.containerId,
             handle.previewUrl,
         )
-        report = await asyncio.to_thread(runner.wait_until_healthy, session_id)
+        with codegen_metrics.stage(session_id, "sandbox_health_check", kind="infrastructure"):
+            report = await asyncio.to_thread(runner.wait_until_healthy, session_id)
         logger.info("Session %s sandbox health=%s", session_id, report.status)
     except Exception as error:
         logger.exception("Sandbox start failed for %s", session_id)
@@ -873,6 +1170,27 @@ async def _boot_preview(
     await log.append(make_event("sandbox.ready", session_id, ready.model_dump()))
     preview = PreviewReadyPayload(previewUrl=handle.previewUrl)
     await log.append(make_event("preview.ready", session_id, preview.model_dump()))
+    codegen_metrics.event(session_id, "preview.healthy", {"previewUrl": handle.previewUrl})
+    await log.save_preview_url(session_id, handle.previewUrl)
+
+    raw_checks = await log.load_acceptance_checks(session_id)
+    if raw_checks:
+        from terrarium_contracts import AcceptanceCheck
+        from terrarium_api.trust.session_checks import run_session_acceptance_checks
+
+        checks = [AcceptanceCheck.model_validate(item) for item in raw_checks]
+        check_error = await run_session_acceptance_checks(
+            log, session_id, handle.previewUrl, filemap, checks
+        )
+        if check_error:
+            intent_raw = await log.load_intent(session_id) or {}
+            heal_intent = Intent(
+                kind=intent_raw.get("kind", "modify"),  # type: ignore[arg-type]
+                stack=intent_raw.get("stack", "react"),  # type: ignore[arg-type]
+                summary=str(intent_raw.get("summary") or "Fix acceptance checks"),
+            )
+            await _heal_loop(log, session_id, "Fix failing acceptance checks", filemap, check_error, intent=heal_intent)
+            return check_error
     return None
 
 
@@ -886,7 +1204,29 @@ async def _heal_loop(
     intent: Intent,
     health: RuntimeStatus = "unhealthy",
 ) -> None:
-    """Retry Editor or Code Generator at most 3 times, then emit heal.exhausted."""
+    """Retry Editor or Code Generator at most 3 times, then emit heal.exhausted.
+
+    A security-gate block is not a code defect the editor can patch, so heal
+    does not run.
+    """
+    if "blocked by security gate" in (logs or ""):
+        logger.info(
+            "Heal skipped for %s: build was blocked by the security gate",
+            session_id,
+        )
+        await log.append(
+            make_event(
+                "heal.skipped",
+                session_id,
+                {
+                    "reason": "blocked by security gate",
+                    "logs": logs,
+                    "message": "Not repairing a security-gate block.",
+                },
+            )
+        )
+        codegen_metrics.finish_run(session_id, status="security-gate")
+        return
     failed = 0
     current_files = files
     current_logs = logs
@@ -906,6 +1246,7 @@ async def _heal_loop(
                 )
             )
             logger.warning("Heal exhausted for %s after %s attempts", session_id, failed)
+            codegen_metrics.finish_run(session_id, status="heal-exhausted")
             return
         failed = attempt
         ctx = ErrorContext(
@@ -931,63 +1272,138 @@ async def _heal_loop(
                 },
             )
         )
+        codegen_metrics.event(session_id, "heal.attempt", {"attempt": attempt})
         logger.info("Heal attempt %s/3 for %s", attempt, session_id)
         try:
-            decision = await asyncio.to_thread(run_heal, job)
+            with codegen_metrics.stage(session_id, f"heal_decision_{attempt}", kind="model"):
+                decision = await asyncio.to_thread(run_heal, job)
         except HealAgentError as error:
+            _llm_fields("heal", session_id)
             current_logs = str(error)
             continue
+        _llm_fields("heal", session_id)
         try:
             if decision.route == "editor" and current_files:
-                result = await asyncio.to_thread(
-                    run_editor,
-                    AgentJob(
-                        sessionId=session_id,
-                        intent=Intent(
-                            kind="modify",
-                            stack=intent.stack,
-                            summary=intent.summary,
-                            toolId=intent.toolId,
+                with codegen_metrics.stage(session_id, f"heal_editor_{attempt}", kind="model"):
+                    result = await asyncio.to_thread(
+                        run_editor,
+                        AgentJob(
+                            sessionId=session_id,
+                            intent=Intent(
+                                kind="modify",
+                                stack=intent.stack,
+                                summary=intent.summary,
+                                toolId=intent.toolId,
+                            ),
+                            prompt=f"{prompt}\n\nFix the preview. Logs:\n{current_logs[:2000]}",
+                            files=current_files,
+                            errorContext=ctx,
                         ),
-                        prompt=f"{prompt}\n\nFix the preview. Logs:\n{current_logs[:2000]}",
-                        files=current_files,
-                        errorContext=ctx,
-                    ),
-                )
+                    )
+                _llm_fields("editor", session_id)
                 current_files = {**current_files, **result.files}
             else:
-                result = await asyncio.to_thread(
-                    generate,
-                    AgentJob(
-                        sessionId=session_id,
-                        intent=Intent(
-                            kind="new",
-                            stack=intent.stack,
-                            summary=intent.summary,
+                with codegen_metrics.stage(session_id, f"heal_codegen_{attempt}", kind="model"):
+                    result = await asyncio.to_thread(
+                        generate,
+                        AgentJob(
+                            sessionId=session_id,
+                            intent=Intent(
+                                kind="new",
+                                stack=intent.stack,
+                                summary=intent.summary,
+                            ),
+                            prompt=prompt,
+                            files=current_files,
+                            errorContext=ctx,
                         ),
-                        prompt=prompt,
-                        files=current_files,
-                        errorContext=ctx,
-                    ),
-                )
+                    )
+                _llm_fields("codegen", session_id)
                 current_files = result.files
         except Exception as error:
             logger.exception("Heal %s/%s agent failed for %s", attempt, 3, session_id)
             current_logs = str(error)
             continue
-        await log.save_files(session_id, current_files)
-        await _emit_preview_stream_files(log, session_id, current_files)
+        with codegen_metrics.stage(session_id, f"heal_save_filemap_{attempt}", kind="infrastructure"):
+            await log.save_files(session_id, current_files)
+            codegen_metrics.record_filemap(session_id, current_files)
+        with codegen_metrics.stage(session_id, f"heal_preview_replay_{attempt}", kind="infrastructure"):
+            await _emit_preview_stream_files(log, session_id, current_files)
         boot_job = AgentJob(sessionId=session_id, intent=intent, prompt=prompt)
-        failed_logs = await _boot_preview(
-            log, session_id, boot_job, files=current_files, draft=False
-        )
+        with codegen_metrics.stage(session_id, f"heal_sandbox_boot_and_health_{attempt}", kind="infrastructure"):
+            failed_logs = await _boot_preview(
+                log, session_id, boot_job, files=current_files, draft=False
+            )
         if failed_logs is None:
             logger.info("Heal %s recovered %s", attempt, session_id)
+            codegen_metrics.finish_run(session_id, status=f"healed-{attempt}")
+            return
+        if "blocked by security gate" in failed_logs:
+            logger.info(
+                "Heal stopped for %s: repaired files were blocked by the security gate",
+                session_id,
+            )
+            await log.append(
+                make_event(
+                    "heal.skipped",
+                    session_id,
+                    {
+                        "reason": "blocked by security gate",
+                        "logs": failed_logs,
+                        "attempt": attempt,
+                        "message": "Not repairing a security-gate block.",
+                    },
+                )
+            )
+            codegen_metrics.finish_run(session_id, status="security-gate")
             return
         current_logs = failed_logs
 
 
+async def run_relay_poll(ctx: dict) -> None:
+    from terrarium_api.change_requests import poll_relay_once
+
+    worker_id = os.environ.get("WORKER_ID", "laptop-worker")
+    await poll_relay_once(worker_id)
+
+
+async def run_nightly_trust_scan(ctx: dict) -> None:
+    """Re-scan live tools and open remediation campaigns (P7-S10)."""
+    from terrarium_api.db import SessionLocal
+    from terrarium_api.trust.campaigns import run_fleet_campaigns
+
+    _ = ctx
+    with SessionLocal() as db:
+        await run_fleet_campaigns(db)
+    logger.info("Nightly trust scan complete")
+
+
+async def run_morning_digest_job(ctx: dict) -> None:
+    from terrarium_api.db import SessionLocal
+    from terrarium_api.trust.campaigns import run_morning_digest
+
+    _ = ctx
+    with SessionLocal() as db:
+        await run_morning_digest(db)
+    logger.info("Morning digest job complete")
+
+
 async def on_startup(ctx: dict) -> None:
+    import asyncio
+
+    from terrarium_api.change_requests import poll_relay_once
+
+    async def relay_loop() -> None:
+        worker_id = os.environ.get("WORKER_ID", "laptop-worker")
+        while True:
+            try:
+                await poll_relay_once(worker_id)
+            except Exception:
+                logger.exception("Relay poll error")
+            await asyncio.sleep(15)
+
+    asyncio.create_task(relay_loop())
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -1008,8 +1424,23 @@ async def on_startup(ctx: dict) -> None:
 
 
 class WorkerSettings:
-    functions = [run_stub_session, run_runtime_error_heal]
+    functions = [
+        run_stub_session,
+        run_runtime_error_heal,
+        run_relay_poll,
+        run_nightly_trust_scan,
+        run_morning_digest_job,
+    ]
     on_startup = on_startup
+    try:
+        from arq.cron import cron
+
+        cron_jobs = [
+            cron(run_nightly_trust_scan, hour=2, minute=0),
+            cron(run_morning_digest_job, hour=8, minute=0),
+        ]
+    except ImportError:
+        cron_jobs = []
     redis_settings = redis_settings()
     job_timeout = 540
     max_jobs = 2

@@ -1,0 +1,108 @@
+﻿01-build-a-library-checkout-desk-li-firstpass|src/App.tsx(2,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/App.tsx(3,20): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/App.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/App.tsx(5,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/App.tsx(6,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/App.tsx(15,22): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ list: string; detail: string; form: string; }'.
+01-build-a-library-checkout-desk-li-firstpass|src/hooks/useData.ts(2,28): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/hooks/useData.ts(7,45): error TS18046: 'fn' is of type 'unknown'.
+01-build-a-library-checkout-desk-li-firstpass|src/hooks/useData.ts(8,20): error TS7006: Parameter 'fn' implicitly has an 'any' type.
+01-build-a-library-checkout-desk-li-firstpass|src/hooks/useData.ts(15,13): error TS7006: Parameter 'draft' implicitly has an 'any' type.
+01-build-a-library-checkout-desk-li-firstpass|src/hooks/useData.ts(23,12): error TS7006: Parameter 'id' implicitly has an 'any' type.
+01-build-a-library-checkout-desk-li-firstpass|src/main.tsx(4,17): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/views/DetailPage.tsx(1,33): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/views/FormPage.tsx(2,32): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/views/FormPage.tsx(3,36): error TS7031: Binding element 'onDone' implicitly has an 'any' type.
+01-build-a-library-checkout-desk-li-firstpass|src/views/ListPage.tsx(2,23): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/views/ListPage.tsx(3,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/views/ListPage.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/views/ListPage.tsx(5,42): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+01-build-a-library-checkout-desk-li-firstpass|src/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type.
+02-roster-firstpass|src/App.tsx(2,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/App.tsx(3,20): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/App.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/App.tsx(5,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/App.tsx(6,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/App.tsx(15,22): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ list: string; detail: string; form: string; }'.
+02-roster-firstpass|src/hooks/useData.ts(2,31): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/hooks/useData.ts(7,45): error TS18046: 'fn' is of type 'unknown'.
+02-roster-firstpass|src/hooks/useData.ts(8,20): error TS7006: Parameter 'fn' implicitly has an 'any' type.
+02-roster-firstpass|src/hooks/useData.ts(15,13): error TS7006: Parameter 'draft' implicitly has an 'any' type.
+02-roster-firstpass|src/hooks/useData.ts(23,12): error TS7006: Parameter 'id' implicitly has an 'any' type.
+02-roster-firstpass|src/main.tsx(4,17): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/views/DetailPage.tsx(1,36): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/views/FormPage.tsx(2,35): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/views/FormPage.tsx(3,36): error TS7031: Binding element 'onDone' implicitly has an 'any' type.
+02-roster-firstpass|src/views/ListPage.tsx(2,23): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/views/ListPage.tsx(3,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/views/ListPage.tsx(4,25): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/views/ListPage.tsx(5,48): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+02-roster-firstpass|src/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/App.tsx(2,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/App.tsx(3,20): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/App.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/App.tsx(5,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/App.tsx(6,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/App.tsx(15,22): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ list: string; detail: string; form: string; }'.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/components/ItemCard.tsx(2,26): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/hooks/useData.ts(2,28): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/hooks/useData.ts(7,45): error TS18046: 'fn' is of type 'unknown'.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/hooks/useData.ts(8,20): error TS7006: Parameter 'fn' implicitly has an 'any' type.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/hooks/useData.ts(15,13): error TS7006: Parameter 'draft' implicitly has an 'any' type.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/hooks/useData.ts(23,12): error TS7006: Parameter 'id' implicitly has an 'any' type.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/main.tsx(4,17): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/views/DetailPage.tsx(1,33): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/views/FormPage.tsx(2,32): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/views/FormPage.tsx(3,36): error TS7031: Binding element 'onDone' implicitly has an 'any' type.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/views/ListPage.tsx(2,23): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/views/ListPage.tsx(3,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/views/ListPage.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/views/ListPage.tsx(5,42): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+03-build-a-parts-bin-mechanics-sear-firstpass|src/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type.
+04-build-a-volunteer-list-coordinat-firstpass|src/App.tsx(2,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/App.tsx(3,20): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/App.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/App.tsx(5,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/App.tsx(6,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/App.tsx(15,22): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ list: string; detail: string; form: string; }'.
+04-build-a-volunteer-list-coordinat-firstpass|src/components/ItemCard.tsx(2,26): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/hooks/useData.ts(2,28): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/hooks/useData.ts(7,45): error TS18046: 'fn' is of type 'unknown'.
+04-build-a-volunteer-list-coordinat-firstpass|src/hooks/useData.ts(8,20): error TS7006: Parameter 'fn' implicitly has an 'any' type.
+04-build-a-volunteer-list-coordinat-firstpass|src/hooks/useData.ts(15,13): error TS7006: Parameter 'draft' implicitly has an 'any' type.
+04-build-a-volunteer-list-coordinat-firstpass|src/hooks/useData.ts(23,12): error TS7006: Parameter 'id' implicitly has an 'any' type.
+04-build-a-volunteer-list-coordinat-firstpass|src/main.tsx(4,17): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/views/DetailPage.tsx(1,33): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/views/FormPage.tsx(2,32): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/views/FormPage.tsx(3,36): error TS7031: Binding element 'onDone' implicitly has an 'any' type.
+04-build-a-volunteer-list-coordinat-firstpass|src/views/ListPage.tsx(2,23): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/views/ListPage.tsx(3,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/views/ListPage.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/views/ListPage.tsx(5,42): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+04-build-a-volunteer-list-coordinat-firstpass|src/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type.
+05-inventory-firstpass|src/App.tsx(2,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/App.tsx(3,20): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/App.tsx(4,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/App.tsx(5,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/App.tsx(6,22): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/App.tsx(7,27): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/App.tsx(16,22): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ list: string; detail: string; form: string; dashboard: string; }'.
+05-inventory-firstpass|src/components/SkuCard.tsx(1,25): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/components/SkuCard.tsx(2,25): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/components/TotalsCard.tsx(1,27): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/hooks/useData.ts(2,27): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/hooks/useData.ts(7,45): error TS18046: 'fn' is of type 'unknown'.
+05-inventory-firstpass|src/hooks/useData.ts(8,20): error TS7006: Parameter 'fn' implicitly has an 'any' type.
+05-inventory-firstpass|src/hooks/useData.ts(15,13): error TS7006: Parameter 'draft' implicitly has an 'any' type.
+05-inventory-firstpass|src/hooks/useData.ts(23,12): error TS7006: Parameter 'id' implicitly has an 'any' type.
+05-inventory-firstpass|src/main.tsx(4,17): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/views/DashboardPage.tsx(1,36): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/views/DashboardPage.tsx(2,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/views/DetailPage.tsx(1,32): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/views/FormPage.tsx(2,31): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/views/FormPage.tsx(3,36): error TS7031: Binding element 'onDone' implicitly has an 'any' type.
+05-inventory-firstpass|src/views/ListPage.tsx(2,23): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/views/ListPage.tsx(3,24): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/views/ListPage.tsx(4,21): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/views/ListPage.tsx(5,40): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+05-inventory-firstpass|src/views/ListPage.tsx(7,36): error TS7031: Binding element 'onOpen' implicitly has an 'any' type.

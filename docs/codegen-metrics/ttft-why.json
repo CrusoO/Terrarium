@@ -1,0 +1,111 @@
+{
+  "rows": [
+    {
+      "ok": true,
+      "modelId": "eu.anthropic.claude-sonnet-4-6",
+      "maxTokens": 64,
+      "systemChars": 28,
+      "userChars": 24,
+      "timeToFirstTokenSeconds": 1.601,
+      "inputTokens": 20,
+      "stoppedAfterChars": 25,
+      "eventsBeforeFirstToken": [
+        "message_start",
+        "content_block_start",
+        "content_block_stop",
+        "message_delta",
+        "message_stop"
+      ],
+      "case": "short-control"
+    },
+    {
+      "ok": true,
+      "modelId": "eu.anthropic.claude-sonnet-4-6",
+      "maxTokens": 16000,
+      "systemChars": 42,
+      "userChars": 356,
+      "timeToFirstTokenSeconds": 19.195,
+      "inputTokens": 102,
+      "stoppedAfterChars": 418,
+      "eventsBeforeFirstToken": [
+        "message_start",
+        "content_block_start"
+      ],
+      "case": "eu-short-system-full-app"
+    },
+    {
+      "ok": true,
+      "modelId": "eu.anthropic.claude-sonnet-4-6",
+      "maxTokens": 16000,
+      "systemChars": 14075,
+      "userChars": 356,
+      "timeToFirstTokenSeconds": 20.438,
+      "inputTokens": 3682,
+      "stoppedAfterChars": 408,
+      "eventsBeforeFirstToken": [
+        "message_start",
+        "content_block_start"
+      ],
+      "case": "eu-long-system-full-app"
+    },
+    {
+      "ok": true,
+      "modelId": "us.anthropic.claude-sonnet-4-6",
+      "maxTokens": 16000,
+      "systemChars": 42,
+      "userChars": 356,
+      "timeToFirstTokenSeconds": 20.505,
+      "inputTokens": 102,
+      "stoppedAfterChars": 403,
+      "eventsBeforeFirstToken": [
+        "message_start",
+        "content_block_start"
+      ],
+      "case": "us-profile-from-us-east-1"
+    },
+    {
+      "ok": false,
+      "modelId": "us.anthropic.claude-sonnet-4-6",
+      "failReason": "ValidationException: An error occurred (ValidationException) when calling the InvokeModelWithResponseStream operation: The provided model identifier is invalid.",
+      "elapsedSeconds": 1.143,
+      "case": "us-profile-from-eu-region"
+    },
+    {
+      "ok": true,
+      "modelId": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "maxTokens": 16000,
+      "systemChars": 42,
+      "userChars": 356,
+      "timeToFirstTokenSeconds": 18.93,
+      "inputTokens": 101,
+      "stoppedAfterChars": 412,
+      "eventsBeforeFirstToken": [
+        "message_start",
+        "content_block_start"
+      ],
+      "case": "haiku-4-5-full-app"
+    },
+    {
+      "ok": false,
+      "modelId": "eu.anthropic.claude-haiku-5-5",
+      "failReason": "ValidationException: An error occurred (ValidationException) when calling the InvokeModelWithResponseStream operation: `temperature` is deprecated for this model.",
+      "elapsedSeconds": 1.098,
+      "case": "haiku-5-5-full-app"
+    },
+    {
+      "ok": true,
+      "modelId": "eu.anthropic.claude-sonnet-4-6",
+      "maxTokens": 16000,
+      "systemChars": 42,
+      "userChars": 456,
+      "timeToFirstTokenSeconds": 1.925,
+      "inputTokens": 128,
+      "stoppedAfterChars": 420,
+      "eventsBeforeFirstToken": [
+        "message_start",
+        "content_block_start"
+      ],
+      "case": "first-file-only"
+    }
+  ]
+}

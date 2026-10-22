@@ -21,6 +21,18 @@ class FakeLog:
     async def save_files(self, _session_id: str, files: dict[str, str]) -> None:
         self.files = files
 
+    async def save_preview_url(self, _session_id: str, _url: str) -> None:
+        return None
+
+    async def load_github_repo(self, _session_id: str) -> None:
+        return None
+
+    async def load_acceptance_checks(self, _session_id: str) -> list[object]:
+        return []
+
+    async def load_intent(self, _session_id: str) -> dict[str, str] | None:
+        return None
+
 
 class HealLoopTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:

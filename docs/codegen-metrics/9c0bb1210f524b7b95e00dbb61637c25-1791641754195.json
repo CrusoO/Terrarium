@@ -1,0 +1,20 @@
+{
+  "durationMs": 1749,
+  "events": [],
+  "finishedAtMs": 1791641755944,
+  "modelCalls": [],
+  "prompt": "Build an ecommerce catalogue web app: product grid, category filters, product detail, cart, and checkout summary. Web UI only.",
+  "runId": "9c0bb1210f524b7b95e00dbb61637c25-1791641754195",
+  "runType": "new",
+  "sessionId": "9c0bb1210f524b7b95e00dbb61637c25",
+  "stages": [
+    {
+      "durationMs": 1744,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791641754197
+    }
+  ],
+  "startedAtMs": 1791641754195,
+  "status": "clarify"
+}

@@ -1,0 +1,126 @@
+{
+  "note": "One-off streaming probe only; it does not change the generation pipeline.",
+  "prompt": "Return a tiny Vite React FileMap JSON with index.html, src/main.jsx, src/App.jsx, and src/styles.css for a customer order tracker. Code only.",
+  "results": [
+    {
+      "chunkCount": 525,
+      "chunkTimeline": [
+        {
+          "chars": 3,
+          "cumulativeChars": 3,
+          "t": 17.4624
+        },
+        {
+          "chars": 15,
+          "cumulativeChars": 18,
+          "t": 17.4625
+        },
+        {
+          "chars": 9,
+          "cumulativeChars": 27,
+          "t": 17.4625
+        },
+        {
+          "chars": 13,
+          "cumulativeChars": 40,
+          "t": 17.4626
+        },
+        {
+          "chars": 21,
+          "cumulativeChars": 61,
+          "t": 17.4626
+        },
+        {
+          "chars": 22,
+          "cumulativeChars": 83,
+          "t": 17.4626
+        },
+        {
+          "chars": 25,
+          "cumulativeChars": 108,
+          "t": 17.4627
+        },
+        {
+          "chars": 10,
+          "cumulativeChars": 118,
+          "t": 17.4627
+        },
+        {
+          "chars": 22,
+          "cumulativeChars": 140,
+          "t": 17.4628
+        },
+        {
+          "chars": 34,
+          "cumulativeChars": 174,
+          "t": 17.4628
+        },
+        {
+          "chars": 23,
+          "cumulativeChars": 197,
+          "t": 17.4628
+        },
+        {
+          "chars": 18,
+          "cumulativeChars": 215,
+          "t": 17.4629
+        },
+        {
+          "chars": 32,
+          "cumulativeChars": 247,
+          "t": 17.4629
+        },
+        {
+          "chars": 3,
+          "cumulativeChars": 250,
+          "t": 17.463
+        },
+        {
+          "chars": 18,
+          "cumulativeChars": 268,
+          "t": 17.463
+        },
+        {
+          "chars": 20,
+          "cumulativeChars": 288,
+          "t": 17.463
+        },
+        {
+          "chars": 26,
+          "cumulativeChars": 314,
+          "t": 17.463
+        },
+        {
+          "chars": 19,
+          "cumulativeChars": 333,
+          "t": 17.4631
+        },
+        {
+          "chars": 23,
+          "cumulativeChars": 356,
+          "t": 17.4631
+        },
+        {
+          "chars": 14,
+          "cumulativeChars": 370,
+          "t": 17.4631
+        }
+      ],
+      "durationSeconds": 18.242,
+      "incremental": true,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 3188,
+      "provider": "bedrock",
+      "timeToFirstTokenSeconds": 17.462,
+      "tokensPerSecond": 174.76,
+      "usageSource": "bedrock"
+    },
+    {
+      "error": "ServerError: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "model": "gemini-3.8-flash",
+      "ok": false,
+      "provider": "gemini"
+    }
+  ]
+}

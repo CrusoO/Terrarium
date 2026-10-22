@@ -1,0 +1,41 @@
+{
+  "durationMs": 3621,
+  "events": [],
+  "finishedAtMs": 1791882285217,
+  "headline": {
+    "generationSource": "fallback",
+    "healAttempts": 0,
+    "infrastructureStageSeconds": 0.0,
+    "modelStageSeconds": 3.606,
+    "timeToFirstFileSeconds": null,
+    "timeToHealthyPreviewSeconds": null
+  },
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 3522,
+      "inputTokens": 1070,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 176,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "hi build me a ecomomrce websut like amazon",
+  "runId": "6e32f288ead546faa0660f4adb1dd502-1791882281596",
+  "runType": "new",
+  "sessionId": "6e32f288ead546faa0660f4adb1dd502",
+  "stages": [
+    {
+      "durationMs": 3606,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791882281598
+    }
+  ],
+  "startedAtMs": 1791882281596,
+  "status": "clarify"
+}

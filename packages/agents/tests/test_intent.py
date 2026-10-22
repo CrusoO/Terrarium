@@ -6,7 +6,7 @@ import os
 import re
 import unittest
 
-from terrarium_agents.intent import _enforce_rules, classify_intent
+from terrarium_agents.intent import _enforce_rules, build_clarify_question_items, classify_intent
 from terrarium_contracts import ConversationTurn, Intent, IntentAgentInput, IntentAgentOutput
 
 
@@ -48,6 +48,14 @@ class IntentAgentTests(unittest.TestCase):
         )
         self.assertEqual(intent.phase, "clarify")
         self.assert_six_everyday(intent.questions)
+
+    def test_greeting_plus_typo_build_request_is_not_greeting(self) -> None:
+        intent = classify_intent(
+            IntentAgentInput(prompt="hi buid me a websit like amazon")
+        )
+        self.assertEqual(intent.phase, "clarify")
+        self.assert_six_everyday(intent.questions)
+        self.assertFalse(re.search(r"what should we build", intent.reply or "", re.I))
 
     def test_build_website_after_hey_asks_questions(self) -> None:
         intent = classify_intent(
@@ -124,6 +132,34 @@ class IntentAgentTests(unittest.TestCase):
         self.assert_six_everyday(intent.questions)
         self.assertNotRegex(intent.reply or "", r"how can i help you today")
 
+    def test_clarify_includes_quick_pick_options(self) -> None:
+        intent = classify_intent(IntentAgentInput(prompt="can you build a website"))
+        self.assertEqual(intent.phase, "clarify")
+        self.assertIsNotNone(intent.questionItems)
+        items = intent.questionItems or []
+        self.assertEqual(len(items), 8)
+        self.assertEqual(items[0].text, "Which kind of app should we build?")
+        self.assertIn("React", items[0].options or [])
+        self.assertIn("Angular", items[0].options or [])
+        self.assertIn("SAP Fiori", items[0].options or [])
+        for item in items:
+            self.assertGreaterEqual(len(item.options), 3)
+
+    def test_business_questions_offer_plain_answer_chips(self) -> None:
+        items = build_clarify_question_items(
+            ["What will people start with — a spreadsheet or copied text?"],
+            "excel to json converter",
+        )
+        self.assertEqual(len(items), 8)
+        sell = next(item for item in items if item.text == "What does your business sell?")
+        self.assertTrue(sell.acceptsFiles)
+        self.assertTrue(sell.allowMultiple)
+        choices = sell.choices or []
+        self.assertEqual(len(choices), 5)
+        titles = " ".join(c.title for c in choices).lower()
+        self.assertIn("clothing", titles)
+        self.assertNotIn("upload", titles)
+
     def test_library_app_after_hey_asks_questions(self) -> None:
         intent = classify_intent(
             IntentAgentInput(
@@ -148,7 +184,7 @@ class IntentAgentTests(unittest.TestCase):
     def test_answers_make_ready(self) -> None:
         intent = classify_intent(
             IntentAgentInput(
-                prompt="Excel in, JSON file out, no extra mapping",
+                prompt="React. Excel in, JSON file out, no extra mapping",
                 conversation=[
                     ConversationTurn(role="user", text="build a json converter"),
                     ConversationTurn(
@@ -190,7 +226,7 @@ class IntentAgentTests(unittest.TestCase):
     def test_just_build_it_is_ready(self) -> None:
         intent = classify_intent(
             IntentAgentInput(
-                prompt="just build it",
+                prompt="React — just build it",
                 conversation=[
                     ConversationTurn(role="user", text="build a calculator"),
                     ConversationTurn(role="assistant", text="1. Which operations?"),
@@ -204,8 +240,9 @@ class IntentAgentTests(unittest.TestCase):
             IntentAgentInput(prompt="Create a support bot with a FastAPI backend")
         )
         self.assertEqual(intent.kind, "new")
-        self.assertEqual(intent.stack, "fullstack")
         self.assertEqual(intent.phase, "clarify")
+        self.assertEqual(intent.frontendStack, "react")
+        self.assertEqual(intent.backendStack, "none")
 
     def test_modify_without_files_or_tool_id_is_new(self) -> None:
         intent = classify_intent(
@@ -248,6 +285,58 @@ class IntentAgentTests(unittest.TestCase):
             {"kind", "stack", "summary", "frontendStack", "backendStack"},
         )
 
+    def test_first_prompt_does_not_guess_stack(self) -> None:
+        angular = classify_intent(IntentAgentInput(prompt="build an angular movie poster site"))
+        self.assertEqual(angular.phase, "clarify")
+        self.assertEqual(angular.frontendStack, "react")
+        catalog = classify_intent(
+            IntentAgentInput(
+                prompt="Build a Fiori catalog app with SAP CAP OData mock data. Show items from the service and their status."
+            )
+        )
+        self.assertEqual(catalog.phase, "clarify")
+        self.assertEqual(catalog.frontendStack, "react")
+        self.assertEqual(catalog.backendStack, "none")
+
+    def test_clarify_stack_pick_selects_frontend(self) -> None:
+        angular = classify_intent(
+            IntentAgentInput(
+                prompt="Angular",
+                conversation=[
+                    ConversationTurn(role="user", text="build a movie poster site"),
+                    ConversationTurn(role="assistant", text="Which kind of app should we build?"),
+                ],
+            )
+        )
+        self.assertEqual(angular.frontendStack, "angular")
+        fiori = classify_intent(
+            IntentAgentInput(
+                prompt="SAP Fiori\nYes — SAP CAP OData",
+                conversation=[
+                    ConversationTurn(role="user", text="build a catalog app"),
+                    ConversationTurn(role="assistant", text="Which kind of app should we build?"),
+                ],
+            )
+        )
+        self.assertEqual(fiori.frontendStack, "sapui5")
+        self.assertEqual(fiori.backendStack, "sap-cap")
+        llm_said_ready = _enforce_rules(
+            IntentAgentOutput(
+                kind="new",
+                stack="react",
+                summary="Fiori catalog",
+                phase="ready",
+                reply="Building it.",
+                frontendStack="sapui5",
+                backendStack="none",
+            ),
+            IntentAgentInput(
+                prompt="Build a Fiori catalog app with SAP CAP OData mock data.",
+            ),
+        )
+        self.assertEqual(llm_said_ready.phase, "clarify")
+        self.assertEqual(llm_said_ready.frontendStack, "react")
+
     def test_backend_need_selection_overrides_auto_heuristic(self) -> None:
         auto = classify_intent(
             IntentAgentInput(
@@ -272,7 +361,7 @@ class IntentAgentTests(unittest.TestCase):
     def test_backend_need_is_inferred_from_clarification_answer(self) -> None:
         with_backend = classify_intent(
             IntentAgentInput(
-                prompt="It needs login and shared database",
+                prompt="React. It needs login and shared database",
                 conversation=[
                     ConversationTurn(role="user", text="build a team notes app"),
                     ConversationTurn(
@@ -287,7 +376,7 @@ class IntentAgentTests(unittest.TestCase):
 
         frontend_only = classify_intent(
             IntentAgentInput(
-                prompt="frontend-only with localStorage",
+                prompt="React, frontend-only with localStorage",
                 conversation=[
                     ConversationTurn(role="user", text="build a team notes app"),
                     ConversationTurn(
@@ -368,7 +457,7 @@ class IntentAgentTests(unittest.TestCase):
         intent = classify_intent(
             IntentAgentInput(
                 prompt=(
-                    "Use a split markdown editor with localStorage autosave, "
+                    "React. Use a split markdown editor with localStorage autosave, "
                     "live preview, and export markdown. Keep it modern."
                 ),
                 conversation=[

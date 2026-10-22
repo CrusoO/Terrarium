@@ -1,0 +1,213 @@
+{
+  "durationMs": 283142,
+  "events": [],
+  "fileMap": {
+    "boilerplate": {
+      "estimatedBoilerplateShare": 0.485,
+      "estimatedBoilerplateTokens": 1404,
+      "estimatedTokensByCategory": {
+        "business-logic": 33,
+        "config": 232,
+        "layout": 1015,
+        "ui": 1455,
+        "ui-primitives": 157
+      }
+    },
+    "fileCount": 15,
+    "jsonOverheadEstimatedTokens": 179,
+    "jsonWrappedBytes": 12300,
+    "jsonWrappedEstimatedTokens": 3075,
+    "rawCodeBytes": 11585,
+    "rawCodeEstimatedTokens": 2896,
+    "tokensPerFileEstimated": {
+      "README.md": {
+        "bytes": 133,
+        "category": "business-logic",
+        "estimatedTokens": 33
+      },
+      "index.html": {
+        "bytes": 349,
+        "category": "config",
+        "estimatedTokens": 87
+      },
+      "package.json": {
+        "bytes": 385,
+        "category": "config",
+        "estimatedTokens": 96
+      },
+      "src/App.jsx": {
+        "bytes": 1242,
+        "category": "ui",
+        "estimatedTokens": 310
+      },
+      "src/components/AppShell.jsx": {
+        "bytes": 1684,
+        "category": "ui",
+        "estimatedTokens": 421
+      },
+      "src/components/ContactForm.jsx": {
+        "bytes": 882,
+        "category": "ui",
+        "estimatedTokens": 220
+      },
+      "src/components/DetailPanel.jsx": {
+        "bytes": 472,
+        "category": "ui",
+        "estimatedTokens": 118
+      },
+      "src/components/FeatureGrid.jsx": {
+        "bytes": 471,
+        "category": "ui",
+        "estimatedTokens": 118
+      },
+      "src/components/Hero.jsx": {
+        "bytes": 583,
+        "category": "ui",
+        "estimatedTokens": 146
+      },
+      "src/components/Toolbar.jsx": {
+        "bytes": 486,
+        "category": "ui",
+        "estimatedTokens": 122
+      },
+      "src/hooks/useLocalState.js": {
+        "bytes": 541,
+        "category": "ui-primitives",
+        "estimatedTokens": 135
+      },
+      "src/main.jsx": {
+        "bytes": 195,
+        "category": "config",
+        "estimatedTokens": 49
+      },
+      "src/styles/global.css": {
+        "bytes": 3966,
+        "category": "layout",
+        "estimatedTokens": 992
+      },
+      "src/utils/helpers.js": {
+        "bytes": 90,
+        "category": "ui-primitives",
+        "estimatedTokens": 22
+      },
+      "styles.css": {
+        "bytes": 92,
+        "category": "layout",
+        "estimatedTokens": 23
+      }
+    }
+  },
+  "finishedAtMs": 1791642328539,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 10891,
+      "inputTokens": 748,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1079,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 1827,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "durationMs": 14856,
+      "inputTokens": 661,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1545,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 2206,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 13992,
+      "inputTokens": 748,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1460,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "codegen",
+      "totalTokens": 2208,
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 2,
+      "durationMs": 263190,
+      "model": "gemini-3.8-flash",
+      "ok": false,
+      "provider": "gemini",
+      "purpose": "codegen",
+      "stage": "codegen"
+    }
+  ],
+  "prompt": "Use a clean modern UI, Vite + React, in-memory mock data (no backend), desktop-first layout, English labels, and ship a working MVP preview now.\n\nAnswers:\n1. What kind of tasks or jobs do you manage? \u2014 yes / use sensible MVP defaults.\n2. Who on your team will use this daily? \u2014 yes / use sensible MVP defaults.\n3. How do people update task progress right now? \u2014 yes / use sensible MVP defaults.\n4. What details do you need to track for each job? \u2014 yes / use sensible MVP defaults.\n5. What kind of reports do you look at most? \u2014 yes / use sensible MVP defaults.\n6. What should people see first when they open it? \u2014 yes / use sensible MVP defaults.",
+  "runId": "354be8312c0846b18901b4db371ea2bd-1791642045397",
+  "runType": "new",
+  "sessionId": "354be8312c0846b18901b4db371ea2bd",
+  "stages": [
+    {
+      "durationMs": 1640,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791642045397
+    },
+    {
+      "durationMs": 14857,
+      "kind": "model",
+      "name": "plan",
+      "startedAtMs": 1791642047040
+    },
+    {
+      "durationMs": 3456,
+      "kind": "infrastructure",
+      "name": "preview_skeleton_stream",
+      "startedAtMs": 1791642061898
+    },
+    {
+      "durationMs": 263193,
+      "kind": "model",
+      "name": "codegen",
+      "startedAtMs": 1791642065355
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "save_filemap",
+      "startedAtMs": 1791642328530
+    },
+    {
+      "durationMs": 5,
+      "kind": "infrastructure",
+      "name": "preview_file_replay",
+      "startedAtMs": 1791642328531
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "filemap_validation",
+      "startedAtMs": 1791642328537
+    },
+    {
+      "durationMs": 0,
+      "kind": "infrastructure",
+      "name": "preboot_scan",
+      "startedAtMs": 1791642328538
+    },
+    {
+      "durationMs": 1,
+      "kind": "infrastructure",
+      "name": "sandbox_boot_and_health",
+      "startedAtMs": 1791642328537
+    }
+  ],
+  "startedAtMs": 1791642045397,
+  "status": "preview-unhealthy"
+}

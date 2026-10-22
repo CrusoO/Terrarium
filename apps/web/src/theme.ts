@@ -3,9 +3,9 @@ import { createTheme } from "@mui/material/styles";
 export const terrariumTheme = createTheme({
   palette: {
     primary: {
-      main: "#6e1429", // Original maroon
-      dark: "#4c0d1c",
-      light: "#f4e8ec",
+      main: "#7A1F3D",
+      dark: "#641932",
+      light: "#F3E4E9",
       contrastText: "#ffffff",
     },
     secondary: {
@@ -17,22 +17,22 @@ export const terrariumTheme = createTheme({
     warning: { main: "#f9ab00", light: "#fef7e0" },
     error: { main: "#d93025", light: "#fce8e6" },
     background: {
-      default: "#f6f5f3",
-      paper: "#ffffff",
+      default: "#F6F3F0",
+      paper: "#FFFFFF",
     },
     text: {
-      primary: "#17181c",
-      secondary: "#667085",
+      primary: "#1D1A1B",
+      secondary: "#5E585A",
     },
-    divider: "#e7e5e1",
+    divider: "#E6E0DC",
   },
   shape: { borderRadius: 8 },
   typography: {
-    fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: '"DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     fontSize: 14,
-    h1: { fontWeight: 600, fontSize: "2rem", letterSpacing: "-0.02em" },
-    h2: { fontWeight: 600, fontSize: "1.5rem", letterSpacing: "-0.01em" },
-    h3: { fontWeight: 600, fontSize: "1.25rem" },
+    h1: { fontFamily: '"Bricolage Grotesque", system-ui, sans-serif', fontWeight: 800, fontSize: "2rem", letterSpacing: "-0.04em" },
+    h2: { fontFamily: '"Bricolage Grotesque", system-ui, sans-serif', fontWeight: 800, fontSize: "1.5rem", letterSpacing: "-0.03em" },
+    h3: { fontFamily: '"Bricolage Grotesque", system-ui, sans-serif', fontWeight: 700, fontSize: "1.25rem", letterSpacing: "-0.02em" },
     h4: { fontWeight: 600, fontSize: "1.1rem" },
     h5: { fontWeight: 600, fontSize: "1rem" },
     h6: { fontWeight: 600, fontSize: "0.95rem" },

@@ -1,0 +1,194 @@
+.container { display: flex; flex-direction: column; gap: 20px; }
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0;
+}
+.backBtn:hover { text-decoration: underline; }
+.sep { color: var(--border); }
+.crumb { color: var(--text); font-weight: 500; }
+
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+  flex-wrap: wrap;
+}
+
+.headerLeft { display: flex; align-items: center; gap: 16px; }
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.patientName { font-size: 20px; font-weight: 700; color: var(--text); }
+.subLine { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+.headerRight { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
+.headerActions { display: flex; gap: 8px; }
+
+.editBtn, .deleteBtn {
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--surface);
+  transition: all 0.15s;
+}
+.editBtn:hover { border-color: var(--primary); color: var(--primary); }
+.deleteBtn:hover { border-color: var(--danger); color: var(--danger); }
+
+.sections { padding: 24px 28px; display: flex; flex-direction: column; gap: 28px; }
+
+.section {}
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+
+.field { display: flex; flex-direction: column; gap: 3px; }
+.fieldLabel { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+.fieldValue { font-size: 14px; color: var(--text); font-weight: 500; }
+
+.notes { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+
+/* Edit form */
+.editForm { padding: 24px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+.formGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+}
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus { border-color: var(--primary); background: #fff; }
+
+.editActions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+
+.cancelBtn {
+  padding: 9px 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.cancelBtn:hover { border-color: var(--text-muted); color: var(--text); }
+
+.saveBtn {
+  padding: 9px 22px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.saveBtn:hover { background: var(--primary-dark); }
+
+/* Delete dialog */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.dialog {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dialog h3 { font-size: 17px; font-weight: 700; }
+.dialog p { font-size: 14px; color: var(--text-muted); }
+.dialogActions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+.confirmDeleteBtn {
+  padding: 9px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.confirmDeleteBtn:hover { background: #dc2626; }
+
+.notFound { padding: 40px; text-align: center; color: var(--text-muted); }
+.notFound button { margin-top: 12px; color: var(--primary); background: none; border: none; font-size: 14px; }
+
+@media (max-width: 600px) {
+  .cardHeader { padding: 16px; }
+  .sections, .editForm { padding: 16px; }
+  .headerRight { align-items: flex-start; }
+}

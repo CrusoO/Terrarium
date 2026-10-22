@@ -1,0 +1,243 @@
+{
+  "edits": 5,
+  "interactionValidated": 4,
+  "rows": [
+    {
+      "archetype": "crud",
+      "kind": "add-field",
+      "wallSeconds": 6.054,
+      "filesChanged": 4,
+      "changed": [
+        "src/types.js",
+        "src/data/seed.js",
+        "src/views/DetailPage.jsx",
+        "src/views/FormPage.jsx"
+      ],
+      "pagesRewritten": [
+        "src/views/DetailPage.jsx",
+        "src/views/FormPage.jsx"
+      ],
+      "modelCalls": 2,
+      "packageUntouched": true,
+      "loaded": true,
+      "interactionValidated": true,
+      "errors": [],
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "customer",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "city",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "paymentStatus",
+              "type": "select-one",
+              "value": "Unpaid",
+              "valid": true
+            },
+            {
+              "id": "pickupDate",
+              "type": "date",
+              "value": "2024-07-01",
+              "valid": true
+            },
+            {
+              "id": "note",
+              "type": "textarea",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      }
+    },
+    {
+      "archetype": "dashboard",
+      "kind": "rename",
+      "wallSeconds": 0.002,
+      "filesChanged": 2,
+      "changed": [
+        "src/types.js",
+        "src/data/seed.js"
+      ],
+      "pagesRewritten": [],
+      "modelCalls": 0,
+      "packageUntouched": true,
+      "loaded": true,
+      "interactionValidated": true,
+      "errors": [],
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      }
+    },
+    {
+      "archetype": "booking",
+      "kind": "new-filter",
+      "wallSeconds": 4.43,
+      "filesChanged": 2,
+      "changed": [
+        "src/data/seed.js",
+        "src/views/ListPage.jsx"
+      ],
+      "pagesRewritten": [
+        "src/views/ListPage.jsx"
+      ],
+      "modelCalls": 1,
+      "packageUntouched": true,
+      "loaded": true,
+      "interactionValidated": false,
+      "errors": [],
+      "behaviour": {
+        "before": 1,
+        "filtered": 1,
+        "filterNarrowed": false,
+        "added": false,
+        "after": 1,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": false,
+        "totalsChanged": null
+      }
+    },
+    {
+      "archetype": "landing",
+      "kind": "add-field",
+      "wallSeconds": 10.035,
+      "filesChanged": 4,
+      "changed": [
+        "src/types.js",
+        "src/data/seed.js",
+        "src/views/DetailPage.jsx",
+        "src/views/FormPage.jsx"
+      ],
+      "pagesRewritten": [
+        "src/views/DetailPage.jsx",
+        "src/views/FormPage.jsx"
+      ],
+      "modelCalls": 2,
+      "packageUntouched": true,
+      "loaded": true,
+      "interactionValidated": true,
+      "errors": [],
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "name",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "email",
+              "type": "email",
+              "value": "canary@terrarium.test",
+              "valid": true
+            },
+            {
+              "id": "plan",
+              "type": "select-one",
+              "value": "Studio",
+              "valid": true
+            },
+            {
+              "id": "phone",
+              "type": "tel",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      }
+    },
+    {
+      "archetype": "charts",
+      "kind": "new-page",
+      "wallSeconds": 4.89,
+      "filesChanged": 2,
+      "changed": [
+        "src/App.jsx",
+        "src/views/ComparePage.jsx"
+      ],
+      "pagesRewritten": [
+        "src/views/ComparePage.jsx"
+      ],
+      "modelCalls": 1,
+      "packageUntouched": true,
+      "loaded": true,
+      "interactionValidated": true,
+      "errors": [],
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      }
+    }
+  ],
+  "loaded": 5
+}

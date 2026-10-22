@@ -187,16 +187,20 @@ def preview_url(
     session_id: str,
     host: str = config.SANDBOX_HOST,
     host_port: int | None = None,
+    runtime: str | None = None,
 ) -> str:
     slug = session_slug(session_id)
     mode = config.preview_mode()
+    sap_entry = runtime in {"sapui5", "sap-cap"}
     if mode == "port":
         if host_port:
-            return f"http://127.0.0.1:{int(host_port)}/"
-        return f"/preview/{slug}/"
+            root = f"http://127.0.0.1:{int(host_port)}"
+            return f"{root}/index.html" if sap_entry else f"{root}/"
+        return f"/preview/{slug}/index.html" if sap_entry else f"/preview/{slug}/"
     if mode == "host":
-        return f"http://{slug}.{host}"
-    return f"/preview/{slug}/"
+        root = f"http://{slug}.{host}"
+        return f"{root}/index.html" if sap_entry else root
+    return f"/preview/{slug}/index.html" if sap_entry else f"/preview/{slug}/"
 
 
 def _published_host_port(container, app_port: str) -> int | None:
@@ -217,9 +221,21 @@ def project_runtime(files: FileMap | None) -> str:
     if not files:
         return "static"
     names = set(files)
-    if "frontend/package.json" in names and "backend/package.json" in names:
+    fullstack = "frontend/package.json" in names and "backend/package.json" in names
+    if fullstack and ("frontend/angular.json" in names or "frontend/src/main.ts" in names):
+        return "angular-node"
+    if fullstack and (
+        "frontend/ui5.yaml" in names or "frontend/webapp/index.html" in names
+    ):
+        return "sap-cap"
+    if fullstack:
         return "react-node"
-    if "package.json" in names and ("src/main.jsx" in names or "src/App.jsx" in names):
+    if "angular.json" in names or "src/main.ts" in names:
+        return "angular"
+    if "ui5.yaml" in names or "webapp/index.html" in names:
+        return "sapui5"
+    react_entries = {"src/main.jsx", "src/App.jsx", "src/main.tsx", "src/App.tsx"}
+    if "package.json" in names and names & react_entries:
         return "react"
     return "static"
 
@@ -244,14 +260,42 @@ def _traefik_labels(slug: str, runtime: str, app_port: str) -> dict[str, str]:
     return labels
 
 
+def _seed_openui5_cache() -> str:
+    """UI5 CLI installs framework libs under ~/.ui5, not node_modules. Point that cache at the image."""
+    return (
+        "export HOME=/root; "
+        "mkdir -p /root/.ui5/framework/packages/@openui5; "
+        "for pkg in sap.m sap.ui.core sap.ui.layout sap.ui.unified themelib_sap_horizon; do "
+        "if [ -f /opt/terrarium/node_modules/@openui5/$pkg/package.json ]; then "
+        "mkdir -p /root/.ui5/framework/packages/@openui5/$pkg; "
+        "ln -sfn /opt/terrarium/node_modules/@openui5/$pkg "
+        "/root/.ui5/framework/packages/@openui5/$pkg/1.136.1; "
+        "fi; done; "
+    )
+
+
 def _node_command(runtime: str, base_path: str) -> str:
-    if runtime == "react-node":
+    seed = _seed_openui5_cache()
+    if runtime in {"react-node", "angular-node", "sap-cap"}:
+        frontend_dev = {
+            "react-node": f"npm run dev -- --host 0.0.0.0 --base {base_path}",
+            "angular-node": "npm run dev",
+            "sap-cap": "npm run dev",
+        }[runtime]
         return (
             "sh -lc 'until [ -f /app/.terrarium-ready ]; do sleep 0.2; done; "
+            f"{seed}"
             "ln -sfn /opt/terrarium/node_modules /app/frontend/node_modules; "
             "ln -sfn /opt/terrarium/node_modules /app/backend/node_modules; "
             "cd /app/backend && (npm run dev > /tmp/backend.log 2>&1 &); "
-            f"cd /app/frontend && npm run dev -- --host 0.0.0.0 --base {base_path}'"
+            f"cd /app/frontend && {frontend_dev}'"
+        )
+    if runtime in {"angular", "sapui5"}:
+        return (
+            "sh -lc 'until [ -f /app/.terrarium-ready ]; do sleep 0.2; done; "
+            f"{seed}"
+            "ln -sfn /opt/terrarium/node_modules /app/node_modules; "
+            "cd /app && npm run dev'"
         )
     return (
         "sh -lc 'until [ -f /app/.terrarium-ready ]; do sleep 0.2; done; "
@@ -306,7 +350,7 @@ class SandboxRunner:
             "tmpfs": {
                 "/var/cache/nginx": "size=8m,mode=1777",
                 "/var/run": "size=1m,mode=1777",
-                "/tmp": "size=8m,mode=1777",
+                "/tmp": "size=256m,mode=1777" if runtime != "static" else "size=8m,mode=1777",
                 "/var/log/nginx": "size=2m,mode=1777",
             },
         }
@@ -328,7 +372,7 @@ class SandboxRunner:
         )
         return SandboxHandle(
             sessionId=session_id,
-            previewUrl=preview_url(session_id, host_port=host_port),
+            previewUrl=preview_url(session_id, host_port=host_port, runtime=runtime),
             containerId=container.id,
         )
 
@@ -349,8 +393,9 @@ class SandboxRunner:
 
         if docker_status == "running":
             if runtime != "static":
+                probe_path = "/index.html" if runtime in {"sapui5", "sap-cap"} else "/"
                 probe = container.exec_run(
-                    ["sh", "-lc", f"wget -qO- http://127.0.0.1:{port}/ >/dev/null 2>&1"]
+                    ["sh", "-lc", f"wget -qO- http://127.0.0.1:{port}{probe_path} >/dev/null 2>&1"]
                 )
                 if int(getattr(probe, "exit_code", 1)) != 0:
                     return HealthReport(status="booting", logs=logs or "Node preview is starting")
@@ -367,7 +412,19 @@ class SandboxRunner:
     def wait_until_healthy(
         self, session_id: str, timeout_s: float | None = None
     ) -> HealthReport:
-        timeout = timeout_s if timeout_s is not None else config.SMOKE_TIMEOUT_S
+        timeout = timeout_s
+        if timeout is None:
+            timeout = config.SMOKE_TIMEOUT_S
+            try:
+                container = self.client.containers.get(container_name(session_id))
+                runtime = str(
+                    (container.attrs.get("Config") or {}).get("Labels", {}).get("terrarium.runtime")
+                    or "static"
+                )
+                if runtime in {"sapui5", "sap-cap", "angular", "angular-node", "react-node"}:
+                    timeout = config.NODE_BOOT_TIMEOUT_S
+            except NotFound:
+                pass
         deadline = time.monotonic() + timeout
         last_report = HealthReport(status="booting", logs="")
         while time.monotonic() < deadline:

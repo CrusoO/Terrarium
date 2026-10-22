@@ -1,0 +1,48 @@
+{
+  "freeGeminiEnv": null,
+  "intent": {
+    "provider": "bedrock",
+    "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "ok": true,
+    "seconds": 3.501,
+    "kind": "new",
+    "phase": "clarify",
+    "stack": "react"
+  },
+  "intentCalls": [
+    {
+      "purpose": "intent",
+      "provider": "bedrock",
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "durationMs": 3049,
+      "ok": true,
+      "inputTokens": 1055,
+      "outputTokens": 214,
+      "usageSource": "bedrock"
+    }
+  ],
+  "editor": {
+    "provider": "bedrock",
+    "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "ok": true,
+    "seconds": 1.524,
+    "files": [
+      "src/views/OrderList.jsx"
+    ],
+    "commitMessage": "Add city field to order cards",
+    "cityAdded": true,
+    "originalAlreadyHadCity": false
+  },
+  "editorCalls": [
+    {
+      "purpose": "editor",
+      "provider": "bedrock",
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "durationMs": 1513,
+      "ok": true,
+      "inputTokens": 419,
+      "outputTokens": 193,
+      "usageSource": "bedrock"
+    }
+  ]
+}

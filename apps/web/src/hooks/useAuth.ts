@@ -90,7 +90,6 @@ export function useAuth() {
     const token = await user.getIdToken();
     setCurrentToken(token);
     await persistSessionCookie(token);
-    return user;
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -98,7 +97,6 @@ export function useAuth() {
     const token = await user.getIdToken();
     setCurrentToken(token);
     await persistSessionCookie(token);
-    return user;
   }, []);
 
   const logout = useCallback(async () => {

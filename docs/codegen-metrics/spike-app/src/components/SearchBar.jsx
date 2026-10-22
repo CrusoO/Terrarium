@@ -1,0 +1,1 @@
+export default function SearchBar({ value, onChange, placeholder }) { return <input className="search-bar" value={value} placeholder={placeholder || 'Search'} onChange={(event) => onChange(event.target.value)} />; }

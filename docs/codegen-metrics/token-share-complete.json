@@ -1,0 +1,2377 @@
+{
+  "retiredTruncatedNine": "docs/codegen-metrics/retired-truncated-nine.json",
+  "apps": 20,
+  "meanScaffoldShare": 0.328,
+  "rows": [
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 194,
+        "business-logic": 1991,
+        "ui-primitives": 515,
+        "mock-data": 165,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3193,
+      "scaffoldUiKitTokens": 1037,
+      "scaffoldUiKitShare": 0.325,
+      "estimatedSecondsSaved": 3.9,
+      "estimatedOutputUsdSaved": 0.0156,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 54
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 102
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 206
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 190
+        },
+        {
+          "path": "src/components/VisitCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 173
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 165
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 118
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 115
+        },
+        {
+          "path": "src/views/DetailPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 310
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 612
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 528
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "appointments",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 194,
+        "business-logic": 1896,
+        "ui-primitives": 475,
+        "mock-data": 140,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3033,
+      "scaffoldUiKitTokens": 997,
+      "scaffoldUiKitShare": 0.329,
+      "estimatedSecondsSaved": 3.7,
+      "estimatedOutputUsdSaved": 0.015,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 54
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 101
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 212
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/ProductCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 201
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 122
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 140
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 122
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 109
+        },
+        {
+          "path": "src/views/DetailPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 270
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 640
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 442
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "catalogue",
+      "complete": true
+    },
+    {
+      "fileCount": 20,
+      "estimatedTokensByCategory": {
+        "config": 194,
+        "business-logic": 1886,
+        "ui-primitives": 670,
+        "mock-data": 151,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3229,
+      "scaffoldUiKitTokens": 1192,
+      "scaffoldUiKitShare": 0.369,
+      "estimatedSecondsSaved": 4.5,
+      "estimatedOutputUsdSaved": 0.0179,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 54
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 103
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/ExpenseCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 252
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 187
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 124
+        },
+        {
+          "path": "src/components/TotalsCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 142
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 151
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 234
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 114
+        },
+        {
+          "path": "src/views/DashboardPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 140
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 644
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 464
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "expenses",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 1919,
+        "ui-primitives": 534,
+        "mock-data": 137,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3110,
+      "scaffoldUiKitTokens": 1054,
+      "scaffoldUiKitShare": 0.339,
+      "estimatedSecondsSaved": 4.0,
+      "estimatedOutputUsdSaved": 0.0158,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 100
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 192
+        },
+        {
+          "path": "src/components/GuestCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 198
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 184
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 137
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 118
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 107
+        },
+        {
+          "path": "src/views/DetailPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 264
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 638
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 500
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "guests",
+      "complete": true
+    },
+    {
+      "fileCount": 21,
+      "estimatedTokensByCategory": {
+        "config": 194,
+        "business-logic": 2157,
+        "ui-primitives": 620,
+        "mock-data": 136,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3435,
+      "scaffoldUiKitTokens": 1142,
+      "scaffoldUiKitShare": 0.332,
+      "estimatedSecondsSaved": 4.3,
+      "estimatedOutputUsdSaved": 0.0171,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 54
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 121
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 200
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/SkuCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 156
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 125
+        },
+        {
+          "path": "src/components/TotalsCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 187
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 136
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 225
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 106
+        },
+        {
+          "path": "src/views/DashboardPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 162
+        },
+        {
+          "path": "src/views/DetailPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 257
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 596
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 490
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "inventory",
+      "complete": true
+    },
+    {
+      "fileCount": 21,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 2125,
+        "ui-primitives": 719,
+        "mock-data": 150,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3514,
+      "scaffoldUiKitTokens": 1239,
+      "scaffoldUiKitShare": 0.353,
+      "estimatedSecondsSaved": 4.7,
+      "estimatedOutputUsdSaved": 0.0186,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 52
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 121
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 221
+        },
+        {
+          "path": "src/components/JobCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 240
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 161
+        },
+        {
+          "path": "src/components/TotalsCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 166
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 150
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 220
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 110
+        },
+        {
+          "path": "src/views/DashboardPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 144
+        },
+        {
+          "path": "src/views/DetailPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 274
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 594
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 441
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "ops",
+      "complete": true
+    },
+    {
+      "fileCount": 21,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 2413,
+        "ui-primitives": 692,
+        "mock-data": 172,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3797,
+      "scaffoldUiKitTokens": 1212,
+      "scaffoldUiKitShare": 0.319,
+      "estimatedSecondsSaved": 4.6,
+      "estimatedOutputUsdSaved": 0.0182,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 120
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 227
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/OrderCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 258
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 126
+        },
+        {
+          "path": "src/components/TotalsCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 156
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 172
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 224
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 119
+        },
+        {
+          "path": "src/views/DashboardPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 149
+        },
+        {
+          "path": "src/views/DetailPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 352
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 639
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 583
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "orders",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 2257,
+        "ui-primitives": 456,
+        "mock-data": 140,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3373,
+      "scaffoldUiKitTokens": 976,
+      "scaffoldUiKitShare": 0.289,
+      "estimatedSecondsSaved": 3.7,
+      "estimatedOutputUsdSaved": 0.0146,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 101
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 199
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/RecipeCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 165
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 139
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 140
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 120
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 109
+        },
+        {
+          "path": "src/views/DetailPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 549
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 655
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 524
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "recipes",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 2489,
+        "ui-primitives": 553,
+        "mock-data": 157,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3719,
+      "scaffoldUiKitTokens": 1073,
+      "scaffoldUiKitShare": 0.289,
+      "estimatedSecondsSaved": 4.0,
+      "estimatedOutputUsdSaved": 0.0161,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 100
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 206
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 184
+        },
+        {
+          "path": "src/components/StudentCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 217
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 157
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 122
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 114
+        },
+        {
+          "path": "src/views/DetailPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 270
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 959
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 718
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "roster",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 1887,
+        "ui-primitives": 567,
+        "mock-data": 166,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3140,
+      "scaffoldUiKitTokens": 1087,
+      "scaffoldUiKitShare": 0.346,
+      "estimatedSecondsSaved": 4.1,
+      "estimatedOutputUsdSaved": 0.0163,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 101
+        },
+        {
+          "path": "src/components/AppShell.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 211
+        },
+        {
+          "path": "src/components/Navbar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 37
+        },
+        {
+          "path": "src/components/SearchBar.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 73
+        },
+        {
+          "path": "src/components/StatusBadge.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 213
+        },
+        {
+          "path": "src/components/TicketCard.jsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 202
+        },
+        {
+          "path": "src/data/seed.js",
+          "category": "mock-data",
+          "estimatedTokens": 166
+        },
+        {
+          "path": "src/hooks/useData.js",
+          "category": "business-logic",
+          "estimatedTokens": 120
+        },
+        {
+          "path": "src/main.jsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.js",
+          "category": "business-logic",
+          "estimatedTokens": 117
+        },
+        {
+          "path": "src/views/DetailPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 303
+        },
+        {
+          "path": "src/views/FormPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 616
+        },
+        {
+          "path": "src/views/ListPage.jsx",
+          "category": "business-logic",
+          "estimatedTokens": 419
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "jsdoc",
+      "slug": "tickets",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 194,
+        "business-logic": 1779,
+        "ui-primitives": 521,
+        "mock-data": 166,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 2988,
+      "scaffoldUiKitTokens": 1043,
+      "scaffoldUiKitShare": 0.349,
+      "estimatedSecondsSaved": 3.9,
+      "estimatedOutputUsdSaved": 0.0156,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 54
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 102
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 167
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 129
+        },
+        {
+          "path": "src/components/VisitCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 250
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 166
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 126
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 89
+        },
+        {
+          "path": "src/views/DetailPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 274
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 577
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 444
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "appointments",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 194,
+        "business-logic": 1758,
+        "ui-primitives": 361,
+        "mock-data": 141,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 2782,
+      "scaffoldUiKitTokens": 883,
+      "scaffoldUiKitShare": 0.317,
+      "estimatedSecondsSaved": 3.3,
+      "estimatedOutputUsdSaved": 0.0132,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 54
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 101
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 176
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/ProductCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 141
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 78
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 141
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 131
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 84
+        },
+        {
+          "path": "src/views/DetailPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 276
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 582
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 408
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "catalogue",
+      "complete": true
+    },
+    {
+      "fileCount": 20,
+      "estimatedTokensByCategory": {
+        "config": 194,
+        "business-logic": 1665,
+        "ui-primitives": 457,
+        "mock-data": 152,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 2796,
+      "scaffoldUiKitTokens": 979,
+      "scaffoldUiKitShare": 0.35,
+      "estimatedSecondsSaved": 3.7,
+      "estimatedOutputUsdSaved": 0.0147,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 54
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 103
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/ExpenseCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 122
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 165
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 74
+        },
+        {
+          "path": "src/components/TotalsCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 119
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 152
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 251
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 88
+        },
+        {
+          "path": "src/views/DashboardPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 116
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 520
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 422
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "expenses",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 1768,
+        "ui-primitives": 340,
+        "mock-data": 138,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 2766,
+      "scaffoldUiKitTokens": 860,
+      "scaffoldUiKitShare": 0.311,
+      "estimatedSecondsSaved": 3.2,
+      "estimatedOutputUsdSaved": 0.0129,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 100
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 188
+        },
+        {
+          "path": "src/components/GuestCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 122
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 76
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 138
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 126
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 81
+        },
+        {
+          "path": "src/views/DetailPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 237
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 568
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 468
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "guests",
+      "complete": true
+    },
+    {
+      "fileCount": 21,
+      "estimatedTokensByCategory": {
+        "config": 194,
+        "business-logic": 1925,
+        "ui-primitives": 511,
+        "mock-data": 136,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3094,
+      "scaffoldUiKitTokens": 1033,
+      "scaffoldUiKitShare": 0.334,
+      "estimatedSecondsSaved": 3.9,
+      "estimatedOutputUsdSaved": 0.0155,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 54
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 121
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 149
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/SkuCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 118
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 128
+        },
+        {
+          "path": "src/components/TotalsCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 123
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 136
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 238
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 80
+        },
+        {
+          "path": "src/views/DashboardPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 114
+        },
+        {
+          "path": "src/views/DetailPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 246
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 576
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 401
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "inventory",
+      "complete": true
+    },
+    {
+      "fileCount": 21,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 1916,
+        "ui-primitives": 476,
+        "mock-data": 150,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3062,
+      "scaffoldUiKitTokens": 996,
+      "scaffoldUiKitShare": 0.325,
+      "estimatedSecondsSaved": 3.7,
+      "estimatedOutputUsdSaved": 0.0149,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 44
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 52
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 121
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 126
+        },
+        {
+          "path": "src/components/JobCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 114
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 102
+        },
+        {
+          "path": "src/components/TotalsCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 118
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 150
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 233
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 84
+        },
+        {
+          "path": "src/views/DashboardPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 114
+        },
+        {
+          "path": "src/views/DetailPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 279
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 561
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 398
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "ops",
+      "complete": true
+    },
+    {
+      "fileCount": 21,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 2311,
+        "ui-primitives": 511,
+        "mock-data": 172,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 3514,
+      "scaffoldUiKitTokens": 1031,
+      "scaffoldUiKitShare": 0.293,
+      "estimatedSecondsSaved": 3.9,
+      "estimatedOutputUsdSaved": 0.0155,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 120
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 128
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/OrderCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 166
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 82
+        },
+        {
+          "path": "src/components/TotalsCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 121
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 172
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 240
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 93
+        },
+        {
+          "path": "src/views/DashboardPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 114
+        },
+        {
+          "path": "src/views/DetailPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 283
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 897
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 436
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "orders",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 1739,
+        "ui-primitives": 402,
+        "mock-data": 140,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 2801,
+      "scaffoldUiKitTokens": 922,
+      "scaffoldUiKitShare": 0.329,
+      "estimatedSecondsSaved": 3.5,
+      "estimatedOutputUsdSaved": 0.0138,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 101
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 138
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/RecipeCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 135
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 125
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 140
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 128
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 84
+        },
+        {
+          "path": "src/views/DetailPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 274
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 578
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 436
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "recipes",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 1800,
+        "ui-primitives": 419,
+        "mock-data": 158,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 2897,
+      "scaffoldUiKitTokens": 939,
+      "scaffoldUiKitShare": 0.324,
+      "estimatedSecondsSaved": 3.5,
+      "estimatedOutputUsdSaved": 0.0141,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 100
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 173
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 126
+        },
+        {
+          "path": "src/components/StudentCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 151
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 158
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 131
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 89
+        },
+        {
+          "path": "src/views/DetailPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 246
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 583
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 478
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "roster",
+      "complete": true
+    },
+    {
+      "fileCount": 19,
+      "estimatedTokensByCategory": {
+        "config": 192,
+        "business-logic": 1682,
+        "ui-primitives": 395,
+        "mock-data": 166,
+        "layout-css": 328
+      },
+      "estimatedTotalTokens": 2763,
+      "scaffoldUiKitTokens": 915,
+      "scaffoldUiKitShare": 0.331,
+      "estimatedSecondsSaved": 3.4,
+      "estimatedOutputUsdSaved": 0.0137,
+      "files": [
+        {
+          "path": "index.html",
+          "category": "config",
+          "estimatedTokens": 43
+        },
+        {
+          "path": "package.json",
+          "category": "config",
+          "estimatedTokens": 53
+        },
+        {
+          "path": "src/App.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 101
+        },
+        {
+          "path": "src/components/AppShell.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 42
+        },
+        {
+          "path": "src/components/FilterTabs.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 148
+        },
+        {
+          "path": "src/components/Navbar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 32
+        },
+        {
+          "path": "src/components/SearchBar.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 68
+        },
+        {
+          "path": "src/components/StatusBadge.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 107
+        },
+        {
+          "path": "src/components/TicketCard.tsx",
+          "category": "ui-primitives",
+          "estimatedTokens": 146
+        },
+        {
+          "path": "src/data/seed.ts",
+          "category": "mock-data",
+          "estimatedTokens": 166
+        },
+        {
+          "path": "src/hooks/useData.ts",
+          "category": "business-logic",
+          "estimatedTokens": 128
+        },
+        {
+          "path": "src/main.tsx",
+          "category": "config",
+          "estimatedTokens": 64
+        },
+        {
+          "path": "src/styles/global.css",
+          "category": "layout-css",
+          "estimatedTokens": 292
+        },
+        {
+          "path": "src/styles/tokens.css",
+          "category": "layout-css",
+          "estimatedTokens": 36
+        },
+        {
+          "path": "src/types.ts",
+          "category": "business-logic",
+          "estimatedTokens": 91
+        },
+        {
+          "path": "src/views/DetailPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 277
+        },
+        {
+          "path": "src/views/FormPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 558
+        },
+        {
+          "path": "src/views/ListPage.tsx",
+          "category": "business-logic",
+          "estimatedTokens": 379
+        },
+        {
+          "path": "vite.config.js",
+          "category": "config",
+          "estimatedTokens": 32
+        }
+      ],
+      "language": "ts",
+      "slug": "tickets",
+      "complete": true
+    }
+  ]
+}

@@ -16,16 +16,34 @@ const LABELS: Record<string, string> = {
   "editor.completed": "✓ Files updated",
   "sandbox.booting": "🚀 Starting preview...",
   "sandbox.ready": "✓ Preview ready",
-  "sandbox.unhealthy": "⚠️ Preview failed",
-  "heal.attempt": "🔄 Retrying...",
+  "sandbox.unhealthy": "Preview failed",
+  "codegen.retry": "Trying once more",
+  "heal.attempt": "Retrying",
   "heal.exhausted": "❌ Max retries reached",
   "preview.stream.started": "Live preview started",
   "preview.stream.file": "Streaming file into preview",
   "preview.stream.completed": "Live preview assembled",
   "preview.ready": "✅ Live preview ready",
+  "check.started": "Running publish checks…",
+  "check.step": "Check step",
+  "check.completed": "Publish check complete",
+  "publish.blocked": "Publish blocked",
 };
 
 export function eventLabel(event: SessionEvent): string {
+  if (event.name === "check.step" && event.payload) {
+    const step = event.payload.step;
+    const status = event.payload.status;
+    if (typeof step === "string" && typeof status === "string") {
+      return `${step.replace("_", " ")} — ${status}`;
+    }
+  }
+  if (event.name === "codegen.started" && event.payload?.stage === "architecture") {
+    return "✓ Architecture planned";
+  }
+  if (event.name === "intent.classified" && event.payload?.architectureReady === true) {
+    return "✓ Architecture ready — a few details";
+  }
   return LABELS[event.name] ?? event.name;
 }
 
@@ -74,6 +92,11 @@ export function eventDetail(event: SessionEvent): string | null {
   }
   if (typeof payload.message === "string" && payload.message.trim()) {
     return [payload.message.trim(), modelDetail].filter(Boolean).join("\n\n");
+  }
+  if (event.name === "check.step" && typeof payload.step === "string") {
+    const status = typeof payload.status === "string" ? payload.status : "";
+    const detail = typeof payload.detail === "string" ? payload.detail : "";
+    return [payload.step, status, detail].filter(Boolean).join(" — ");
   }
   return modelDetail || null;
 }
