@@ -16,7 +16,7 @@ class IntentToCodegenTests(unittest.TestCase):
     def test_ready_new_intent_feeds_codegen(self) -> None:
         classified = classify_intent(
             IntentAgentInput(
-                prompt="just build it",
+                prompt="React — just build it",
                 conversation=[
                     ConversationTurn(role="user", text="build a calculator"),
                     ConversationTurn(role="assistant", text="1. Which operations?"),
@@ -29,7 +29,7 @@ class IntentToCodegenTests(unittest.TestCase):
             AgentJob(
                 sessionId="sync-test",
                 intent=classified.as_intent(),
-                prompt="just build it",
+                prompt="React — just build it",
             )
         )
         self.assertIn("index.html", result.files)
