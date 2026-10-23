@@ -12,7 +12,7 @@ export type FrontendStack = z.infer<typeof frontendStackSchema>;
 export const backendNeedSchema = z.enum(["auto", "yes", "no"]);
 export type BackendNeed = z.infer<typeof backendNeedSchema>;
 
-export const backendStackSchema = z.enum(["none", "node-express", "sap-cap"]);
+export const backendStackSchema = z.enum(["none", "node-express", "angular-express", "sap-cap"]);
 export type BackendStack = z.infer<typeof backendStackSchema>;
 
 export const intentKindSchema = z.enum(["new", "modify"]);
@@ -130,6 +130,7 @@ export const clarifyChoiceSchema = z.object({
   subtitle: z.string(),
   value: z.string(),
   variant: z.enum(["default", "upload", "custom"]).optional(),
+  recommended: z.boolean().optional(),
 });
 export type ClarifyChoice = z.infer<typeof clarifyChoiceSchema>;
 
@@ -144,6 +145,7 @@ export const clarifyQuestionSchema = z.object({
   options: z.array(z.string()).min(3).max(6).optional(),
   choices: z.array(clarifyChoiceSchema).min(3).max(6).optional(),
   dataSource: z.boolean().optional(),
+  isStackSelector: z.boolean().optional(),
 });
 export type ClarifyQuestion = z.infer<typeof clarifyQuestionSchema>;
 

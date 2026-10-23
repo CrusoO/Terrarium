@@ -757,6 +757,18 @@ async def _run_stub_session_locked(
         codegen_metrics.finish_run(session_id, status=f"phase-{intent.phase}")
         return
 
+    _BAD_FE = frozenset({"angular","sapui5","custom"})
+    _BAD_BE = frozenset({"angular-express","sap-cap"})
+    _NAMES = {"angular":"Angular","sapui5":"SAPUI5/Fiori","custom":"Custom stack","angular-express":"Angular+Node","sap-cap":"SAP CAP"}
+    _fe = (intent.frontendStack or frontend_stack or "react").strip().lower()
+    _be = (intent.backendStack or backend_stack or "none").strip().lower()
+    if _fe in _BAD_FE or _be in _BAD_BE:
+        _msg = f"{_NAMES.get(_fe) or _NAMES.get(_be, _fe)} is not yet supported. Choose React / Vite to continue."
+        logger.warning("Session %s blocked by stack gate: fe=%s be=%s", session_id, _fe, _be)
+        await log.append(make_event("sandbox.unhealthy", session_id, {"logs": _msg, "terminal": True}))
+        codegen_metrics.finish_run(session_id, status="unsupported-stack")
+        return
+
     plan: SessionPlan | None = None
     if saved_plan_raw:
         plan = await asyncio.to_thread(session_plan_from_payload, saved_plan_raw)
