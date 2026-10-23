@@ -392,144 +392,157 @@ export function ClarifyAnswers({
         </Typography>
       </Box>
 
-      <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
-        <Typography
-          sx={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            fontWeight: 500,
-            letterSpacing: "0.08em",
-            color: "text.secondary",
+      {current?.isStackSelector ? (
+        <StackSelectorStep
+          step={current}
+          disabled={disabled}
+          onSelect={(json, display) => {
+            setStackJson((prev) => prev.map((v, i) => (i === step ? json : v)));
+            setStackDisplay((prev) => prev.map((v, i) => (i === step ? display : v)));
           }}
-        >
-          SUGGESTED ANSWERS
-        </Typography>
-        <Button
-          size="small"
-          onClick={() => {
-            setIdeaOffset((value) => value + 1);
-            setSelectedIndexes((prev) => prev.map((items, i) => (i === step ? [] : items)));
-            setSelectedValues((prev) => prev.map((items, i) => (i === step ? [] : items)));
-          }}
-          sx={{ color: "var(--tt-accent-text)", minHeight: 44, textTransform: "none", fontWeight: 600 }}
-        >
-          More ideas
-        </Button>
-      </Stack>
-
-      <Box role={allowMultiple ? "group" : "radiogroup"} aria-label={prompt}>
-        <Stack spacing={1}>
-          {displayedChoices.map((choice, index) => {
-            const selected = selectedValueSet.has(choice.value);
-            return (
-              <Box
-                key={`${choice.title}-${index}`}
-                ref={(node: HTMLDivElement | null) => {
-                  radioRefs.current[index] = node;
-                }}
-                role={allowMultiple ? "checkbox" : "radio"}
-                tabIndex={selected || (selectedForStep.length === 0 && index === 0) ? 0 : -1}
-                aria-checked={selected}
-                onKeyDown={(event) => onRadioKeyDown(event, index)}
-                onClick={() => selectChoice(index)}
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 1,
-                  width: "100%",
-                  minHeight: 58,
-                  px: "14px",
-                  py: "10px",
-                  borderRadius: "12px",
-                  border: "1.5px solid",
-                  borderColor: selected ? "var(--tt-accent-text)" : BORDER,
-                  bgcolor: selected ? SELECTED_BG : "var(--tt-surface)",
-                  cursor: disabled ? "not-allowed" : "pointer",
-                  boxSizing: "border-box",
-                  outline: "none",
-                  "&:focus-visible": {
-                    boxShadow: "0 0 0 3px color-mix(in srgb, var(--tt-accent-text) 26%, transparent)",
-                  },
-                }}
-              >
-                <RadioDot selected={selected} />
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25 }}>
-                    {choice.title}
-                  </Typography>
-                  {choice.subtitle ? (
-                    <Typography sx={{ fontSize: 13, color: MUTED, mt: 0.35, lineHeight: 1.35 }}>
-                      {choice.subtitle}
-                    </Typography>
-                  ) : null}
-                </Box>
-              </Box>
-            );
-          })}
-        </Stack>
-      </Box>
-
-      {customSelected ? (
-        <Stack spacing={1.5}>
-          <Box sx={{ position: "relative" }} onDragOver={(event) => event.preventDefault()} onDrop={onDrop}>
-            <TextField
-              inputRef={customRef}
-              fullWidth
-              multiline
-              minRows={3}
-              label="Add context for Terra"
-              placeholder={current?.inputPlaceholder ?? "Type details, paste notes, or describe what to build"}
-              value={customText[step] ?? ""}
-              disabled={disabled}
-              onChange={(event) => {
-                const value = event.target.value;
-                setCustomText((prev) => prev.map((item, i) => (i === step ? value : item)));
-                markSkipped(step, false);
-              }}
-              slotProps={{ inputLabel: { shrink: true } }}
+        />
+      ) : (
+        <>
+          <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
+            <Typography
               sx={{
-                "& .MuiOutlinedInput-root": { borderRadius: "12px", pr: acceptsFiles ? 6 : undefined },
-                "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: MAROON },
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: "0.08em",
+                color: "text.secondary",
               }}
-            />
-            {acceptsFiles ? (
-              <>
-                <IconButton
-                  aria-label="Attach file or image"
-                  disabled={disabled}
-                  onClick={() => fileRef.current?.click()}
-                  sx={{
-                    position: "absolute",
-                    right: 10,
-                    bottom: 10,
-                    width: 38,
-                    height: 38,
-                    color: MAROON,
-                    bgcolor: SELECTED_BG,
-                    border: "1px solid",
-                    borderColor: "var(--tt-line)",
-                    "&:hover": { bgcolor: "var(--tt-tint)" },
-                  }}
-                >
-                  <CloudUploadOutlinedIcon sx={{ fontSize: 20 }} />
-                </IconButton>
-              <input
-                ref={fileRef}
-                type="file"
-                hidden
-                accept=".csv,.txt,.pdf,.xlsx,.xls,.png,.jpg,.jpeg,.webp"
-                onChange={onFileChange}
-              />
-              </>
-            ) : null}
-          </Box>
-          {fileAnswers[step]?.trim() ? (
-            <Typography sx={{ fontSize: 13, color: MUTED }}>
-              File ready — continue when you are done.
+            >
+              SUGGESTED ANSWERS
             </Typography>
+            <Button
+              size="small"
+              onClick={() => {
+                setIdeaOffset((value) => value + 1);
+                setSelectedIndexes((prev) => prev.map((items, i) => (i === step ? [] : items)));
+                setSelectedValues((prev) => prev.map((items, i) => (i === step ? [] : items)));
+              }}
+              sx={{ color: "var(--tt-accent-text)", minHeight: 44, textTransform: "none", fontWeight: 600 }}
+            >
+              More ideas
+            </Button>
+          </Stack>
+
+          <Box role={allowMultiple ? "group" : "radiogroup"} aria-label={prompt}>
+            <Stack spacing={1}>
+              {displayedChoices.map((choice, index) => {
+                const selected = selectedValueSet.has(choice.value);
+                return (
+                  <Box
+                    key={`${choice.title}-${index}`}
+                    ref={(node: HTMLDivElement | null) => {
+                      radioRefs.current[index] = node;
+                    }}
+                    role={allowMultiple ? "checkbox" : "radio"}
+                    tabIndex={selected || (selectedForStep.length === 0 && index === 0) ? 0 : -1}
+                    aria-checked={selected}
+                    onKeyDown={(event) => onRadioKeyDown(event, index)}
+                    onClick={() => selectChoice(index)}
+                    sx={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 1,
+                      width: "100%",
+                      minHeight: 58,
+                      px: "14px",
+                      py: "10px",
+                      borderRadius: "12px",
+                      border: "1.5px solid",
+                      borderColor: selected ? "var(--tt-accent-text)" : BORDER,
+                      bgcolor: selected ? SELECTED_BG : "var(--tt-surface)",
+                      cursor: disabled ? "not-allowed" : "pointer",
+                      boxSizing: "border-box",
+                      outline: "none",
+                      "&:focus-visible": {
+                        boxShadow: "0 0 0 3px color-mix(in srgb, var(--tt-accent-text) 26%, transparent)",
+                      },
+                    }}
+                  >
+                    <RadioDot selected={selected} />
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25 }}>
+                        {choice.title}
+                      </Typography>
+                      {choice.subtitle ? (
+                        <Typography sx={{ fontSize: 13, color: MUTED, mt: 0.35, lineHeight: 1.35 }}>
+                          {choice.subtitle}
+                        </Typography>
+                      ) : null}
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Stack>
+          </Box>
+
+          {customSelected ? (
+            <Stack spacing={1.5}>
+              <Box sx={{ position: "relative" }} onDragOver={(event) => event.preventDefault()} onDrop={onDrop}>
+                <TextField
+                  inputRef={customRef}
+                  fullWidth
+                  multiline
+                  minRows={3}
+                  label="Add context for Terra"
+                  placeholder={current?.inputPlaceholder ?? "Type details, paste notes, or describe what to build"}
+                  value={customText[step] ?? ""}
+                  disabled={disabled}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setCustomText((prev) => prev.map((item, i) => (i === step ? value : item)));
+                    markSkipped(step, false);
+                  }}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": { borderRadius: "12px", pr: acceptsFiles ? 6 : undefined },
+                    "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: MAROON },
+                  }}
+                />
+                {acceptsFiles ? (
+                  <>
+                    <IconButton
+                      aria-label="Attach file or image"
+                      disabled={disabled}
+                      onClick={() => fileRef.current?.click()}
+                      sx={{
+                        position: "absolute",
+                        right: 10,
+                        bottom: 10,
+                        width: 38,
+                        height: 38,
+                        color: MAROON,
+                        bgcolor: SELECTED_BG,
+                        border: "1px solid",
+                        borderColor: "var(--tt-line)",
+                        "&:hover": { bgcolor: "var(--tt-tint)" },
+                      }}
+                    >
+                      <CloudUploadOutlinedIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      hidden
+                      accept=".csv,.txt,.pdf,.xlsx,.xls,.png,.jpg,.jpeg,.webp"
+                      onChange={onFileChange}
+                    />
+                  </>
+                ) : null}
+              </Box>
+              {fileAnswers[step]?.trim() ? (
+                <Typography sx={{ fontSize: 13, color: MUTED }}>
+                  File ready — continue when you are done.
+                </Typography>
+              ) : null}
+            </Stack>
           ) : null}
-        </Stack>
-      ) : null}
+        </>
+      )}
 
       <Stack
         direction="row"

@@ -54,7 +54,7 @@ export function StackSelectorStep({step,disabled=false,onSelect}:{step:ClarifyQu
               sx={{display:"flex",alignItems:"flex-start",gap:1,px:"14px",py:"10px",borderRadius:"12px",border:"1.5px solid",borderColor:sel?"var(--tt-accent-text)":BORDER,bgcolor:sel?SEL_BG:"var(--tt-surface)",cursor:disabled?"not-allowed":"pointer",outline:"none","&:focus-visible":{boxShadow:"0 0 0 3px color-mix(in srgb, var(--tt-accent-text) 26%, transparent)"}}}>
               <Dot selected={sel}/>
               <Box sx={{minWidth:0,flex:1}}>
-                <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
+                <Stack direction="row" spacing={0.75} sx={{ alignItems: "center", flexWrap: "wrap" }}>
                   <Typography sx={{fontSize:14,fontWeight:700,lineHeight:1.25}}>{choice.title}</Typography>
                   {choice.recommended?<Chip label="Recommended" size="small" sx={{height:18,fontSize:11,fontWeight:600,bgcolor:MAROON,color:"#fff",borderRadius:"999px","& .MuiChip-label":{px:1}}}/>:null}
                 </Stack>
