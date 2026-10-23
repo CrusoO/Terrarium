@@ -247,13 +247,14 @@ export function ClarifyAnswers({
     if (disabled) {
       return;
     }
-    if (options?.skipAll) {
-      onSend("Skip the questions");
-      return;
-    }
+    // Always fire onStackSelect before sending so the stack persists even on skip.
     if (onStackSelect) {
       const idx = steps.findIndex(s => s.isStackSelector);
       if (idx >= 0) { try { const sel = JSON.parse(stackJson[idx]??"{}") as StackSelection; if (sel.frontendStack) onStackSelect(sel); } catch {} }
+    }
+    if (options?.skipAll) {
+      onSend("Skip the questions");
+      return;
     }
     onSend(compose(options?.skipIndex));
   }

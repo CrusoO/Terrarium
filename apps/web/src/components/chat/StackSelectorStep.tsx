@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { Box, Chip, FormControl, InputLabel, MenuItem, Select, Stack, Typography } from "@mui/material";
 import type { ClarifyChoice, ClarifyQuestion } from "@terrarium/contracts";
 
-export type StackSelection = { frontendStack: string; backendNeed: "auto"|"yes"|"no"; backendStack: string };
+export type StackSelection = { frontendStack: string; backendNeed: "yes"|"no"; backendStack: string };
 
 const BE: Record<string, {value:string;label:string}[]> = {
   react:   [{value:"none",label:"Frontend only"},{value:"node-express",label:"+ Node / Express backend"}],
-  angular: [{value:"none",label:"Frontend only"},{value:"angular-express",label:"+ Node / Express backend"}],
+  angular: [{value:"none",label:"Frontend only"},{value:"node-express",label:"+ Node / Express backend"}],
   sapui5:  [{value:"none",label:"Frontend only"},{value:"sap-cap",label:"+ SAP CAP backend"}],
   custom:  [{value:"none",label:"Frontend only"}],
 };
@@ -27,7 +27,7 @@ export function StackSelectorStep({step,disabled=false,onSelect}:{step:ClarifyQu
   const [be, setBe] = useState("none");
 
   function emit(f:string,b:string) {
-    const json = JSON.stringify({frontendStack:f,backendNeed:"auto",backendStack:b});
+    const json = JSON.stringify({frontendStack:f,backendNeed:b!=="none"?"yes":"no",backendStack:b});
     const fl = choices.find(c=>c.value===f)?.title ?? f;
     const bl = (BE[f]??BE.react!).find(o=>o.value===b)?.label ?? b;
     onSelect(json,`${fl} — ${bl}`);
@@ -39,7 +39,7 @@ export function StackSelectorStep({step,disabled=false,onSelect}:{step:ClarifyQu
   function setBackend(v:string){setBe(v);emit(fe,v);}
 
   const beOpts = BE[fe]??BE.react!;
-  const isUnsupported = fe==="angular"||fe==="sapui5"||fe==="custom";
+  const isCustom = fe==="custom";
   const title = choices.find(c=>c.value===fe)?.title ?? fe;
 
   return (
@@ -74,13 +74,11 @@ export function StackSelectorStep({step,disabled=false,onSelect}:{step:ClarifyQu
         </FormControl>
       ):null}
 
-      {isUnsupported?(
+      {isCustom?(
         <Box sx={{p:2,borderRadius:"12px",bgcolor:"#fff8e1",border:"1.5px solid #f59e0b"}}>
-          <Typography sx={{fontSize:13,fontWeight:600,color:"#92400e",mb:0.5}}>{fe==="custom"?"Custom stack":`${title} support`}</Typography>
+          <Typography sx={{fontSize:13,fontWeight:600,color:"#92400e",mb:0.5}}>Custom stack</Typography>
           <Typography sx={{fontSize:13,color:"#78350f",lineHeight:1.5}}>
-            {fe==="custom"
-              ?"Custom stacks are not yet supported. Terra will show an error before building starts."
-              :`${title} support is coming soon. Terra will confirm before building starts.`}
+            Custom stacks are not yet supported. Terra will stop before building starts.
           </Typography>
         </Box>
       ):null}

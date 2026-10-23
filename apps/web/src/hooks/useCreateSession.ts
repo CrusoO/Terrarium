@@ -339,9 +339,9 @@ export function useCreateSession() {
     const parsed = createSessionRequestSchema.safeParse({
       prompt: trimmed,
       sessionId: sessionIdRef.current ?? undefined,
-      frontendStack: stk&&stk.frontendStack!=="custom"?stk.frontendStack:undefined,
-      backendNeed: stk?stk.backendNeed:undefined,
-      backendStack: stk&&stk.backendStack!=="none"?stk.backendStack:undefined,
+      frontendStack: stk?.frontendStack ?? undefined,
+      backendNeed: stk?.backendNeed ?? undefined,
+      backendStack: stk?.backendStack ?? undefined,
     });
     if (!parsed.success) {
       setStatus("Enter a prompt before submitting.");
