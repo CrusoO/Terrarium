@@ -20,7 +20,7 @@ class AuthResponse(BaseModel):
     user: User
 
 Stack = Literal["react", "fullstack"]
-FrontendStack = Literal["vanilla", "react", "angular", "sapui5"]
+FrontendStack = Literal["vanilla", "react", "angular", "sapui5", "custom"]
 BackendNeed = Literal["auto", "yes", "no"]
 BackendStack = Literal["none", "node-express", "sap-cap"]
 IntentKind = Literal["new", "modify"]
@@ -177,6 +177,7 @@ class ClarifyChoice(BaseModel):
     subtitle: str
     value: str
     variant: Literal["default", "upload", "custom"] | None = None
+    recommended: bool = False
 
 
 class ClarifyQuestion(BaseModel):
@@ -192,6 +193,7 @@ class ClarifyQuestion(BaseModel):
     options: list[str] | None = Field(default=None, min_length=3, max_length=6)
     choices: list[ClarifyChoice] | None = Field(default=None, min_length=3, max_length=6)
     dataSource: bool = False
+    isStackSelector: bool = False
 
 
 class IntentAgentOutput(BaseModel):

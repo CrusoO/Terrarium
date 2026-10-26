@@ -10,6 +10,7 @@ import {
   type SessionEvent,
   type ToolRole,
 } from "@terrarium/contracts";
+import type { StackSelection } from "../components/chat/StackSelectorStep";
 import { requestAppAccess } from "../api/groups";
 import { acceptSmartMatch, createSession, fetchSessionFiles, reportRuntimeError, subscribeSessionEvents } from "../api/sessions";
 import type { PreviewStatus } from "../components/canvas/PreviewPanel";
@@ -105,6 +106,8 @@ export function useCreateSession() {
   const busyRef = useRef(false);
   const lastPromptRef = useRef("");
   const lastRuntimeErrorRef = useRef("");
+  const stackSelectionRef = useRef<StackSelection | null>(null);
+  function handleStackSelect(s: StackSelection) { stackSelectionRef.current = s; }
 
   useEffect(() => {
     return () => {
@@ -332,9 +335,13 @@ export function useCreateSession() {
     if (!trimmed || busyRef.current) {
       return;
     }
+    const stk = stackSelectionRef.current;
     const parsed = createSessionRequestSchema.safeParse({
       prompt: trimmed,
       sessionId: sessionIdRef.current ?? undefined,
+      frontendStack: stk?.frontendStack ?? undefined,
+      backendNeed: stk?.backendNeed ?? undefined,
+      backendStack: stk?.backendStack ?? undefined,
     });
     if (!parsed.success) {
       setStatus("Enter a prompt before submitting.");
@@ -527,6 +534,7 @@ export function useCreateSession() {
     editRequestStatus,
     onSubmit,
     sendPrompt,
+    handleStackSelect,
     onPreviewRuntimeError,
     retryAnyway,
     acceptMatch,

@@ -6,7 +6,7 @@ export const DEV_USER = "dev-user" as const;
 export const stackSchema = z.enum(["react", "fullstack"]);
 export type Stack = z.infer<typeof stackSchema>;
 
-export const frontendStackSchema = z.enum(["vanilla", "react", "angular", "sapui5"]);
+export const frontendStackSchema = z.enum(["vanilla", "react", "angular", "sapui5", "custom"]);
 export type FrontendStack = z.infer<typeof frontendStackSchema>;
 
 export const backendNeedSchema = z.enum(["auto", "yes", "no"]);
@@ -130,6 +130,7 @@ export const clarifyChoiceSchema = z.object({
   subtitle: z.string(),
   value: z.string(),
   variant: z.enum(["default", "upload", "custom"]).optional(),
+  recommended: z.boolean().optional(),
 });
 export type ClarifyChoice = z.infer<typeof clarifyChoiceSchema>;
 
@@ -144,6 +145,7 @@ export const clarifyQuestionSchema = z.object({
   options: z.array(z.string()).min(3).max(6).optional(),
   choices: z.array(clarifyChoiceSchema).min(3).max(6).optional(),
   dataSource: z.boolean().optional(),
+  isStackSelector: z.boolean().optional(),
 });
 export type ClarifyQuestion = z.infer<typeof clarifyQuestionSchema>;
 
