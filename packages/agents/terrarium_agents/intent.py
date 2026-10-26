@@ -7,9 +7,6 @@ import logging
 import os
 import re
 
-_SAP_RE = re.compile(r"\b(sap|sapui5|fiori|btp|abap|s/4|hana|odata|cap)\b", re.IGNORECASE)
-_ANGULAR_RE = re.compile(r"\b(angular|ng[\s-]?app|rxjs|ngrx|angular[\s-]?material)\b", re.IGNORECASE)
-
 from terrarium_contracts import (
     BackendStack,
     ClarifyChoice,
@@ -772,40 +769,11 @@ def _business_question_item(spec: dict[str, object]) -> ClarifyQuestion:
     )
 
 
-_STACK_CHOICES: tuple[dict[str, str], ...] = (
-    {"value": "react",   "title": "React / Vite",   "subtitle": "Modern web tool — works everywhere"},
-    {"value": "angular", "title": "Angular",         "subtitle": "Component-based — great for enterprise teams"},
-    {"value": "sapui5",  "title": "SAPUI5 / Fiori",  "subtitle": "SAP look-and-feel — uses local mock data"},
-    {"value": "custom",  "title": "Custom / Other",  "subtitle": "Describe a different stack below"},
-)
-
-
-def _detect_recommended_frontend(prompt: str) -> str:
-    if _SAP_RE.search(prompt):
-        return "sapui5"
-    if _ANGULAR_RE.search(prompt):
-        return "angular"
-    return "react"
-
-
-def _stack_selector_item(rec: str = "react") -> ClarifyQuestion:
-    return ClarifyQuestion(
-        text="Which technology should the tool use?",
-        helperText="Pick the framework your team already knows. One option is recommended based on your prompt.",
-        allowMultiple=False,
-        inputPlaceholder="e.g. We use SAP internally — describe your stack",
-        isStackSelector=True,
-        choices=[
-            ClarifyChoice(title=o["title"], subtitle=o["subtitle"], value=o["value"], recommended=(o["value"] == rec))
-            for o in _STACK_CHOICES
-        ],
-        options=[o["value"] for o in _STACK_CHOICES],
-    )
-
-
 def build_clarify_question_items(questions: list[str], idea: str) -> list[ClarifyQuestion]:
-    rec = _detect_recommended_frontend(idea)
-    return [_business_question_item(s) for s in _BUSINESS_ONBOARDING[:5]] + [_stack_selector_item(rec)]
+    _ = questions, idea
+    return [
+        _business_question_item(spec) for spec in (*_STACK_ONBOARDING, *_BUSINESS_ONBOARDING)
+    ]
 
 
 def clarify_reply_after_plan(idea: str, architecture: str) -> str:

@@ -2,7 +2,6 @@ import { useEffect, useRef, type FormEvent } from "react";
 import { Wordmark } from "./Wordmark";
 import { ChatThread } from "../chat/ChatThread";
 import type { ChatItem } from "../../types/chat";
-import type { StackSelection } from "../chat/StackSelectorStep";
 
 type ChatPanelProps = {
   userName: string;
@@ -16,7 +15,6 @@ type ChatPanelProps = {
   onRetryAnyway?: () => void;
   onAcceptMatch?: (toolId: string) => void;
   onRejectMatch?: () => void;
-  onStackSelect?: (selection: StackSelection) => void;
   onConfirmBrownie?: (itemId: string, assetIds: string[]) => void;
 };
 
@@ -32,7 +30,6 @@ export function ChatPanel({
   onRetryAnyway,
   onAcceptMatch,
   onRejectMatch,
-  onStackSelect,
   onConfirmBrownie,
 }: ChatPanelProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -71,7 +68,6 @@ export function ChatPanel({
               onRetryAnyway={onRetryAnyway}
               onAcceptMatch={onAcceptMatch}
               onRejectMatch={onRejectMatch}
-              onStackSelect={onStackSelect}
               onConfirmBrownie={onConfirmBrownie}
             />
           )}
