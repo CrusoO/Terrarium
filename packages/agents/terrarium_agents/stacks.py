@@ -348,8 +348,8 @@ def sapui5_files(title: str, *, with_odata: bool = False) -> FileMap:
             '  <App>\n    <Page title="{= ${/title} || \'Catalog\' }" class="sapUiResponsiveContentPadding">\n'
             "      <content>\n"
             '        <VBox class="sapUiSmallMargin">\n'
-            f'          <Title level="H1" text={json.dumps(title)} />\n'
-            f'          <Text text={json.dumps(catalog_intro)} />\n'
+            f'          <Title level="H1" text="{escape(title, quote=True)}" />\n'
+            f'          <Text text="{escape(catalog_intro, quote=True)}" />\n'
             f'          <List items="{{{catalog_path}}}" headerText="Products">\n'
             '            <StandardListItem title="{title}" description="{price}" info="{status}" type="Active" press=".onItemPress" />\n'
             "          </List>\n"
@@ -379,7 +379,7 @@ def sapui5_files(title: str, *, with_odata: bool = False) -> FileMap:
             "      if (this.getOwnerComponent().getModel()) { return; }\n"
             f"      this.getView().setModel(new JSONModel({{ title: {json.dumps(title)}, items: ["
             "{ title: 'Whole milk', price: '$2.40', status: 'Ready' }, "
-            "{ title: 'Sourdough loaf', price: '$4.10', status: 'Open' }] }}));\n"
+            "{ title: 'Sourdough loaf', price: '$4.10', status: 'Open' }] }));\n"
             "    },\n"
             "    onItemPress: function (event) {\n"
             "      var item = event.getSource().getBindingContext().getObject();\n"

@@ -487,6 +487,14 @@ def _ensure_react_default_imports(files: FileMap) -> FileMap:
     return out
 
 
+_XML_BARE_AMP = re.compile(r"&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)")
+
+
+def _escape_bare_xml_ampersands(body: str) -> str:
+    """UI5 parses views as XML. A raw & in a title stops the preview on a parser error."""
+    return _XML_BARE_AMP.sub("&amp;", body)
+
+
 def _finalize_files(files: FileMap, layout: Layout | None = None) -> FileMap:
     """Make overlay FileMaps clickable even when the model ships a pretty-but-broken UI."""
     html = files.get("index.html", "")
@@ -511,6 +519,9 @@ def _finalize_files(files: FileMap, layout: Layout | None = None) -> FileMap:
         out["styles.css"] = css
     if js:
         out["app.js"] = js
+    for path, body in list(out.items()):
+        if path.endswith(".xml"):
+            out[path] = _escape_bare_xml_ampersands(body)
     return _ensure_react_default_imports(out)
 
 
