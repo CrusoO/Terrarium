@@ -40,7 +40,6 @@ export function StackSelectorStep({step,disabled=false,onSelect}:{step:ClarifyQu
 
   const beOpts = BE[fe]??BE.react!;
   const isCustom = fe==="custom";
-  const title = choices.find(c=>c.value===fe)?.title ?? fe;
 
   return (
     <Stack spacing={2.5}>
