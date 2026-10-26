@@ -135,8 +135,10 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("backend/src/server.js", result.files)
         self.assertNotIn("Terrarium · List", result.files["frontend/index.html"])
 
-    def test_live_without_model_filemap_uses_deterministic_fallback(self) -> None:
+    def test_live_without_model_filemap_stops_instead_of_serving_a_template(self) -> None:
         from unittest.mock import patch
+
+        from terrarium_agents.codegen import ProvidersUnavailable
 
         os.environ["TERRARIUM_AGENTS"] = "live"
         job = AgentJob(
@@ -145,10 +147,8 @@ class CodeGeneratorTests(unittest.TestCase):
             prompt="modern text to JSON converter",
         )
         with patch("terrarium_agents.llm.complete_json", return_value=None):
-            result = generate(job)
-        self.assertIn("package.json", result.files)
-        self.assertIn("src/App.jsx", result.files)
-        self.assertNotIn("Terrarium ·", result.files.get("index.html", ""))
+            with self.assertRaises(ProvidersUnavailable):
+                generate(job)
 
     def test_live_bad_model_filemap_reports_validation_reason(self) -> None:
         from unittest.mock import patch

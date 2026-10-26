@@ -25,7 +25,7 @@ import {
   type ToolMember,
   type ToolSummary,
 } from "@terrarium/contracts";
-import { getAuthHeaders } from "./auth";
+import { getAuthHeaders, refreshAuthToken } from "./auth";
 
 export async function createSession(
   request: CreateSessionRequest
@@ -33,14 +33,21 @@ export async function createSession(
   const body = createSessionRequestSchema.parse(request);
   const controller = new AbortController();
   const abortTimer = window.setTimeout(() => controller.abort(), 20_000);
-  let response: Response;
-  try {
-    response = await fetch("/sessions", {
+  const post = () =>
+    fetch("/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify(body),
       signal: controller.signal,
     });
+  let response: Response;
+  try {
+    await refreshAuthToken().catch(() => undefined);
+    response = await post();
+    if (response.status === 401) {
+      await refreshAuthToken(true).catch(() => undefined);
+      response = await post();
+    }
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
       throw new Error("Could not reach the API. Check that it is running on port 3010.");

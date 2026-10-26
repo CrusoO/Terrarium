@@ -91,6 +91,7 @@ function MainApp({
       onAcceptMatch={session.acceptMatch}
       onRejectMatch={session.rejectMatch}
       onStackSelect={session.handleStackSelect}
+      onConfirmBrownie={session.confirmBrownie}
       view={view}
       onViewChange={setView}
       onLogout={onLogout}

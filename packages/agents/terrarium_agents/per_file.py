@@ -46,6 +46,10 @@ class UnsupportedBlueprint(RuntimeError):
         self.mapper = mapper
 
 
+class BlueprintUnavailable(RuntimeError):
+    """The blueprint model did not answer. The app itself is not unsupported."""
+
+
 def resolve_prompt_spec(prompt: str, *, live: bool) -> tuple[AppSpec, dict, list[dict]]:
     """Resolve a prompt without ever presenting the generic Item scaffold live."""
     from terrarium_agents.canary import SUPPORTED_ARCHETYPES, classify
@@ -107,8 +111,13 @@ def _model_blueprint(prompt: str, classified: str) -> tuple[AppSpec, dict, list[
         purpose="blueprint",
     )
     GATE.release(_throttled(str(result.get("failReason") or "")))
+    text = _strip(str(result.get("text") or "")).strip()
+    if not result.get("ok") or not text:
+        raise BlueprintUnavailable(
+            str(result.get("failReason") or "blueprint provider returned no text")
+        )
     try:
-        payload = json.loads(_strip(str(result.get("text") or "")).strip())
+        payload = json.loads(text)
     except json.JSONDecodeError:
         payload = {}
     confidence = max(0.0, min(1.0, float(payload.get("confidence") or 0.0)))

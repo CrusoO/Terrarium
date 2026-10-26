@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from terrarium_api.auth.routes import router as auth_router
+from terrarium_api.routes.brownie import router as brownie_router
 from terrarium_api.routes.github import router as github_router
 from terrarium_api.routes.groups import router as groups_router
 from terrarium_api.routes.health import router as health_router
@@ -57,6 +58,7 @@ def create_app() -> FastAPI:
     app.include_router(groups_router)
     app.include_router(auth_router)
     app.include_router(github_router)
+    app.include_router(brownie_router)
     _attach_web_ui(app)
     return app
 

@@ -20,6 +20,14 @@ export function getAuthHeaders(): Record<string, string> {
   return _currentToken ? { Authorization: `Bearer ${_currentToken}` } : {};
 }
 
+/** Firebase ID tokens expire after an hour; getIdToken() returns the cached one unless it is about to. */
+export async function refreshAuthToken(force = false): Promise<void> {
+  const user = firebaseAuth.currentUser;
+  if (user) {
+    setCurrentToken(await user.getIdToken(force));
+  }
+}
+
 // ── Auth operations ─────────────────────────────────────────────────────────
 
 export async function persistSessionCookie(token: string | null): Promise<void> {

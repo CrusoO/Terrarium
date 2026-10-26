@@ -46,6 +46,7 @@ def infer_backend_stack(
     frontend: FrontendStack,
     selected: str | None = None,
     need: str | None = None,
+    default: BackendStack = "none",
 ) -> BackendStack:
     if need == "no":
         return "none"
@@ -65,7 +66,7 @@ def infer_backend_stack(
         return compatible_backend(frontend, "node-express")
     if need == "yes":
         return compatible_backend(frontend, "node-express")
-    return "none"
+    return compatible_backend(frontend, default)
 
 
 def compatible_backend(frontend: FrontendStack, backend: BackendStack) -> BackendStack:

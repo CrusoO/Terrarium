@@ -6,11 +6,13 @@ import logging
 import os
 import posixpath
 import re
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Literal
 
 from terrarium_contracts import AgentJob, AgentResult, BackendStack, FileMap, FrontendStack, Intent, Stack
+from terrarium_agents.brownie_reuse import ReusePlan, reuse_import_error, reuse_prompt_section
 from terrarium_agents.stacks import (
     BACKEND_STACKS,
     FRONTEND_STACKS,
@@ -116,6 +118,34 @@ _THEMES: dict[ThemeName, dict[str, str]] = {
 
 class CodeGeneratorError(ValueError):
     pass
+
+
+class ProvidersUnavailable(CodeGeneratorError):
+    """No live coding model returned files. Retrying the same build cannot help until a provider answers."""
+
+
+_overlay_attempts = threading.local()
+
+
+def provider_failure_summary(reason: str | None) -> str:
+    text = reason or ""
+    if re.search(r"UnrecognizedClientException|InvalidClientTokenId|security token", text):
+        return "AWS keys rejected (invalid security token)"
+    if re.search(r"\b429\b|RESOURCE_EXHAUSTED|quota", text, re.I):
+        return "quota exhausted (429)"
+    if re.search(r"\b503\b|UNAVAILABLE|high demand", text):
+        return "overloaded (503)"
+    if "first_token_timeout" in text:
+        return "no response before the first-token timeout"
+    if "timeout" in text.lower():
+        return "timed out"
+    return text[:160] or "returned no files"
+
+
+def _record_overlay_failure(provider: str, reason: str | None) -> None:
+    failures = getattr(_overlay_attempts, "failures", None)
+    if failures is not None:
+        failures.append(f"{provider}: {provider_failure_summary(reason)}")
 
 
 logger = logging.getLogger(__name__)
@@ -595,15 +625,21 @@ def generate(
     plan: SessionPlan | None = None,
     *,
     on_file: Callable[[str, str], None] | None = None,
+    reuse: ReusePlan | None = None,
 ) -> AgentResult:
     """Model FileMap only. New apps only. Never talks to Docker. Never serves a layout recipe.
 
     When on_file is provided and tagged streaming is enabled, each completed file
     is emitted as soon as its tagged block closes (Step 2).
+
+    When reuse carries files copied from the user's published dashboard
+    projects, React builds take the monolith path, the model generates only the
+    remaining files, and the copied files are merged into the FileMap unchanged.
+    In live mode a provider outage raises ProvidersUnavailable; no template is served.
     """
     from terrarium_agents.llm import agents_mode
     from terrarium_agents.canary import DemoBlocked, canary_per_file, demo_block_reason, demo_mode, record_shadow
-    from terrarium_agents.per_file import generate_per_file
+    from terrarium_agents.per_file import BlueprintUnavailable, generate_per_file
     from terrarium_agents.tagged_files import codegen_format
 
     _require_new(job)
@@ -613,7 +649,15 @@ def generate(
     decision = record_shadow(job.sessionId, job.prompt)
     frontend = resolve_frontend_stack(job)
     backend = resolve_backend_stack(job)
-    if uses_react_per_file_path(frontend, backend) and (
+    if reuse is not None and reuse.files and frontend != "react":
+        logger.info(
+            "Generate %s ignoring Brownie reuse for frontend=%s (React builds only)",
+            job.sessionId,
+            frontend,
+        )
+        reuse = None
+    reusing = reuse is not None and bool(reuse.files)
+    if not reusing and uses_react_per_file_path(frontend, backend) and (
         demo_mode() or canary_per_file(job.sessionId, job.prompt)
     ):
         logger.info(
@@ -622,7 +666,14 @@ def generate(
             decision.archetype,
             decision.confidence,
         )
-        return generate_per_file(job, plan, on_file=on_file)
+        try:
+            return generate_per_file(job, plan, on_file=on_file)
+        except BlueprintUnavailable as error:
+            logger.warning(
+                "Generate %s per-file blueprint unavailable (%s); using the monolith generator",
+                job.sessionId,
+                error,
+            )
     if frontend in {"angular", "sapui5"}:
         logger.info(
             "Generate %s stack scaffold frontend=%s backend=%s (skip React per-file path)",
@@ -664,20 +715,36 @@ def generate(
         resolved.complexity,
         codegen_format(),
     )
-    overlay = _maybe_llm_overlay(job, resolved, on_file=on_file)
+    _overlay_attempts.failures = []
+    try:
+        overlay = _maybe_llm_overlay(job, resolved, on_file=on_file, reuse=reuse if reusing else None)
+        failures = list(_overlay_attempts.failures)
+    finally:
+        _overlay_attempts.failures = None
+    if overlay and reusing and reuse is not None:
+        overlay = {path: body for path, body in overlay.items() if path not in reuse.files} | reuse.files
+        logger.info(
+            "Generate %s merged Brownie reuse assets=%s files=%s",
+            job.sessionId,
+            reuse.applied_ids,
+            list(reuse.files),
+        )
     overlay_error = _static_preview_error(overlay) if overlay else None
+    if overlay and overlay_error is None and reusing and reuse is not None:
+        overlay_error = reuse_import_error(overlay, reuse)
     if overlay and overlay_error is None:
         files = overlay
         logger.info("Generate %s used model FileMap files=%s", job.sessionId, list(files))
-    elif agents_mode() != "live" or overlay_error is None:
+    elif agents_mode() != "live":
         files = _stub_generated_files(job, resolved)
-        if agents_mode() == "live":
-            logger.warning(
-                "Generate %s using deterministic FileMap fallback because live providers returned no model files",
-                job.sessionId,
-            )
-        else:
-            logger.info("Generate %s stub FileMap (no layout recipe)", job.sessionId)
+        logger.info("Generate %s stub FileMap (no layout recipe)", job.sessionId)
+    elif not overlay:
+        detail = "; ".join(failures) or "no coding provider is configured"
+        logger.warning("Generate %s stopped: no coding model returned files (%s)", job.sessionId, detail)
+        raise ProvidersUnavailable(
+            f"No coding model returned files ({detail}). Not serving a template. "
+            "Check the model keys in .env, then retry."
+        )
     else:
         reason = overlay_error or (
             "model JSON did not contain any safe files. Expected "
@@ -689,6 +756,8 @@ def generate(
             "Not serving a template."
         )
     files = _finalize_files(files)
+    if reusing and reuse is not None:
+        files = {path: body for path, body in files.items() if path not in reuse.files} | dict(reuse.files)
     if not _has_html_document(_entry_html(files)):
         raise CodeGeneratorError("Generator output is missing a valid index.html")
     final_error = _static_preview_error(files)
@@ -1291,7 +1360,7 @@ def _plan_from_payload(raw: dict, fallback: SessionPlan) -> SessionPlan:
     )
 
 
-def _overlay_prompt(job: AgentJob, plan: SessionPlan) -> tuple[str, str]:
+def _overlay_prompt(job: AgentJob, plan: SessionPlan, reuse: ReusePlan | None = None) -> tuple[str, str]:
     """
     Enhanced prompt following Gemini's approach:
     - Component-based architecture
@@ -1383,11 +1452,17 @@ def _overlay_prompt(job: AgentJob, plan: SessionPlan) -> tuple[str, str]:
         "- Accessibility: proper labels, ARIA when needed\n"
     )
     
+    reuse_section = reuse_prompt_section(reuse) if reuse is not None else ""
     user = (
         f"Requirements: {job.prompt}\n\n"
         f"Summary: {job.intent.summary}\n\n"
         f"Architecture Plan:\n{json.dumps(plan.to_payload(), indent=2)}\n\n"
-        "Generate the complete application following the exact stack and file structure above."
+        f"{reuse_section}"
+        + (
+            "Generate only the files that are not provided above, following the exact stack and file structure."
+            if reuse_section
+            else "Generate the complete application following the exact stack and file structure above."
+        )
     )
     return system, user
 
@@ -1442,18 +1517,26 @@ def _maybe_llm_overlay(
     plan: SessionPlan,
     *,
     on_file: Callable[[str, str], None] | None = None,
+    reuse: ReusePlan | None = None,
 ) -> FileMap:
     from terrarium_agents import llm
-    from terrarium_agents.llm import llm_provider_order, model_for_provider, record_llm_call
-    from terrarium_agents.llm_stream import stream_gemini_text, stream_with_one_continuation
+    from terrarium_agents.llm import codegen_providers, model_for_provider, record_llm_call
+    from terrarium_agents.llm_stream import stream_gemini_with_retry, stream_with_one_continuation
     from terrarium_agents.tagged_files import TaggedFileParser, codegen_format
 
-    system, user = _overlay_prompt(job, plan)
+    system, user = _overlay_prompt(job, plan, reuse)
+    if reuse is not None and on_file:
+        for path, body in reuse.files.items():
+            on_file(path, body)
     if codegen_format() == "tagged":
         from terrarium_agents.llm_fixtures import MissingFixture
 
         replay_miss = False
-        for provider in llm_provider_order("codegen"):
+        providers = codegen_providers()
+        index = 0
+        while index < len(providers):
+            provider = providers[index]
+            index += 1
             model = model_for_provider(provider, "codegen")
             overlay: FileMap = {}
             continued = False
@@ -1461,6 +1544,8 @@ def _maybe_llm_overlay(
             def _on_complete(path: str, content: str, _overlay: FileMap = overlay) -> None:
                 sanitized = _sanitize_overlay_files({path: content}, session_id=job.sessionId)
                 for rel, body in sanitized.items():
+                    if reuse is not None and rel in reuse.files:
+                        continue
                     _overlay[rel] = body
                     if on_file:
                         on_file(rel, body)
@@ -1511,7 +1596,7 @@ def _maybe_llm_overlay(
                         continuation.stop_reason,
                     )
             elif provider == "gemini":
-                result = stream_gemini_text(
+                result = stream_gemini_with_retry(
                     system, user, model, on_chunk=_on_chunk, json_mode=False
                 )
             else:
@@ -1548,6 +1633,9 @@ def _maybe_llm_overlay(
                     result.time_to_first_token_s,
                 )
                 return overlay
+            _record_overlay_failure(provider, result.fail_reason)
+            if provider == "bedrock":
+                providers = codegen_providers(result.fail_reason, providers)
             logger.warning(
                 "Tagged codegen failover from %s reason=%s files=%s",
                 result.provider,

@@ -32,6 +32,10 @@ SessionEventName = Literal[
     "smartmatch.hit",
     "smartmatch.miss",
     "intent.classified",
+    "brownie.knowledge",
+    "architecture.planned",
+    "brownie.review",
+    "brownie.applied",
     "codegen.started",
     "codegen.completed",
     "codegen.retry",
@@ -270,6 +274,8 @@ class CreateSessionRequest(BaseModel):
     frontendStack: FrontendStack | None = None
     backendNeed: BackendNeed | None = None
     backendStack: BackendStack | None = None
+    # Brownie asset ids the user accepted for reuse. Present only when resuming a paused Brownie review.
+    brownieAssetIds: list[str] | None = None
 
 
 class CreateSessionResponse(BaseModel):

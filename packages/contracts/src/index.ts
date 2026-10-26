@@ -38,6 +38,10 @@ export const sessionEventNameSchema = z.enum([
   "smartmatch.hit",
   "smartmatch.miss",
   "intent.classified",
+  "brownie.knowledge",
+  "architecture.planned",
+  "brownie.review",
+  "brownie.applied",
   "codegen.started",
   "codegen.completed",
   "codegen.retry",
@@ -207,6 +211,8 @@ export const createSessionRequestSchema = z.object({
   frontendStack: frontendStackSchema.optional(),
   backendNeed: backendNeedSchema.optional(),
   backendStack: backendStackSchema.optional(),
+  /** Brownie asset ids the user accepted for reuse. Present only when resuming a paused Brownie review. */
+  brownieAssetIds: z.array(z.string()).optional(),
 });
 export type CreateSessionRequest = z.infer<typeof createSessionRequestSchema>;
 

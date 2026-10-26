@@ -25,8 +25,8 @@ from terrarium_contracts import (
 from terrarium_agents.llm import (
     DEFAULT_GEMINI_JSON_TIMEOUT_MS,
     agents_mode,
+    bedrock_ready,
     fast_model,
-    gemini_api_key,
     gemini_client,
     intent_model,
     invoke_bedrock_text,
@@ -210,15 +210,15 @@ class IntentAgent:
         if agents_mode() == "stub":
             raw = self._classify_stub(inp)
         elif os.environ.get("TERRARIUM_ALLOW_FREE_GEMINI") == "1" or intent_model().lower().startswith("gemini"):
-            raw = self._classify_gemini(inp)
-        else:
             try:
-                raw = self._classify_bedrock(inp)
-            except IntentError:
-                if not gemini_api_key():
-                    raise
-                logger.warning("Intent Bedrock failed; falling back to Gemini")
                 raw = self._classify_gemini(inp)
+            except IntentError:
+                if not bedrock_ready():
+                    raise
+                logger.warning("Intent provider failed; falling back to Bedrock")
+                raw = self._classify_bedrock(inp)
+        else:
+            raw = self._classify_bedrock(inp)
         return _enforce_rules(raw, inp)
 
     def _classify_stub(self, inp: IntentAgentInput) -> IntentAgentOutput:
@@ -589,24 +589,35 @@ def _selected_frontend(inp: IntentAgentInput, intent: IntentAgentOutput | None =
     return "react"
 
 
-def _selected_backend(inp: IntentAgentInput, intent: IntentAgentOutput | None = None) -> BackendStack:
+def _selected_backend(
+    inp: IntentAgentInput,
+    intent: IntentAgentOutput | None = None,
+    *,
+    default_fullstack: bool = False,
+) -> BackendStack:
     from terrarium_agents.stacks import infer_backend_stack
 
-    _ = intent
     frontend = _selected_frontend(inp, intent)
+    # An unanswered server question on a framework app means full stack; a plain page stays static.
+    default: BackendStack = "node-express" if default_fullstack and frontend in {"react", "angular"} else "none"
     if inp.backendNeed in {"yes", "no"}:
         return infer_backend_stack("", frontend, selected=inp.backendStack, need=inp.backendNeed)
     picks = _user_picks_text(inp)
     if picks:
-        return infer_backend_stack(picks, frontend, selected=inp.backendStack, need=inp.backendNeed)
+        return infer_backend_stack(
+            picks, frontend, selected=inp.backendStack, need=inp.backendNeed, default=default
+        )
     if inp.frontendStack:
         return infer_backend_stack(
             _stack_decision_text(inp),
             frontend,
             selected=inp.backendStack,
             need=inp.backendNeed,
+            default=default,
         )
-    return infer_backend_stack("", frontend, selected=inp.backendStack, need=inp.backendNeed)
+    return infer_backend_stack(
+        "", frontend, selected=inp.backendStack, need=inp.backendNeed, default=default
+    )
 
 
 def _stack_decision_text(inp: IntentAgentInput) -> str:
@@ -630,7 +641,7 @@ def _clarify_lead_in(idea: str) -> str:
         return "I can make that calculator. A few questions, including which kind of app to build."
     if "website" in lower or "web site" in lower or "landing" in lower:
         return "I can make that site. A few questions, including which kind of app to build."
-    return "I can make that. A few questions, including which kind of app to build."
+    return "I can build that. A few quick questions first, so the app matches what you need."
 
 
 _STACK_ONBOARDING: tuple[dict[str, object], ...] = (
@@ -648,12 +659,12 @@ _STACK_ONBOARDING: tuple[dict[str, object], ...] = (
     },
     {
         "text": "Should this keep shared data on a server?",
-        "helperText": "Frontend-only stays on this screen. A server is for logins and team data.",
+        "helperText": "Default is a server (full stack) for logins and team data. Frontend-only stays on this screen.",
         "allowMultiple": False,
-        "inputPlaceholder": "e.g. Just this screen",
+        "inputPlaceholder": "e.g. Yes, keep shared data on a server",
         "suggestions": (
-            "Just this screen — no server",
             "Yes — keep shared data on a server",
+            "Just this screen — no server",
             "Yes — SAP CAP OData",
         ),
     },
@@ -820,9 +831,7 @@ def _fallback_questions(prompt: str) -> list[str]:
 def _live_or_stub_questions(questions: list[str], prompt: str) -> list[str]:
     if questions:
         return questions[:_MAX_QUESTIONS]
-    if agents_mode() == "stub":
-        return _fallback_questions(prompt)
-    return []
+    return _fallback_questions(prompt)
 
 
 def _everyday_pad() -> list[str]:
@@ -953,8 +962,23 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
             phase = "ready"
             questions = []
 
+    # A first request always gets questions. Architecture waits until they are answered.
+    if (
+        kind == "new"
+        and not _has_existing_app(inp)
+        and phase != "greeting"
+        and not _last_assistant_questions(inp)
+        and not _PROCEED_RE.search(inp.prompt.strip())
+    ):
+        phase = "clarify"
+        questions = questions or _exactly_six([], _thread_idea(inp))
+
     if phase != "clarify":
         questions = []
+
+    if phase == "ready" and kind == "new" and not _has_existing_app(inp):
+        backend_stack = _selected_backend(inp, intent, default_fullstack=True)
+        stack = "fullstack" if backend_stack != "none" else "react"
 
     if intent.phase == "ready" and phase == "clarify":
         reply = _clarify_lead_in(_thread_idea(inp))
@@ -974,21 +998,13 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
     elif phase == "greeting" and not (intent.reply or "").strip():
         reply = _greeting_reply()
 
+    if phase == "clarify" and not _last_assistant_questions(inp):
+        reply = "I can build that. A few quick questions first, so the app matches what you need."
     if phase == "ready" and kind == "new":
-        if backend_stack == "sap-cap":
-            reply = f"{reply} Stack: SAPUI5/Fiori with a SAP CAP OData mock."
-        elif backend_stack == "node-express" and frontend_stack == "angular":
-            reply = f"{reply} Stack: Angular frontend with a Node/Express backend."
-        elif backend_stack == "node-express":
-            reply = f"{reply} Stack: React/Vite frontend with a Node/Express backend."
-        elif frontend_stack == "angular":
-            reply = f"{reply} Stack: Angular frontend only."
-        elif frontend_stack == "sapui5":
-            reply = f"{reply} Stack: SAPUI5/Fiori frontend only."
-        elif frontend_stack == "react":
-            reply = f"{reply} Stack: React/Vite frontend only."
+        if backend_stack != "none":
+            reply = f"{reply} Shared information will be kept on a server, so the team sees the same thing."
         else:
-            reply = f"{reply} Stack: vanilla frontend only."
+            reply = f"{reply} This stays on the screen in front of you, with no shared server."
 
     question_items = (
         build_clarify_question_items(questions, _thread_idea(inp))

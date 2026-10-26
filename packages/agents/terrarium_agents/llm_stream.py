@@ -385,7 +385,7 @@ def stream_gemini_text(
     chunks: list[dict[str, Any]] = []
     usage: dict[str, Any] = {}
     # Cap HTTP timeout to our total budget; retries disabled so we control failover.
-    http_timeout_ms = int(min(total, 180.0) * 1000)
+    http_timeout_ms = int(min(total, 300.0) * 1000)
     config_kwargs: dict[str, Any] = {
         "system_instruction": system,
         "temperature": 0.3,
@@ -527,6 +527,27 @@ def stream_gemini_text(
         )
 
 
+def stream_gemini_with_retry(
+    system: str,
+    user: str,
+    model: str,
+    *,
+    on_chunk: ChunkCallback | None = None,
+    json_mode: bool = True,
+    attempts: int = 3,
+) -> StreamResult:
+    """Gemini returns 503 under load. That is temporary, so retry before failover ends."""
+    result = stream_gemini_text(system, user, model, on_chunk=on_chunk, json_mode=json_mode)
+    backoff = 2.0
+    while not result.ok and "503" in (result.fail_reason or "") and attempts > 1:
+        attempts -= 1
+        logger.warning("Gemini 503; retrying in %.1fs (%s left)", backoff, attempts)
+        time.sleep(backoff)
+        backoff *= 2
+        result = stream_gemini_text(system, user, model, on_chunk=on_chunk, json_mode=json_mode)
+    return result
+
+
 def stream_codegen_with_failover(
     system: str,
     user: str,
@@ -535,27 +556,19 @@ def stream_codegen_with_failover(
     on_attempt: Callable[[StreamResult], None] | None = None,
 ) -> StreamResult:
     """Try providers in order; failover on first-token/total timeout or empty/unusable stream."""
-    from terrarium_agents.llm import llm_provider_order, model_for_provider, record_llm_call
+    from terrarium_agents.llm import codegen_providers, model_for_provider, record_llm_call
 
     attempts: list[StreamResult] = []
-    for provider in llm_provider_order("codegen"):
+    providers = codegen_providers()
+    index = 0
+    while index < len(providers):
+        provider = providers[index]
+        index += 1
         model = model_for_provider(provider, "codegen")
         if provider == "bedrock":
             result = stream_bedrock_text(system, user, model, on_chunk=on_chunk)
         elif provider == "gemini":
-            attempts_left = 3
-            backoff = 2.0
-            result = stream_gemini_text(system, user, model, on_chunk=on_chunk)
-            while (
-                not result.ok
-                and "503" in (result.fail_reason or "")
-                and attempts_left > 1
-            ):
-                attempts_left -= 1
-                logger.warning("Gemini 503; retrying in %.1fs (%s left)", backoff, attempts_left)
-                time.sleep(backoff)
-                backoff *= 2
-                result = stream_gemini_text(system, user, model, on_chunk=on_chunk)
+            result = stream_gemini_with_retry(system, user, model, on_chunk=on_chunk)
         else:
             # NVIDIA stays on non-stream complete_json path for now.
             continue
@@ -584,6 +597,8 @@ def stream_codegen_with_failover(
                     ", ".join(f"{a.provider}:{a.fail_reason}" for a in attempts[:-1]),
                 )
             return result
+        if provider == "bedrock":
+            providers = codegen_providers(result.fail_reason, providers)
         logger.warning(
             "Codegen stream failover from %s/%s reason=%s",
             result.provider,

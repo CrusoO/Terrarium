@@ -57,6 +57,7 @@ export default defineConfig({
       "/access-requests": "http://127.0.0.1:3010",
       "/tools": "http://127.0.0.1:3010",
       "/settings": "http://127.0.0.1:3010",
+      "/brownie": "http://127.0.0.1:3010",
     },
   },
 });
