@@ -611,7 +611,13 @@ export function PreviewPanel({
             <Tooltip title="Refresh preview">
               <IconButton
                 size="small"
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  const frame = iframeRef.current;
+                  if (!frame?.src) return;
+                  const url = new URL(frame.src, window.location.href);
+                  url.searchParams.set("refresh", String(Date.now()));
+                  frame.src = url.toString();
+                }}
                 sx={{ ml: 0.5 }}
               >
                 <RefreshRoundedIcon sx={{ fontSize: 18 }} />

@@ -611,6 +611,23 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("webapp/index.html", result.files)
         self.assertIn("sap.m", result.files["webapp/index.html"])
         self.assertNotIn("hana.ondemand", "\n".join(result.files.values()))
+        controller = result.files["webapp/controller/App.controller.js"]
+        self.assertIn("] }));", controller)
+        self.assertNotIn("] }}));", controller)
+
+    def test_sapui5_view_escapes_ampersands(self) -> None:
+        result = generate(
+            AgentJob(
+                sessionId="sap-amp",
+                intent=Intent(kind="new", stack="react", summary="Clothing & Accessories", frontendStack="sapui5"),
+                prompt="sapui5 fiori catalog",
+                frontendStack="sapui5",
+                backendStack="none",
+            )
+        )
+        view = result.files["webapp/view/App.view.xml"]
+        self.assertIn("Clothing &amp; Accessories", view)
+        self.assertNotIn("Clothing & Accessories", view)
 
     def test_sapui5_cap_has_mock_odata(self) -> None:
         result = generate(
