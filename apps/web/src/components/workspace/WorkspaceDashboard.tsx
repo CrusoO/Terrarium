@@ -21,6 +21,7 @@ import {
 } from "@mui/material";
 import type { ToolSummary } from "@terrarium/contracts";
 import { getMyAccessRequests, requestAppAccess, type AccessRequest } from "../../api/groups";
+import { syncBrownieCatalog } from "../../api/brownie";
 import { fetchWorkspaceTools, sleepWorkspaceTool, wakeWorkspaceTool } from "../../api/sessions";
 import { ToolCardHealth } from "../trust/ToolCardHealth";
 
@@ -77,6 +78,7 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
     setLoading(true);
     setStatus(null);
     try {
+      await syncBrownieCatalog().catch(() => null);
       const [listed, mine] = await Promise.all([
         fetchWorkspaceTools(),
         currentUserId ? getMyAccessRequests(currentUserId) : Promise.resolve([]),
@@ -380,6 +382,13 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
                           />
                           {tool.myRole && tool.myRole !== "owner" ? (
                             <Chip size="small" variant="outlined" label={tool.myRole === "editor" ? "Can edit" : "View only"} />
+                          ) : null}
+                          {tool.id.startsWith("brownie-") ? (
+                            <Chip
+                              size="small"
+                              label="Brownie source · fictional"
+                              sx={{ bgcolor: "rgba(237, 108, 2, 0.1)", color: "warning.dark", fontWeight: 600 }}
+                            />
                           ) : null}
                         </Stack>
                         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 640 }}>

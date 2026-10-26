@@ -93,6 +93,7 @@ async def create_session(
         body.frontendStack,
         body.backendNeed,
         body.backendStack,
+        body.brownieAssetIds,
         _job_id=f"session:{session_id}:{uuid4().hex}",
     )
     if job is None:

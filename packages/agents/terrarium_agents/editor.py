@@ -4,6 +4,7 @@ Behaviour:
 - Rejects AgentJob with intent.kind='new' (caller must use Code Generator).
 - In stub mode (TERRARIUM_AGENTS=stub) returns a deterministic EDIT.md marker.
 - In live mode calls Bedrock (Haiku) unless TERRARIUM_ALLOW_FREE_GEMINI=1.
+- A Gemini editor failure falls back to Bedrock when AWS credentials are set.
 - Heal / patch mode (errorContext set, or TERRARIUM_EDITOR_PATCHES=1) returns
   search/replace patches for failing files only (Step 3).
 - Never talks to Docker; returns AgentResult only.
@@ -152,9 +153,17 @@ def run_editor(job: AgentJob) -> AgentResult:
     if agents_mode() == "stub":
         return _run_stub(job)
     if os.environ.get("TERRARIUM_ALLOW_FREE_GEMINI") == "1":
-        if _patch_mode(job):
-            return _run_gemini_patches(job)
-        return _run_gemini(job)
+        try:
+            if _patch_mode(job):
+                return _run_gemini_patches(job)
+            return _run_gemini(job)
+        except EditorAgentError:
+            from terrarium_agents.llm import bedrock_ready
+
+            if not bedrock_ready():
+                raise
+            logger.warning("Editor provider failed; falling back to Bedrock")
+            return _run_bedrock(job)
     return _run_bedrock(job)
 
 

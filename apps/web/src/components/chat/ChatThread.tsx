@@ -2,6 +2,8 @@ import { Avatar, Box, Button, Chip, Paper, Stack, Typography } from "@mui/materi
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import type { SessionEvent } from "@terrarium/contracts";
 import type { ChatItem } from "../../types/chat";
+import { BrownieChatStep } from "../brownie/BrownieChatStep";
+import { BrownieKnowledgeStep } from "../brownie/BrownieKnowledgeStep";
 import { AgentTrace } from "./AgentTrace";
 import { ClarifyAnswers } from "./ClarifyAnswers";
 import { SmartMatchOffer } from "./SmartMatchOffer";
@@ -37,6 +39,7 @@ type ChatThreadProps = {
   onAcceptMatch?: (toolId: string) => void;
   onRejectMatch?: () => void;
   onStackSelect?: (selection: StackSelection) => void;
+  onConfirmBrownie?: (itemId: string, assetIds: string[]) => void;
 };
 
 function latestUnansweredAssistantId(chat: ChatItem[]): string | null {
@@ -162,6 +165,7 @@ export function ChatThread({
   onAcceptMatch,
   onRejectMatch,
   onStackSelect,
+  onConfirmBrownie,
 }: ChatThreadProps) {
   if (chat.length === 0) {
     return null;
@@ -271,6 +275,46 @@ export function ChatThread({
                     Retry anyway
                   </Button>
                 ) : null}
+              </Paper>
+            </Stack>
+          );
+        }
+        if (item.kind === "knowledge") {
+          return (
+            <Stack component="li" key={item.id} direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
+              <TerrariumAvatar />
+              <Paper
+                elevation={0}
+                sx={{ flex: 1, minWidth: 0, maxWidth: 560, px: 1.75, py: 1.5, border: 1, borderColor: "divider", borderRadius: "14px", bgcolor: "#fff" }}
+              >
+                <BrownieKnowledgeStep item={item} />
+              </Paper>
+            </Stack>
+          );
+        }
+        if (item.kind === "brownie") {
+          return (
+            <Stack component="li" key={item.id} direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
+              <TerrariumAvatar />
+              <Paper
+                elevation={0}
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  maxWidth: 520,
+                  px: 1.75,
+                  py: 1.5,
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: "14px",
+                  bgcolor: "#fff",
+                  boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04)",
+                }}
+              >
+                <BrownieChatStep
+                  item={item}
+                  onConfirm={busy || !onConfirmBrownie ? undefined : (assetIds) => onConfirmBrownie(item.id, assetIds)}
+                />
               </Paper>
             </Stack>
           );

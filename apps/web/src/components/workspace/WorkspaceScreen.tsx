@@ -19,6 +19,7 @@ type WorkspaceScreenProps = {
   onSendChoice: (text: string) => void;
   onRetryAnyway?: () => void;
   onAcceptMatch?: (toolId: string) => void;
+  onConfirmBrownie?: (itemId: string, assetIds: string[]) => void;
   onRejectMatch?: () => void;
   onStackSelect?: (selection: StackSelection) => void;
   view?: ViewType;

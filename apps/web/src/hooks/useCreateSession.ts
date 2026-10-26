@@ -11,10 +11,11 @@ import {
   type ToolRole,
 } from "@terrarium/contracts";
 import type { StackSelection } from "../components/chat/StackSelectorStep";
+import { parseProvenance, parseRecommendation } from "../api/brownie";
 import { requestAppAccess } from "../api/groups";
 import { acceptSmartMatch, createSession, fetchSessionFiles, reportRuntimeError, subscribeSessionEvents } from "../api/sessions";
 import type { PreviewStatus } from "../components/canvas/PreviewPanel";
-import type { ChatItem } from "../types/chat";
+import type { ChatItem, KnowledgeStep } from "../types/chat";
 
 const THINKING_ID = "thinking";
 const RECONNECT_MAX = 8;
@@ -190,7 +191,7 @@ export function useCreateSession() {
     if (eventId) {
       lastEventIdRef.current = eventId;
     }
-    const fingerprint = `${event.sessionId}:${event.at}:${event.name}`;
+    const fingerprint = `${event.sessionId}:${event.at}:${event.name}:${stringField(event.payload, "stage")}:${stringField(event.payload, "source")}`;
     const keys = [eventId, fingerprint].filter((key): key is string => Boolean(key));
     if (keys.some((key) => seenEventsRef.current.has(key))) {
       return;
@@ -200,6 +201,19 @@ export function useCreateSession() {
     }
 
     setEvents((current) => [...current, event]);
+    if (event.name === "brownie.knowledge") {
+      const step = (event.payload ?? {}) as KnowledgeStep;
+      setChat((current) => {
+        const rest = withoutThinking(current);
+        const last = rest[rest.length - 1];
+        const next: ChatItem[] =
+          step.stage === "started" || last?.kind !== "knowledge"
+            ? [...rest, { kind: "knowledge", id: `knowledge:${eventId || fingerprint}`, steps: [step], done: false }]
+            : [...rest.slice(0, -1), { ...last, steps: [...last.steps, step], done: step.stage === "done" }];
+        return withThinking(next, step.stage === "done" ? "Choosing the shape of the app" : "Reading Confluence, Jira, and mail");
+      });
+      return;
+    }
     setChat((current) => [
       ...withoutThinking(current),
       { kind: "event", id: eventId || fingerprint, event },
@@ -211,6 +225,7 @@ export function useCreateSession() {
       const questions = stringList(payload, "questions");
       const questionItems = parseQuestionItems(payload);
       const keepBuilding = phase === "ready";
+      const busyLabel = stringField(payload, "kind") === "modify" ? "Updating the app" : "Checking the existing project repos";
       setIntentPhase(phase);
       const assistant: ChatItem = {
         kind: "assistant",
@@ -223,7 +238,7 @@ export function useCreateSession() {
       busyRef.current = keepBuilding;
       setChat((current) => {
         const next = [...withoutThinking(current), assistant];
-        return keepBuilding ? withThinking(next, "Generating code") : next;
+        return keepBuilding ? withThinking(next, busyLabel) : next;
       });
       setBusy(keepBuilding);
       if (keepBuilding) {
@@ -232,6 +247,58 @@ export function useCreateSession() {
         clearTimeoutSafe();
       }
       setStatus(null);
+    }
+    if (event.name === "brownie.review") {
+      const payload = event.payload;
+      const stack = stringField(payload, "frontendStack") || stringField(payload, "stack");
+      busyRef.current = false;
+      setBusy(false);
+      clearTimeoutSafe();
+      setStatus(null);
+      setChat((current) => [
+        ...withoutThinking(current).map((item) =>
+          item.kind === "brownie" && item.status === "review" ? { ...item, status: "superseded" as const } : item
+        ),
+        {
+          kind: "brownie",
+          id: `brownie:${eventId || fingerprint}`,
+          prompt: [stringField(payload, "prompt"), stringField(payload, "summary")].filter(Boolean).join(" "),
+          stack: stack || undefined,
+          backendStack: stringField(payload, "backendStack") || undefined,
+          reuseSupported: payload?.reuseSupported === true,
+          status: "review",
+          recommendation: parseRecommendation(payload?.recommendation),
+        },
+      ]);
+    }
+    if (event.name === "brownie.applied") {
+      const payload = event.payload;
+      setChat((current) => {
+        const next = [...current];
+        const index = next
+          .map((item) => item.kind === "brownie" && item.status === "submitted")
+          .lastIndexOf(true);
+        if (index < 0) {
+          return current;
+        }
+        const target = next[index];
+        if (target.kind === "brownie") {
+          next[index] = {
+            ...target,
+            status: "applied",
+            appliedAssetIds: stringList(payload, "appliedAssetIds"),
+            ignoredAssetIds: stringList(payload, "ignoredAssetIds"),
+            appliedFiles: stringList(payload, "files"),
+            provenance: parseProvenance(payload?.provenance),
+            ignored: Array.isArray(payload?.ignored)
+              ? (payload.ignored as { assetId?: unknown; reason?: unknown }[])
+                  .filter((entry) => typeof entry?.assetId === "string")
+                  .map((entry) => ({ assetId: String(entry.assetId), reason: String(entry.reason ?? "") }))
+              : [],
+          };
+        }
+        return next;
+      });
     }
     if (event.name === "editor.completed") {
       // Stay busy so previewStatus shows "updating" while the sandbox rebuilds.
@@ -385,6 +452,39 @@ export function useCreateSession() {
     }
   }
 
+  async function confirmBrownie(itemId: string, assetIds: string[]) {
+    const currentSessionId = sessionIdRef.current;
+    if (!currentSessionId || busyRef.current) {
+      return;
+    }
+    const setItemStatus = (status: "review" | "submitted") =>
+      setChat((current) =>
+        current.map((item) => (item.kind === "brownie" && item.id === itemId ? { ...item, status } : item))
+      );
+    busyRef.current = true;
+    setItemStatus("submitted");
+    setChat((current) => withThinking(current, assetIds.length ? "Generating the missing files" : "Generating code"));
+    setBusy(true);
+    setStatus(null);
+    setIntentPhase("ready");
+    armTimeout();
+    try {
+      await createSession({
+        prompt: "Continue the build with the selected Brownie assets.",
+        sessionId: currentSessionId,
+        brownieAssetIds: assetIds,
+      });
+      connectEvents(currentSessionId);
+    } catch (error) {
+      busyRef.current = false;
+      setBusy(false);
+      clearTimeoutSafe();
+      setChat((current) => withoutThinking(current));
+      setItemStatus("review");
+      setStatus(error instanceof Error ? error.message : "Could not send the Brownie selection.");
+    }
+  }
+
   async function onPreviewRuntimeError(error: RuntimeErrorRequest) {
     const currentSessionId = sessionIdRef.current;
     if (!currentSessionId) {
@@ -535,6 +635,7 @@ export function useCreateSession() {
     onSubmit,
     sendPrompt,
     handleStackSelect,
+    confirmBrownie,
     onPreviewRuntimeError,
     retryAnyway,
     acceptMatch,

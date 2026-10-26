@@ -32,6 +32,7 @@ DEFAULT_BEDROCK_READ_TIMEOUT_PLAN_S = 90.0
 DEFAULT_BEDROCK_READ_TIMEOUT_CODEGEN_S = 300.0
 DEFAULT_BEDROCK_CONNECT_TIMEOUT_S = 10.0
 DEFAULT_GEMINI_JSON_TIMEOUT_MS = 180_000
+DEFAULT_GEMINI_PLAN_TIMEOUT_MS = 45_000
 DEFAULT_NVIDIA_JSON_TIMEOUT_S = 30.0
 
 _FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.I)
@@ -270,6 +271,21 @@ def bedrock_read_timeout_s(purpose: JsonPurpose | None = None) -> float:
         return default
 
 
+def gemini_json_timeout_ms(purpose: JsonPurpose | None = None) -> int:
+    if purpose == "plan":
+        raw = os.environ.get("GEMINI_PLAN_TIMEOUT_S", "").strip()
+        default = DEFAULT_GEMINI_PLAN_TIMEOUT_MS
+    else:
+        raw = os.environ.get("GEMINI_JSON_TIMEOUT_S", "").strip()
+        default = DEFAULT_GEMINI_JSON_TIMEOUT_MS
+    if not raw:
+        return default
+    try:
+        return int(max(10.0, float(raw)) * 1000)
+    except ValueError:
+        return default
+
+
 def bedrock_connect_timeout_s() -> float:
     raw = os.environ.get("BEDROCK_CONNECT_TIMEOUT_S", "").strip()
     if not raw:
@@ -473,8 +489,44 @@ def model_for_provider(provider: str, purpose: JsonPurpose) -> str:
     return DEFAULT_GEMINI_CODEGEN_MODEL
 
 
+_BEDROCK_AUTH_MARKERS = (
+    "UnrecognizedClientException",
+    "InvalidClientTokenId",
+    "ExpiredTokenException",
+    "IncompleteSignature",
+    "SignatureDoesNotMatch",
+)
+
+
+def bedrock_rejected_credentials(reason: str | None) -> bool:
+    """True when Bedrock refused the credentials, rather than the model missing."""
+    text = reason or ""
+    return any(marker in text for marker in _BEDROCK_AUTH_MARKERS)
+
+
+def codegen_providers(failed_reason: str | None = None, order: list[str] | None = None) -> list[str]:
+    """Codegen provider order.
+
+    Gemini stays off the normal codegen order because of its free-tier cap.
+    An authentication failure is not a model miss, so Gemini is added then:
+    otherwise a rejected AWS token leaves codegen with no provider at all.
+    """
+    providers = list(order if order is not None else llm_provider_order("codegen"))
+    if (
+        bedrock_rejected_credentials(failed_reason)
+        and gemini_api_key()
+        and "gemini" not in providers
+    ):
+        providers.append("gemini")
+    return providers
+
+
 def llm_provider_order(purpose: JsonPurpose) -> list[str]:
-    """Primary routing: Bedrock → Gemini → NVIDIA (only when TERRARIUM_ENABLE_NVIDIA=1)."""
+    """Provider order for plan and codegen.
+
+    Bedrock is first when it is configured. Any other provider that fails is
+    followed by Bedrock, which is always appended when AWS credentials are set.
+    """
     custom = (os.environ.get("TERRARIUM_LLM_PROVIDER_ORDER") or "").strip()
     if custom:
         allowed = {"bedrock", "gemini", "nvidia"}
@@ -503,6 +555,8 @@ def llm_provider_order(purpose: JsonPurpose) -> list[str]:
     # daily cap; intent and the editor keep their own Gemini models.
     if purpose == "codegen" and os.environ.get("TERRARIUM_ENABLE_GEMINI_CODEGEN") != "1":
         available = [name for name in available if name != "gemini"]
+    if bedrock_ready() and "bedrock" not in available:
+        available.append("bedrock")
     return available
 
 
@@ -573,7 +627,7 @@ def complete_json(
     purpose: JsonPurpose = "codegen",
     nvidia_first: bool | None = None,
 ) -> dict[str, Any] | None:
-    """Structured JSON via llm_provider_order (Bedrock → Gemini → optional NVIDIA).
+    """Structured JSON via llm_provider_order. Bedrock is the fallback when another provider fails.
 
     For purpose=codegen, uses streaming with first-token (~25s) and total (~120s)
     timeouts plus automatic failover (see llm_stream). Plan stays non-streaming.
@@ -637,7 +691,7 @@ def complete_json(
         elif provider == "nvidia":
             payload = _nvidia_json(system, user, used_model)
         else:
-            payload = _gemini_json(system, user, used_model)
+            payload = _gemini_json(system, user, used_model, purpose=purpose)
         last_provider = provider
         last_model = used_model
         elapsed_ms = int((time.monotonic() - started) * 1000)
@@ -765,10 +819,22 @@ def _bedrock_json(
     return None
 
 
-def _gemini_json(system: str, user: str, model: str) -> dict[str, Any] | None:
+def _gemini_json(
+    system: str,
+    user: str,
+    model: str,
+    *,
+    purpose: JsonPurpose | None = None,
+) -> dict[str, Any] | None:
     if not gemini_api_key():
         return None
-    logger.info("Gemini generate_content start model=%s", model)
+    timeout_ms = gemini_json_timeout_ms(purpose)
+    logger.info(
+        "Gemini generate_content start model=%s purpose=%s timeout=%ss",
+        model,
+        purpose,
+        timeout_ms / 1000,
+    )
     started = time.monotonic()
     try:
         from google.genai import types
@@ -783,7 +849,7 @@ def _gemini_json(system: str, user: str, model: str) -> dict[str, Any] | None:
                 automatic_function_calling=types.AutomaticFunctionCallingConfig(
                     disable=True
                 ),
-                http_options=types.HttpOptions(timeout=DEFAULT_GEMINI_JSON_TIMEOUT_MS),
+                http_options=types.HttpOptions(timeout=timeout_ms),
             ),
         )
         text = (response.text or "").strip()

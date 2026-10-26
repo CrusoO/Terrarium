@@ -237,6 +237,21 @@ class IntentAgentTests(unittest.TestCase):
             )
         )
         self.assertEqual(intent.phase, "ready")
+        self.assertEqual(intent.backendStack, "node-express")
+        self.assertEqual(intent.stack, "fullstack")
+
+    def test_frontend_only_answer_overrides_fullstack_default(self) -> None:
+        intent = classify_intent(
+            IntentAgentInput(
+                prompt="React, just this screen — no server. Just build it",
+                conversation=[
+                    ConversationTurn(role="user", text="build a calculator"),
+                    ConversationTurn(role="assistant", text="1. Which operations?"),
+                ],
+            )
+        )
+        self.assertEqual(intent.phase, "ready")
+        self.assertEqual(intent.backendStack, "none")
 
     def test_fullstack_prompt(self) -> None:
         intent = classify_intent(
@@ -452,7 +467,7 @@ class IntentAgentTests(unittest.TestCase):
                 IntentAgentInput(prompt="Build a simple markdown notepad"),
             )
             self.assertEqual(intent.phase, "clarify")
-            self.assertFalse(intent.questions)
+            self.assertEqual(len(intent.questions or []), 6)
         finally:
             os.environ["TERRARIUM_AGENTS"] = "stub"
 

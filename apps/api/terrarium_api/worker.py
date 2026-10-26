@@ -22,6 +22,8 @@ from terrarium_agents import (
     run_editor,
     run_heal,
 )
+from terrarium_agents.brownie_reuse import ReusePlan
+from terrarium_agents.codegen import ProvidersUnavailable
 from terrarium_agents.llm_fixtures import MissingFixture
 from terrarium_agents.canary import (
     DemoBlocked,
@@ -450,14 +452,14 @@ def _configured_llm_choice(purpose: str) -> tuple[str, str, str]:
     if purpose == "plan":
         reasons = {
             "bedrock": "Architecture planning uses Claude on Bedrock for multi-step design reasoning.",
-            "gemini": "Bedrock is unavailable; Gemini generates the architecture JSON.",
-            "nvidia": "Optional NVIDIA fallback when TERRARIUM_ENABLE_NVIDIA=1.",
+            "gemini": "Gemini plans the architecture. A failure falls back to Bedrock.",
+            "nvidia": "Optional NVIDIA provider. A failure falls back to Bedrock.",
         }
     else:
         reasons = {
             "bedrock": "Code generation uses Claude on Bedrock for large structured FileMaps.",
-            "gemini": "Gemini Flash fallback when Bedrock fails or is not configured.",
-            "nvidia": "Optional NVIDIA fallback when TERRARIUM_ENABLE_NVIDIA=1.",
+            "gemini": "Gemini generates the FileMap. A failure falls back to Bedrock.",
+            "nvidia": "Optional NVIDIA provider. A failure falls back to Bedrock.",
         }
     order = llm_provider_order("plan" if purpose == "plan" else "codegen")
     if not order:
@@ -499,6 +501,13 @@ async def _stop_unvalidated(log: SessionEventLog, session_id: str, message: str,
     codegen_metrics.finish_run(session_id, status="not-validated")
 
 
+async def _stop_providers_unavailable(log: SessionEventLog, session_id: str, error: Exception) -> None:
+    """A provider outage is not a code defect: healing would call the same dead providers again."""
+    logger.warning("Session %s stopped, coding providers unavailable: %s", session_id, error)
+    _llm_fields("codegen", session_id)
+    await _stop_unvalidated(log, session_id, str(error), offer_retry=True)
+
+
 def classify_session_intent(
     session_id: str,
     prompt: str,
@@ -533,8 +542,12 @@ async def run_stub_session(
     frontend_stack: str | None = None,
     backend_need: str | None = None,
     backend_stack: str | None = None,
+    brownie_asset_ids: list[str] | None = None,
 ) -> None:
-    """Intent → (if new+ready) Code Generator FileMap → sandbox. Agents never call Docker."""
+    """Intent → architecture → (clarify) → Brownie review → Code Generator FileMap → sandbox.
+
+    Agents never call Docker.
+    """
     redis = ctx["redis"]
     token = lock_token or await acquire_session_lock(redis, session_id)
     if token is None:
@@ -548,6 +561,7 @@ async def run_stub_session(
             frontend_stack=frontend_stack,
             backend_need=backend_need,
             backend_stack=backend_stack,
+            brownie_asset_ids=brownie_asset_ids,
         )
     finally:
         await release_session_lock(redis, session_id, token)
@@ -603,6 +617,7 @@ async def _run_stub_session_locked(
     frontend_stack: str | None = None,
     backend_need: str | None = None,
     backend_stack: str | None = None,
+    brownie_asset_ids: list[str] | None = None,
 ) -> None:
     from terrarium_agents.parked import note_parked
 
@@ -623,6 +638,30 @@ async def _run_stub_session_locked(
     files = await log.load_files(session_id)
     tool_id = await log.load_tool_id(session_id)
     drain_llm_calls()
+    saved_plan_raw = await log.load_session_plan(session_id)
+    if brownie_asset_ids is not None:
+        saved_intent = await _load_saved_intent(log, session_id) if saved_plan_raw else None
+        if saved_intent is None or saved_plan_raw is None:
+            await _stop_unvalidated(
+                log,
+                session_id,
+                "The Brownie review for this build has expired. Send your request again.",
+                offer_retry=False,
+            )
+            return
+        await _continue_after_brownie(
+            log,
+            session_id,
+            files,
+            history,
+            saved_intent,
+            saved_plan_raw,
+            brownie_asset_ids,
+            frontend_stack=frontend_stack,
+            backend_need=backend_need,
+            backend_stack=backend_stack,
+        )
+        return
     try:
         with codegen_metrics.stage(session_id, "intent", kind="model"):
             intent = await asyncio.to_thread(
@@ -652,8 +691,8 @@ async def _run_stub_session_locked(
         len(intent.questions or []),
         intent.summary,
     )
+    intent_llm = _llm_fields("intent", session_id)
 
-    saved_plan_raw = await log.load_session_plan(session_id)
     if saved_plan_raw and intent.kind == "new":
         intent = intent.model_copy(update={"phase": "ready", "questions": None})
 
@@ -680,14 +719,6 @@ async def _run_stub_session_locked(
         )
         intent = intent.model_copy(update={"kind": "new", "toolId": None})
 
-    if intent.kind == "new" and intent.phase == "clarify" and not (intent.questions or []):
-        # Clarify with nothing to ask used to return before the plan and codegen.
-        logger.info(
-            "Session %s clarify returned no questions; continuing to the plan and codegen",
-            session_id,
-        )
-        intent = intent.model_copy(update={"phase": "ready", "questions": None, "questionItems": None})
-
     from terrarium_agents.acceptance import propose_acceptance_checks
 
     if intent.phase == "ready" and not intent.acceptanceChecks:
@@ -702,15 +733,14 @@ async def _run_stub_session_locked(
             session_id, [c.model_dump() for c in intent.acceptanceChecks]
         )
 
-    await log.append(
-        make_event(
-            "intent.classified",
-            session_id,
-            {**intent.model_dump(exclude_none=True), **_llm_fields("intent", session_id)},
-        )
-    )
-
     if intent.kind == "modify":
+        await log.append(
+            make_event(
+                "intent.classified",
+                session_id,
+                {**intent.model_dump(exclude_none=True), **intent_llm},
+            )
+        )
         if intent.phase == "ready" and files:
             failed = await _run_editor_step(log, session_id, prompt, intent, files)
             if failed:
@@ -730,16 +760,7 @@ async def _run_stub_session_locked(
             codegen_metrics.finish_run(session_id, status="edit-no-filemap")
         return
 
-    generation_prompt = prompt
-    if intent.kind == "new":
-        user_context = [
-            turn.text.strip()
-            for turn in history
-            if turn.role == "user" and turn.text.strip()
-        ]
-        if user_context:
-            generation_prompt = "\n\n".join(user_context)
-
+    generation_prompt = _generation_prompt(prompt, intent, history)
     job = AgentJob(
         sessionId=session_id,
         intent=intent.as_intent(),
@@ -748,8 +769,16 @@ async def _run_stub_session_locked(
         backendNeed=backend_need,  # type: ignore[arg-type]
         backendStack=backend_stack,  # type: ignore[arg-type]
     )
+
+    await log.append(
+        make_event(
+            "intent.classified",
+            session_id,
+            {**intent.model_dump(exclude_none=True), **intent_llm},
+        )
+    )
     if intent.phase == "clarify":
-        logger.info("Session %s clarifying — no template preview", session_id)
+        logger.info("Session %s waiting for answers before the app shape is chosen", session_id)
         codegen_metrics.finish_run(session_id, status="clarify")
         return
     if intent.phase != "ready":
@@ -765,17 +794,25 @@ async def _run_stub_session_locked(
         codegen_metrics.finish_run(session_id, status="unsupported-stack")
         return
 
+    user_prompt = generation_prompt
+    knowledge = ""
+    if not saved_plan_raw and intent.kind == "new":
+        knowledge = await _search_knowledge(log, session_id, generation_prompt)
+        if knowledge:
+            generation_prompt = f"{generation_prompt}\n\n{knowledge}"
+            job = job.model_copy(update={"prompt": generation_prompt})
+
     plan: SessionPlan | None = None
     if saved_plan_raw:
         plan = await asyncio.to_thread(session_plan_from_payload, saved_plan_raw)
-        await log.clear_session_plan(session_id)
-        logger.info("Session %s resuming codegen with saved architecture plan", session_id)
-    if plan is None:
+        logger.info("Session %s keeping the saved architecture plan", session_id)
+        plan = await _replan_if_stack_changed(log, session_id, job, plan)
+    else:
         try:
             with codegen_metrics.stage(session_id, "plan", kind="model"):
                 plan = await asyncio.to_thread(build_session_plan, job)
         except CodeGeneratorError as error:
-            logger.warning("Code generation rejected for %s: %s", session_id, error)
+            logger.warning("Architecture planning rejected for %s: %s", session_id, error)
             await _unhealthy(log, session_id, error)
             _llm_fields("plan", session_id)
             codegen_metrics.finish_run(session_id, status="plan-error")
@@ -783,7 +820,307 @@ async def _run_stub_session_locked(
                 log, session_id, generation_prompt, files, str(error), intent=intent.as_intent()
             )
             return
+        plan_payload = plan.to_payload()
+        await log.save_session_plan(session_id, {**plan_payload, "knowledgeContext": knowledge})
+        await log.append(
+            make_event(
+                "architecture.planned",
+                session_id,
+                {
+                    "message": "The shape of the app is ready, based on your answers and the project notes.",
+                    "stack": plan.stack,
+                    "layout": plan.layout,
+                    "complexity": plan.complexity,
+                    "frontendStack": plan.frontend_stack,
+                    "backendStack": plan.backend_stack,
+                    "plan": plan_payload,
+                    **_llm_fields("plan", session_id),
+                },
+            )
+        )
 
+    await log.save_intent(session_id, intent.model_dump(exclude_none=True))
+    recommendation: dict[str, object] | None = None
+    actor_id = await log.load_actor_id(session_id)
+    if actor_id:
+        try:
+            recommendation = await asyncio.to_thread(
+                _dashboard_recommendation,
+                actor_id,
+                user_prompt,
+                plan.frontend_stack,
+                " ".join([*plan.screens, plan.notes]),
+            )
+        except Exception:
+            logger.exception("Brownie catalog recommendation failed for %s", session_id)
+    await log.append(
+        make_event(
+            "brownie.review",
+            session_id,
+            {
+                "message": "I checked the existing project repos for parts that fit this app. Choose what to reuse.",
+                "summary": intent.summary,
+                "prompt": user_prompt,
+                "stack": plan.stack,
+                "frontendStack": plan.frontend_stack,
+                "backendStack": plan.backend_stack,
+                "screens": list(plan.screens),
+                "reuseSupported": plan.frontend_stack == "react",
+                "recommendation": recommendation,
+            },
+        )
+    )
+    logger.info("Session %s paused for Brownie review", session_id)
+    codegen_metrics.finish_run(session_id, status="brownie-review")
+
+
+def _generation_prompt(prompt: str, intent: IntentAgentOutput, history: list[ConversationTurn]) -> str:
+    if intent.kind != "new":
+        return prompt
+    user_context = [turn.text.strip() for turn in history if turn.role == "user" and turn.text.strip()]
+    return "\n\n".join(user_context) if user_context else (prompt or intent.summary or "")
+
+
+async def _load_saved_intent(log: SessionEventLog, session_id: str) -> IntentAgentOutput | None:
+    raw = await log.load_intent(session_id)
+    if not raw:
+        return None
+    try:
+        return IntentAgentOutput.model_validate(raw)
+    except ValueError:
+        logger.warning("Session %s saved intent is not valid; Brownie resume refused", session_id)
+        return None
+
+
+def _default_fullstack(
+    intent: IntentAgentOutput,
+    history: list[ConversationTurn],
+    prompt: str,
+    backend_need: str | None,
+    backend_stack: str | None,
+) -> dict[str, object]:
+    """Same rule as the intent agent: an unanswered server question on a framework app means full stack."""
+    from terrarium_agents.stacks import infer_backend_stack
+
+    frontend = intent.frontendStack or "react"
+    if intent.backendStack not in {None, "none"} or frontend not in {"react", "angular"}:
+        return {}
+    text = "\n".join([prompt, *(turn.text for turn in history if turn.role == "user")])
+    backend = infer_backend_stack(text, frontend, selected=backend_stack, need=backend_need, default="node-express")
+    return {"backendStack": backend, "stack": "fullstack"} if backend != "none" else {}
+
+
+async def _replan_if_stack_changed(
+    log: SessionEventLog, session_id: str, job: AgentJob, plan: SessionPlan
+) -> SessionPlan:
+    """The plan is made on the first turn; the answers can change the stack (e.g. add a server)."""
+    from terrarium_agents.codegen import resolve_backend_stack, resolve_frontend_stack
+
+    frontend, backend = resolve_frontend_stack(job), resolve_backend_stack(job)
+    if (plan.frontend_stack, plan.backend_stack) == (frontend, backend):
+        return plan
+    logger.info(
+        "Session %s re-planning: stack %s/%s -> %s/%s",
+        session_id,
+        plan.frontend_stack,
+        plan.backend_stack,
+        frontend,
+        backend,
+    )
+    try:
+        with codegen_metrics.stage(session_id, "replan", kind="model"):
+            plan = await asyncio.to_thread(build_session_plan, job)
+    except CodeGeneratorError as error:
+        logger.warning("Session %s re-plan failed (%s); keeping the first plan", session_id, error)
+        return plan
+    payload = plan.to_payload()
+    await log.save_session_plan(session_id, payload)
+    await log.append(
+        make_event(
+            "architecture.planned",
+            session_id,
+            {
+                "message": f"Architecture re-planned for {frontend} + {backend} after your answers.",
+                "stack": plan.stack,
+                "layout": plan.layout,
+                "complexity": plan.complexity,
+                "frontendStack": plan.frontend_stack,
+                "backendStack": plan.backend_stack,
+                "plan": payload,
+                **_llm_fields("plan", session_id),
+            },
+        )
+    )
+    return plan
+
+
+def _dashboard_reuse(owner_id: str | None, asset_ids: list[str], backend_stack: str) -> ReusePlan:
+    from terrarium_api.brownie_catalog import reuse_from_dashboard
+    from terrarium_api.db import SessionLocal
+
+    with SessionLocal() as db:
+        return reuse_from_dashboard(db, owner_id, asset_ids, backend_stack)
+
+
+def _knowledge_step_delay() -> float:
+    try:
+        return max(0.0, float(os.environ.get("TERRARIUM_KNOWLEDGE_STEP_DELAY_S", "0.7")))
+    except ValueError:
+        return 0.7
+
+
+async def _search_knowledge(log: SessionEventLog, session_id: str, prompt: str) -> str:
+    """Search Confluence, Jira, and mail through the mock connectors, one visible step at a time."""
+    from terrarium_agents.brownie_knowledge import search_steps
+
+    delay = _knowledge_step_delay()
+    await log.append(
+        make_event(
+            "brownie.knowledge",
+            session_id,
+            {
+                "stage": "started",
+                "message": "Searching Confluence, Jira, and mail for this project.",
+                "sources": ["confluence", "jira", "mail"],
+                "simulated": True,
+            },
+        )
+    )
+    context = ""
+    for stage, payload in search_steps(prompt):
+        if delay:
+            await asyncio.sleep(delay)
+        if stage == "done":
+            context = str(payload.get("context") or "")
+            message = f"Found {payload['factCount']} requirements in Confluence, Jira, and mail."
+        elif stage == "query":
+            message = f"Searching {payload['label']}"
+        elif stage == "results":
+            message = f"{payload['label']}: {payload['total']} found"
+        else:
+            message = f"{payload['label']}: {len(payload['facts'])} requirements read"
+        await log.append(
+            make_event(
+                "brownie.knowledge",
+                session_id,
+                {"stage": stage, "message": message, "simulated": True, **payload},
+            )
+        )
+    logger.info("Session %s knowledge search finished (%s chars of context)", session_id, len(context))
+    return context
+
+
+def _dashboard_recommendation(
+    owner_id: str,
+    prompt: str,
+    frontend_stack: str,
+    architecture: str = "",
+) -> dict[str, object]:
+    from terrarium_api.brownie_catalog import recommend_from_dashboard, sync_projects
+    from terrarium_api.db import SessionLocal
+
+    with SessionLocal() as db:
+        # The same dashboard versions are both recommended and later reused.
+        sync_projects(db, {"id": owner_id})
+        return recommend_from_dashboard(
+            db,
+            owner_id,
+            prompt,
+            frontend_stack=frontend_stack,
+            architecture=architecture,
+        )
+
+
+async def _continue_after_brownie(
+    log: SessionEventLog,
+    session_id: str,
+    files: dict[str, str] | None,
+    history: list[ConversationTurn],
+    intent: IntentAgentOutput,
+    saved_plan_raw: dict[str, object],
+    asset_ids: list[str],
+    *,
+    frontend_stack: str | None,
+    backend_need: str | None,
+    backend_stack: str | None,
+) -> None:
+    """Resume a paused build with the Brownie assets the user accepted."""
+    generation_prompt = _generation_prompt("", intent, history)
+    knowledge = str(saved_plan_raw.get("knowledgeContext") or "")
+    if knowledge:
+        generation_prompt = f"{generation_prompt}\n\n{knowledge}"
+    job = AgentJob(
+        sessionId=session_id,
+        intent=intent.as_intent(),
+        prompt=generation_prompt,
+        frontendStack=frontend_stack,  # type: ignore[arg-type]
+        backendNeed=backend_need,  # type: ignore[arg-type]
+        backendStack=backend_stack,  # type: ignore[arg-type]
+    )
+    plan = await asyncio.to_thread(session_plan_from_payload, saved_plan_raw)
+    await log.clear_session_plan(session_id)
+    reuse_supported = plan.frontend_stack == "react"
+    if reuse_supported and asset_ids:
+        owner_id = await log.load_actor_id(session_id)
+        reuse = await asyncio.to_thread(_dashboard_reuse, owner_id, asset_ids, plan.backend_stack)
+    else:
+        reuse = ReusePlan(ignored=tuple((asset_id, "React builds only.") for asset_id in asset_ids))
+    if reuse.applied:
+        sources = sorted({asset.tool_name for asset in reuse.applied})
+        message = (
+            f"Reusing {len(reuse.applied)} component(s) from {', '.join(sources)}; "
+            "the generator writes only the remaining files."
+        )
+    elif asset_ids and not reuse_supported:
+        message = "Brownie reuse applies to React builds only. Generating every file."
+    else:
+        message = "No Brownie assets accepted. Generating every file."
+    await log.append(
+        make_event(
+            "brownie.applied",
+            session_id,
+            {
+                "message": message,
+                "requestedAssetIds": asset_ids,
+                "appliedAssetIds": reuse.applied_ids,
+                "ignoredAssetIds": reuse.ignored_ids,
+                "ignored": [{"assetId": asset_id, "reason": reason} for asset_id, reason in reuse.ignored],
+                "files": list(reuse.files),
+                "provenance": reuse.provenance(),
+                "reuseSupported": reuse_supported,
+                "simulated": True,
+            },
+        )
+    )
+    logger.info(
+        "Session %s Brownie resume requested=%s applied=%s ignored=%s",
+        session_id,
+        asset_ids,
+        reuse.applied_ids,
+        reuse.ignored,
+    )
+    await _codegen_and_preview(
+        log,
+        session_id,
+        generation_prompt,
+        files,
+        intent,
+        job,
+        plan,
+        reuse,
+    )
+
+
+async def _codegen_and_preview(
+    log: SessionEventLog,
+    session_id: str,
+    prompt: str,
+    files: dict[str, str] | None,
+    intent: IntentAgentOutput,
+    job: AgentJob,
+    plan: SessionPlan,
+    reuse: ReusePlan,
+) -> None:
     plan_payload = plan.to_payload()
     codegen_provider, selected_codegen_model, codegen_reason = _configured_llm_choice("codegen")
     started_payload: dict[str, object] = {
@@ -801,6 +1138,8 @@ async def _run_stub_session_locked(
         "codegenModel": selected_codegen_model,
         "codegenReason": codegen_reason,
         "plan": plan_payload,
+        "reusedFiles": list(reuse.files),
+        "reusedAssetIds": reuse.applied_ids,
         **_llm_fields("plan", session_id),
     }
     await log.append(make_event("codegen.started", session_id, started_payload))
@@ -850,7 +1189,9 @@ async def _run_stub_session_locked(
                 future.result(timeout=10)
 
             set_canary_actor(await log.load_actor_email(session_id) or "")
-            result = await asyncio.to_thread(generate, job, plan, on_file=_on_generated_file)
+            result = await asyncio.to_thread(
+                generate, job, plan, on_file=_on_generated_file, reuse=reuse
+            )
             if streamed_paths:
                 codegen_metrics.event(
                     session_id,
@@ -884,31 +1225,43 @@ async def _run_stub_session_locked(
             )
         )
         try:
-            result = await asyncio.to_thread(generate, job, plan, on_file=_on_generated_file)
+            result = await asyncio.to_thread(
+                generate, job, plan, on_file=_on_generated_file, reuse=reuse
+            )
         except DemoBlocked as again:
             await _stop_unvalidated(log, session_id, str(again), offer_retry=True)
+            return
+        except ProvidersUnavailable as error:
+            await _stop_providers_unavailable(log, session_id, error)
             return
         except CodeGeneratorError as error:
             logger.warning("Code generation rejected for %s: %s", session_id, error)
             await _unhealthy(log, session_id, error)
             _llm_fields("codegen", session_id)
             codegen_metrics.finish_run(session_id, status="codegen-error")
-            await _heal_loop(log, session_id, prompt, files, str(error), intent=intent.as_intent())
+            await _heal_loop(
+                log, session_id, prompt, files, str(error), intent=intent.as_intent(), plan=plan, reuse=reuse
+            )
             return
         except Exception as error:
             logger.exception("Code generation failed for %s", session_id)
             await _unhealthy(log, session_id, error)
             _llm_fields("codegen", session_id)
             codegen_metrics.finish_run(session_id, status="codegen-error")
-            await _heal_loop(log, session_id, prompt, files, str(error), intent=intent.as_intent())
+            await _heal_loop(
+                log, session_id, prompt, files, str(error), intent=intent.as_intent(), plan=plan, reuse=reuse
+            )
             return
+    except ProvidersUnavailable as error:
+        await _stop_providers_unavailable(log, session_id, error)
+        return
     except CodeGeneratorError as error:
         logger.warning("Code generation rejected for %s: %s", session_id, error)
         await _unhealthy(log, session_id, error)
         _llm_fields("codegen", session_id)
         codegen_metrics.finish_run(session_id, status="codegen-error")
         await _heal_loop(
-            log, session_id, prompt, files, str(error), intent=intent.as_intent()
+            log, session_id, prompt, files, str(error), intent=intent.as_intent(), plan=plan, reuse=reuse
         )
         return
     except Exception as error:
@@ -917,7 +1270,7 @@ async def _run_stub_session_locked(
         _llm_fields("codegen", session_id)
         codegen_metrics.finish_run(session_id, status="codegen-error")
         await _heal_loop(
-            log, session_id, prompt, files, str(error), intent=intent.as_intent()
+            log, session_id, prompt, files, str(error), intent=intent.as_intent(), plan=plan, reuse=reuse
         )
         return
 
@@ -1211,6 +1564,8 @@ async def _heal_loop(
     *,
     intent: Intent,
     health: RuntimeStatus = "unhealthy",
+    plan: SessionPlan | None = None,
+    reuse: ReusePlan | None = None,
 ) -> None:
     """Retry Editor or Code Generator at most 3 times, then emit heal.exhausted.
 
@@ -1325,9 +1680,14 @@ async def _heal_loop(
                             files=current_files,
                             errorContext=ctx,
                         ),
+                        plan,
+                        reuse=reuse if reuse is not None and reuse.files else None,
                     )
                 _llm_fields("codegen", session_id)
                 current_files = result.files
+        except ProvidersUnavailable as error:
+            await _stop_providers_unavailable(log, session_id, error)
+            return
         except Exception as error:
             logger.exception("Heal %s/%s agent failed for %s", attempt, 3, session_id)
             current_logs = str(error)
@@ -1450,5 +1810,5 @@ class WorkerSettings:
     except ImportError:
         cron_jobs = []
     redis_settings = redis_settings()
-    job_timeout = 540
+    job_timeout = 900
     max_jobs = 2

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import unittest
+from unittest.mock import patch
 
 from terrarium_agents import classify_intent, generate
 from terrarium_contracts import AgentJob, ConversationTurn, IntentAgentInput
@@ -25,15 +26,18 @@ class IntentToCodegenTests(unittest.TestCase):
         )
         self.assertEqual(classified.phase, "ready")
         self.assertEqual(classified.kind, "new")
-        result = generate(
-            AgentJob(
-                sessionId="sync-test",
-                intent=classified.as_intent(),
-                prompt="React — just build it",
+        self.assertEqual(classified.backendStack, "node-express")
+        with patch("terrarium_agents.codegen._maybe_llm_overlay", return_value={}):
+            result = generate(
+                AgentJob(
+                    sessionId="sync-test",
+                    intent=classified.as_intent(),
+                    prompt="React — just build it",
+                )
             )
-        )
-        self.assertIn("index.html", result.files)
-        self.assertNotIn("{{TITLE}}", result.files["index.html"])
+        self.assertIn("frontend/index.html", result.files)
+        self.assertIn("backend/src/server.js", result.files)
+        self.assertNotIn("{{TITLE}}", result.files["frontend/index.html"])
 
     def test_greeting_does_not_look_like_codegen_job(self) -> None:
         classified = classify_intent(IntentAgentInput(prompt="hello"))
