@@ -38,8 +38,8 @@ type ChatThreadProps = {
   onRetryAnyway?: () => void;
   onAcceptMatch?: (toolId: string) => void;
   onRejectMatch?: () => void;
-  onStackSelect?: (selection: StackSelection) => void;
   onConfirmBrownie?: (itemId: string, assetIds: string[]) => void;
+  onStackSelect?: (selection: StackSelection) => void;
 };
 
 function latestUnansweredAssistantId(chat: ChatItem[]): string | null {
@@ -164,8 +164,8 @@ export function ChatThread({
   onRetryAnyway,
   onAcceptMatch,
   onRejectMatch,
-  onStackSelect,
   onConfirmBrownie,
+  onStackSelect,
 }: ChatThreadProps) {
   if (chat.length === 0) {
     return null;

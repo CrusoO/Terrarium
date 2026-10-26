@@ -804,8 +804,13 @@ def _stack_selector_item(rec: str = "react") -> ClarifyQuestion:
 
 
 def build_clarify_question_items(questions: list[str], idea: str) -> list[ClarifyQuestion]:
+    _ = questions, idea
+    # Onboarding questions come first. The stack selector follows them.
     rec = _detect_recommended_frontend(idea)
-    return [_business_question_item(s) for s in _BUSINESS_ONBOARDING[:5]] + [_stack_selector_item(rec)]
+    return [
+        *(_business_question_item(spec) for spec in (*_STACK_ONBOARDING, *_BUSINESS_ONBOARDING)),
+        _stack_selector_item(rec),
+    ]
 
 
 def clarify_reply_after_plan(idea: str, architecture: str) -> str:

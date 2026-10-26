@@ -137,14 +137,13 @@ class IntentAgentTests(unittest.TestCase):
         self.assertEqual(intent.phase, "clarify")
         self.assertIsNotNone(intent.questionItems)
         items = intent.questionItems or []
-        self.assertEqual(len(items), 6)
-        # The 6th (last) item is the dedicated stack selector
+        self.assertEqual(len(items), 9)
+        self.assertEqual(items[0].text, "Which kind of app should we build?")
+        self.assertIn("React", items[0].options or [])
+        self.assertIn("Angular", items[0].options or [])
+        self.assertIn("SAP Fiori", items[0].options or [])
         stack_item = items[-1]
         self.assertTrue(stack_item.isStackSelector)
-        choice_values = [c.value for c in (stack_item.choices or [])]
-        self.assertIn("react", choice_values)
-        self.assertIn("angular", choice_values)
-        self.assertIn("sapui5", choice_values)
         for item in items:
             self.assertGreaterEqual(len(item.options or []), 3)
 
@@ -153,7 +152,8 @@ class IntentAgentTests(unittest.TestCase):
             ["What will people start with — a spreadsheet or copied text?"],
             "excel to json converter",
         )
-        self.assertEqual(len(items), 6)
+        self.assertEqual(len(items), 9)
+        self.assertEqual(items[0].text, "Which kind of app should we build?")
         sell = next(item for item in items if item.text == "What does your business sell?")
         self.assertTrue(sell.acceptsFiles)
         self.assertTrue(sell.allowMultiple)

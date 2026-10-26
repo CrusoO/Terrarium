@@ -10,8 +10,8 @@ import {
   type SessionEvent,
   type ToolRole,
 } from "@terrarium/contracts";
-import type { StackSelection } from "../components/chat/StackSelectorStep";
 import { parseProvenance, parseRecommendation } from "../api/brownie";
+import type { StackSelection } from "../components/chat/StackSelectorStep";
 import { requestAppAccess } from "../api/groups";
 import { acceptSmartMatch, createSession, fetchSessionFiles, reportRuntimeError, subscribeSessionEvents } from "../api/sessions";
 import type { PreviewStatus } from "../components/canvas/PreviewPanel";
@@ -634,8 +634,8 @@ export function useCreateSession() {
     editRequestStatus,
     onSubmit,
     sendPrompt,
-    handleStackSelect,
     confirmBrownie,
+    handleStackSelect,
     onPreviewRuntimeError,
     retryAnyway,
     acceptMatch,

@@ -16,8 +16,8 @@ type ChatPanelProps = {
   onRetryAnyway?: () => void;
   onAcceptMatch?: (toolId: string) => void;
   onRejectMatch?: () => void;
-  onStackSelect?: (selection: StackSelection) => void;
   onConfirmBrownie?: (itemId: string, assetIds: string[]) => void;
+  onStackSelect?: (selection: StackSelection) => void;
 };
 
 export function ChatPanel({
@@ -32,8 +32,8 @@ export function ChatPanel({
   onRetryAnyway,
   onAcceptMatch,
   onRejectMatch,
-  onStackSelect,
   onConfirmBrownie,
+  onStackSelect,
 }: ChatPanelProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
 
@@ -71,8 +71,8 @@ export function ChatPanel({
               onRetryAnyway={onRetryAnyway}
               onAcceptMatch={onAcceptMatch}
               onRejectMatch={onRejectMatch}
-              onStackSelect={onStackSelect}
               onConfirmBrownie={onConfirmBrownie}
+              onStackSelect={onStackSelect}
             />
           )}
           {status ? <div className="tw-status-error">{status}</div> : null}

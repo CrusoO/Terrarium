@@ -90,8 +90,8 @@ function MainApp({
       onRetryAnyway={session.retryAnyway}
       onAcceptMatch={session.acceptMatch}
       onRejectMatch={session.rejectMatch}
-      onStackSelect={session.handleStackSelect}
       onConfirmBrownie={session.confirmBrownie}
+      onStackSelect={session.handleStackSelect}
       view={view}
       onViewChange={setView}
       onLogout={onLogout}

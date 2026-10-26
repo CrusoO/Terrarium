@@ -786,14 +786,6 @@ async def _run_stub_session_locked(
         codegen_metrics.finish_run(session_id, status=f"phase-{intent.phase}")
         return
 
-    _fe = (intent.frontendStack or frontend_stack or "react").strip().lower()
-    if _fe == "custom":
-        _msg = "Custom stacks are not yet supported. Choose React / Vite, Angular, or SAP Fiori to continue."
-        logger.warning("Session %s blocked by stack gate: fe=custom", session_id)
-        await log.append(make_event("sandbox.unhealthy", session_id, {"logs": _msg, "terminal": True}))
-        codegen_metrics.finish_run(session_id, status="unsupported-stack")
-        return
-
     user_prompt = generation_prompt
     knowledge = ""
     if not saved_plan_raw and intent.kind == "new":
@@ -801,6 +793,14 @@ async def _run_stub_session_locked(
         if knowledge:
             generation_prompt = f"{generation_prompt}\n\n{knowledge}"
             job = job.model_copy(update={"prompt": generation_prompt})
+
+    _fe = (intent.frontendStack or frontend_stack or "react").strip().lower()
+    if _fe == "custom":
+        _msg = "Custom stacks are not yet supported. Choose React / Vite, Angular, or SAP Fiori to continue."
+        logger.warning("Session %s blocked by stack gate: fe=custom", session_id)
+        await log.append(make_event("sandbox.unhealthy", session_id, {"logs": _msg, "terminal": True}))
+        codegen_metrics.finish_run(session_id, status="unsupported-stack")
+        return
 
     plan: SessionPlan | None = None
     if saved_plan_raw:
