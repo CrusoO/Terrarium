@@ -1,7 +1,6 @@
 import { type FormEvent, useState } from "react";
 import {
   Alert,
-  Avatar,
   Box,
   Button,
   CircularProgress,
@@ -9,6 +8,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { LogoMark } from "../workspace/LogoMark";
 
 type Mode = "login" | "signup";
 
@@ -60,9 +60,9 @@ export function LoginPage({ onLogin, onSignup }: Props) {
             bgcolor: "background.paper", boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
           }}
         >
-          <Avatar sx={{ bgcolor: "primary.main", width: 48, height: 48, fontWeight: 800, fontSize: 20, mb: 0.5 }}>T</Avatar>
+          <LogoMark />
 
-          <Typography variant="h6" fontWeight={700} textAlign="center">
+          <Typography variant="h6" sx={{ fontWeight: 700, textAlign: "center" }}>
             {mode === "login" ? "Sign in to Terrarium" : "Create your account"}
           </Typography>
 
@@ -74,7 +74,7 @@ export function LoginPage({ onLogin, onSignup }: Props) {
             <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
               required fullWidth size="small"
               autoComplete={mode === "login" ? "current-password" : "new-password"}
-              inputProps={{ minLength: 6 }}
+              slotProps={{ htmlInput: { minLength: 6 } }}
               helperText={mode === "signup" ? "At least 6 characters" : undefined} />
             <Button type="submit" variant="contained" fullWidth disabled={busy} sx={{ mt: 0.5, py: 1.2, fontWeight: 700 }}>
               {busy ? <CircularProgress size={20} color="inherit" /> : mode === "login" ? "Sign in" : "Create account"}

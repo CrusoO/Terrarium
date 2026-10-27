@@ -1,0 +1,36 @@
+{
+  "rows": [
+    {
+      "thinking": "disabled",
+      "prompt": "full-app",
+      "promptCaching": false,
+      "note": "System is a plain string. No cache_control checkpoints. Codegen default leaves thinking unset, which is off.",
+      "ok": true,
+      "failReason": null,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "inputTokens": 79,
+      "outputTokens": 16000,
+      "outputTokensEstimated": null,
+      "timeToFirstTokenSeconds": 20.25889029999962,
+      "durationSeconds": 81.686,
+      "outputTokensPerSecond": 260.47,
+      "chunkCount": 2880
+    },
+    {
+      "thinking": "minimal",
+      "prompt": "short",
+      "promptCaching": false,
+      "note": "System is a plain string. No cache_control checkpoints. Codegen default leaves thinking unset, which is off.",
+      "ok": true,
+      "failReason": null,
+      "model": "eu.anthropic.claude-sonnet-4-6",
+      "inputTokens": 75,
+      "outputTokens": 274,
+      "outputTokensEstimated": null,
+      "timeToFirstTokenSeconds": 3.785313500004122,
+      "durationSeconds": 3.786,
+      "outputTokensPerSecond": 72.37,
+      "chunkCount": 50
+    }
+  ]
+}

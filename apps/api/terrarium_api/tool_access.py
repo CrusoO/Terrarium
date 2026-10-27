@@ -15,7 +15,11 @@ def _norm(value: str | None) -> str:
 
 
 def member_role(db: Session, tool: ToolRecord, user: dict[str, str]) -> str | None:
-    if tool.owner_id == user["id"] or _norm(tool.owner_email) == _norm(user.get("email")):
+    if tool.owner_id == user["id"]:
+        return "owner"
+    owner_email = _norm(tool.owner_email)
+    user_email = _norm(user.get("email"))
+    if owner_email and user_email and owner_email == user_email:
         return "owner"
     row = db.scalars(
         select(ToolMemberRecord).where(

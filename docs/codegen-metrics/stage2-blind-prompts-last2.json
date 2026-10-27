@@ -1,0 +1,16 @@
+[
+  {
+    "id": "p19",
+    "prompt": "Make a desktop video editor that trims clips, mixes several audio tracks, and exports a 4K timeline.",
+    "expectedArchetype": "unsupported",
+    "supportedExpected": false,
+    "messyKind": null
+  },
+  {
+    "id": "p20",
+    "prompt": "Create a compiler for a new programming language, including a debugger and a WebAssembly backend.",
+    "expectedArchetype": "unsupported",
+    "supportedExpected": false,
+    "messyKind": null
+  }
+]

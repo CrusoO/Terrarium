@@ -1,0 +1,20 @@
+{
+  "durationMs": 1274,
+  "events": [],
+  "finishedAtMs": 1791664873738,
+  "modelCalls": [],
+  "prompt": "Add a status filter to the main list. Go ahead and build it.",
+  "runId": "16905fa5b32f403187e9930e719b8ede-1791664872464",
+  "runType": "new",
+  "sessionId": "16905fa5b32f403187e9930e719b8ede",
+  "stages": [
+    {
+      "durationMs": 1266,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791664872468
+    }
+  ],
+  "startedAtMs": 1791664872464,
+  "status": "clarify"
+}

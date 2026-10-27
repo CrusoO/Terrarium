@@ -8,7 +8,9 @@ const outDir = path.join(root, "docs", "stories");
 
 const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
 const stories = catalog.stories ?? [];
-const expected = (catalog.phaseCount ?? 6) * (catalog.storiesPerPhase ?? 4);
+const expected =
+  catalog.storyCount ??
+  (catalog.phaseCount ?? 6) * (catalog.storiesPerPhase ?? 4);
 
 if (stories.length !== expected) {
   throw new Error(
@@ -20,8 +22,8 @@ const ids = new Set();
 for (const story of stories) {
   if (ids.has(story.id)) throw new Error(`Duplicate story id: ${story.id}`);
   ids.add(story.id);
-  if (!/^P[1-6]-S[1-4]$/.test(story.id)) {
-    throw new Error(`Bad story id ${story.id}; expected Pn-Sm`);
+  if (!/^P[1-7]-S(?:10|[1-9])$/.test(story.id)) {
+    throw new Error(`Bad story id ${story.id}; expected Pn-Sm (phase 7 allows S1–S10)`);
   }
 }
 
@@ -75,6 +77,6 @@ ${list(story.nonGoals)}
 
 ## Implementation notes
 
-Read [PLAN.md](../../PLAN.md) before coding. Change only the packages listed above. If contract changes are not none, update \`packages/contracts\` (Zod) and \`packages/py-contracts\` (Pydantic) first. Do not start work from another story. Live preview is always an iframe URL; Monaco is not the running app.
+Read [ARCHITECTURE.md](../../ARCHITECTURE.md) and [PLAN.md](../../PLAN.md) before coding. Change only the packages listed above. If contract changes are not none, update \`packages/contracts\` (Zod) and \`packages/py-contracts\` (Pydantic) first. Do not start work from another story. Live preview is always an iframe URL; Monaco is not the running app.
 `;
 }

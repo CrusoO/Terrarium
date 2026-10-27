@@ -25,6 +25,8 @@ class ToolRecord(Base):
     group_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
     group_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     latest_session_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    draft_version_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    auto_approve_tests: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
@@ -44,9 +46,44 @@ class ToolVersionRecord(Base):
     prompt: Mapped[str] = mapped_column(Text, default="")
     summary: Mapped[str] = mapped_column(Text, default="")
     files: Mapped[dict[str, str]] = mapped_column(JSON)
+    is_live: Mapped[bool] = mapped_column(default=True)
+    acceptance_checks: Mapped[list | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     tool: Mapped[ToolRecord] = relationship(back_populates="versions")
+
+
+class ToolHealthRecord(Base):
+    __tablename__ = "tool_health"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    tool_id: Mapped[str] = mapped_column(ForeignKey("tools.id", ondelete="CASCADE"), index=True)
+    version_id: Mapped[str] = mapped_column(String(64), index=True)
+    file_map_hash: Mapped[str] = mapped_column(String(64), index=True)
+    vuln_db_version: Mapped[str] = mapped_column(String(32))
+    payload: Mapped[dict] = mapped_column(JSON)
+    checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)
+
+
+class LedgerEntryRecord(Base):
+    __tablename__ = "vuln_ledger"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    tool_id: Mapped[str] = mapped_column(ForeignKey("tools.id", ondelete="CASCADE"), index=True)
+    kind: Mapped[str] = mapped_column(String(32))
+    finding_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    detail: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)
+
+
+class RemediationCampaignRecord(Base):
+    __tablename__ = "remediation_campaigns"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    advisory_id: Mapped[str] = mapped_column(String(128), index=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
 
 class ToolMemberRecord(Base):

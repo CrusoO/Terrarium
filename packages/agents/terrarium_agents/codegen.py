@@ -6,11 +6,22 @@ import logging
 import os
 import posixpath
 import re
+import threading
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Callable, Literal
 
 from terrarium_contracts import AgentJob, AgentResult, BackendStack, FileMap, FrontendStack, Intent, Stack
+from terrarium_agents.brownie_reuse import ReusePlan, reuse_import_error, reuse_prompt_section
+from terrarium_agents.stacks import (
+    BACKEND_STACKS,
+    FRONTEND_STACKS,
+    build_stack_files,
+    compatible_backend,
+    infer_backend_stack,
+    infer_frontend_stack,
+    uses_react_per_file_path,
+)
 
 _SAFE_PATH = re.compile(r"^(?!\.)[a-zA-Z0-9._/-]+$")
 _ALLOWED_SUFFIX = {".html", ".css", ".js", ".jsx", ".json", ".md", ".svg", ".txt"}
@@ -44,7 +55,8 @@ _LIST_RE = re.compile(
 _BACKEND_NEEDED_RE = re.compile(
     r"\b(auth|logins?|sign[- ]?up|users?|shared|database|db|backend|server|"
     r"api keys?|secrets?|payments?|email|upload|file processing|multi[- ]?user|"
-    r"roles?|permissions?|websocket|real[- ]?time)\b",
+    r"roles?|permissions?|websocket|real[- ]?time|"
+    r"express|node[- ]?express|odata|cap|sap\s*cap)\b",
     re.I,
 )
 _CDN_RE = re.compile(
@@ -108,6 +120,34 @@ class CodeGeneratorError(ValueError):
     pass
 
 
+class ProvidersUnavailable(CodeGeneratorError):
+    """No live coding model returned files. Retrying the same build cannot help until a provider answers."""
+
+
+_overlay_attempts = threading.local()
+
+
+def provider_failure_summary(reason: str | None) -> str:
+    text = reason or ""
+    if re.search(r"UnrecognizedClientException|InvalidClientTokenId|security token", text):
+        return "AWS keys rejected (invalid security token)"
+    if re.search(r"\b429\b|RESOURCE_EXHAUSTED|quota", text, re.I):
+        return "quota exhausted (429)"
+    if re.search(r"\b503\b|UNAVAILABLE|high demand", text):
+        return "overloaded (503)"
+    if "first_token_timeout" in text:
+        return "no response before the first-token timeout"
+    if "timeout" in text.lower():
+        return "timed out"
+    return text[:160] or "returned no files"
+
+
+def _record_overlay_failure(provider: str, reason: str | None) -> None:
+    failures = getattr(_overlay_attempts, "failures", None)
+    if failures is not None:
+        failures.append(f"{provider}: {provider_failure_summary(reason)}")
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -145,6 +185,48 @@ class SessionPlan:
             "frontendStack": self.frontend_stack,
             "backendStack": self.backend_stack,
         }
+
+
+def session_plan_from_payload(raw: dict[str, object]) -> SessionPlan:
+    """Rebuild a SessionPlan saved in Redis between clarify and codegen."""
+    complexity: Complexity = (
+        "complex" if str(raw.get("complexity") or "") == "complex" else "basic"
+    )
+    stack: Stack = (
+        raw["stack"] if raw.get("stack") in {"react", "fullstack"} else "react"  # type: ignore[assignment]
+    )
+    layout: Layout = (
+        raw["layout"] if raw.get("layout") in {"board", "form", "list", "split"} else "form"  # type: ignore[assignment]
+    )
+    theme: ThemeName = raw["theme"] if raw.get("theme") in _THEMES else "maroon"  # type: ignore[assignment]
+    frontend: FrontendStack = (
+        raw["frontendStack"] if raw.get("frontendStack") in FRONTEND_STACKS else "react"  # type: ignore[assignment]
+    )
+    backend: BackendStack = (
+        raw["backendStack"] if raw.get("backendStack") in BACKEND_STACKS else "none"  # type: ignore[assignment]
+    )
+
+    def _tuple(key: str) -> tuple[str, ...]:
+        value = raw.get(key)
+        if not isinstance(value, list):
+            return ()
+        return tuple(str(item) for item in value if str(item).strip())
+
+    return SessionPlan(
+        complexity=complexity,
+        stack=stack,
+        screens=_tuple("screens"),
+        data=_tuple("data"),
+        files=_tuple("files"),
+        notes=str(raw.get("notes") or "").strip(),
+        layout=layout,
+        theme=theme,
+        architecture=str(raw.get("architecture") or "").strip(),
+        approach=str(raw.get("approach") or "").strip(),
+        structure=_tuple("structure"),
+        frontend_stack=frontend,
+        backend_stack=backend,
+    )
 
 
 def templates_root() -> Path:
@@ -405,6 +487,14 @@ def _ensure_react_default_imports(files: FileMap) -> FileMap:
     return out
 
 
+_XML_BARE_AMP = re.compile(r"&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)")
+
+
+def _escape_bare_xml_ampersands(body: str) -> str:
+    """UI5 parses views as XML. A raw & in a title stops the preview on a parser error."""
+    return _XML_BARE_AMP.sub("&amp;", body)
+
+
 def _finalize_files(files: FileMap, layout: Layout | None = None) -> FileMap:
     """Make overlay FileMaps clickable even when the model ships a pretty-but-broken UI."""
     html = files.get("index.html", "")
@@ -429,6 +519,9 @@ def _finalize_files(files: FileMap, layout: Layout | None = None) -> FileMap:
         out["styles.css"] = css
     if js:
         out["app.js"] = js
+    for path, body in list(out.items()):
+        if path.endswith(".xml"):
+            out[path] = _escape_bare_xml_ampersands(body)
     return _ensure_react_default_imports(out)
 
 
@@ -481,20 +574,18 @@ def detect_complexity(job: AgentJob) -> Complexity:
 
 def resolve_frontend_stack(job: AgentJob) -> FrontendStack:
     selected = job.frontendStack or job.intent.frontendStack
-    return selected if selected in {"vanilla", "react"} else "react"
+    return infer_frontend_stack(f"{job.intent.summary} {job.prompt}", selected)
 
 
 def resolve_backend_stack(job: AgentJob) -> BackendStack:
-    if job.backendStack in {"none", "node-express"}:
-        return job.backendStack
-    if job.backendNeed == "yes":
-        return "node-express"
-    if job.backendNeed == "no":
-        return "none"
-    if job.intent.backendStack in {"none", "node-express"}:
-        return job.intent.backendStack
+    frontend = resolve_frontend_stack(job)
     blob = f"{job.intent.summary} {job.prompt}"
-    return "node-express" if _BACKEND_NEEDED_RE.search(blob) else "none"
+    return infer_backend_stack(
+        blob,
+        frontend,
+        selected=job.backendStack or job.intent.backendStack,
+        need=job.backendNeed,
+    )
 
 
 def build_session_plan(job: AgentJob) -> SessionPlan:
@@ -540,33 +631,140 @@ def draft_files(
     return files
 
 
-def generate(job: AgentJob, plan: SessionPlan | None = None) -> AgentResult:
-    """Model FileMap only. New apps only. Never talks to Docker. Never serves a layout recipe."""
+def generate(
+    job: AgentJob,
+    plan: SessionPlan | None = None,
+    *,
+    on_file: Callable[[str, str], None] | None = None,
+    reuse: ReusePlan | None = None,
+) -> AgentResult:
+    """Model FileMap only. New apps only. Never talks to Docker. Never serves a layout recipe.
+
+    When on_file is provided and tagged streaming is enabled, each completed file
+    is emitted as soon as its tagged block closes (Step 2).
+
+    When reuse carries files copied from the user's published dashboard
+    projects, React builds take the monolith path, the model generates only the
+    remaining files, and the copied files are merged into the FileMap unchanged.
+    In live mode a provider outage raises ProvidersUnavailable; no template is served.
+    """
     from terrarium_agents.llm import agents_mode
+    from terrarium_agents.canary import DemoBlocked, canary_per_file, demo_block_reason, demo_mode, record_shadow
+    from terrarium_agents.per_file import BlueprintUnavailable, generate_per_file
+    from terrarium_agents.tagged_files import codegen_format
 
     _require_new(job)
+    blocked = demo_block_reason(job.sessionId, job.prompt)
+    if blocked:
+        raise DemoBlocked(blocked, retry=False)
+    decision = record_shadow(job.sessionId, job.prompt)
+    frontend = resolve_frontend_stack(job)
+    backend = resolve_backend_stack(job)
+    if reuse is not None and reuse.files and frontend not in {"react", "sapui5"}:
+        logger.info(
+            "Generate %s ignoring Brownie reuse for frontend=%s (React and SAP Fiori builds only)",
+            job.sessionId,
+            frontend,
+        )
+        reuse = None
+    reusing = reuse is not None and bool(reuse.files)
+    if not reusing and uses_react_per_file_path(frontend, backend) and (
+        demo_mode() or canary_per_file(job.sessionId, job.prompt)
+    ):
+        logger.info(
+            "Generate %s canary per-file archetype=%s confidence=%.2f",
+            job.sessionId,
+            decision.archetype,
+            decision.confidence,
+        )
+        try:
+            return generate_per_file(job, plan, on_file=on_file)
+        except BlueprintUnavailable as error:
+            logger.warning(
+                "Generate %s per-file blueprint unavailable (%s); using the monolith generator",
+                job.sessionId,
+                error,
+            )
+    if frontend in {"angular", "sapui5"}:
+        logger.info(
+            "Generate %s stack scaffold frontend=%s backend=%s (skip React per-file path)",
+            job.sessionId,
+            frontend,
+            backend,
+        )
+        resolved = plan or build_session_plan(job)
+        raw_title = (
+            (job.intent.summary or job.prompt or "New tool").strip().split("\n")[0][:80]
+            or "New tool"
+        )
+        files = build_stack_files(
+            title=raw_title,
+            prompt=job.prompt,
+            frontend=frontend,
+            backend=backend,
+            reused=reuse.files if reusing and reuse is not None else None,
+        )
+        if reusing and reuse is not None:
+            logger.info(
+                "Generate %s merged Brownie reuse into the %s scaffold assets=%s files=%s",
+                job.sessionId,
+                frontend,
+                reuse.applied_ids,
+                list(reuse.files),
+            )
+        files = _finalize_files(files)
+        if not _has_html_document(_entry_html(files)):
+            raise CodeGeneratorError("Generator output is missing a valid index.html")
+        _assert_file_sizes(files)
+        return AgentResult(
+            files=files,
+            commitMessage=f"Generate {resolved.stack} app: {job.intent.summary[:72]}",
+        )
+    logger.info(
+        "Generate %s monolith archetype=%s confidence=%.2f",
+        job.sessionId,
+        decision.archetype,
+        decision.confidence,
+    )
     resolved = plan or build_session_plan(job)
     logger.info(
-        "Generate %s from model plan layout=%s stack=%s complexity=%s",
+        "Generate %s from model plan layout=%s stack=%s complexity=%s format=%s",
         job.sessionId,
         resolved.layout,
         resolved.stack,
         resolved.complexity,
+        codegen_format(),
     )
-    overlay = _maybe_llm_overlay(job, resolved)
+    _overlay_attempts.failures = []
+    try:
+        overlay = _maybe_llm_overlay(job, resolved, on_file=on_file, reuse=reuse if reusing else None)
+        failures = list(_overlay_attempts.failures)
+    finally:
+        _overlay_attempts.failures = None
+    if overlay and reusing and reuse is not None:
+        overlay = {path: body for path, body in overlay.items() if path not in reuse.files} | reuse.files
+        logger.info(
+            "Generate %s merged Brownie reuse assets=%s files=%s",
+            job.sessionId,
+            reuse.applied_ids,
+            list(reuse.files),
+        )
     overlay_error = _static_preview_error(overlay) if overlay else None
+    if overlay and overlay_error is None and reusing and reuse is not None:
+        overlay_error = reuse_import_error(overlay, reuse)
     if overlay and overlay_error is None:
         files = overlay
         logger.info("Generate %s used model FileMap files=%s", job.sessionId, list(files))
-    elif agents_mode() != "live" or overlay_error is None:
+    elif agents_mode() != "live":
         files = _stub_generated_files(job, resolved)
-        if agents_mode() == "live":
-            logger.warning(
-                "Generate %s using deterministic FileMap fallback because live providers returned no JSON",
-                job.sessionId,
-            )
-        else:
-            logger.info("Generate %s stub FileMap (no layout recipe)", job.sessionId)
+        logger.info("Generate %s stub FileMap (no layout recipe)", job.sessionId)
+    elif not overlay:
+        detail = "; ".join(failures) or "no coding provider is configured"
+        logger.warning("Generate %s stopped: no coding model returned files (%s)", job.sessionId, detail)
+        raise ProvidersUnavailable(
+            f"No coding model returned files ({detail}). Not serving a template. "
+            "Check the model keys in .env, then retry."
+        )
     else:
         reason = overlay_error or (
             "model JSON did not contain any safe files. Expected "
@@ -578,6 +776,8 @@ def generate(job: AgentJob, plan: SessionPlan | None = None) -> AgentResult:
             "Not serving a template."
         )
     files = _finalize_files(files)
+    if reusing and reuse is not None:
+        files = {path: body for path, body in files.items() if path not in reuse.files} | dict(reuse.files)
     if not _has_html_document(_entry_html(files)):
         raise CodeGeneratorError("Generator output is missing a valid index.html")
     final_error = _static_preview_error(files)
@@ -602,6 +802,13 @@ def _stub_generated_files(job: AgentJob, plan: SessionPlan) -> FileMap:
     )
     summary = html.escape((job.intent.summary or title).strip()[:400], quote=True)
     raw_title = (job.intent.summary or job.prompt or "New tool").strip().split("\n")[0][:80] or "New tool"
+    if plan.frontend_stack in {"angular", "sapui5"}:
+        return build_stack_files(
+            title=raw_title,
+            prompt=job.prompt,
+            frontend=plan.frontend_stack,
+            backend=plan.backend_stack,
+        )
     if plan.frontend_stack == "react" and plan.backend_stack == "node-express":
         return _stub_react_node_files(raw_title, job.prompt, plan)
     if plan.frontend_stack == "react":
@@ -851,7 +1058,7 @@ def _stub_react_files(title: str, prompt: str, plan: SessionPlan | None = None) 
         ),
         "src/utils/helpers.js": "export function clampText(value, max = 120) { return String(value || '').slice(0, max); }\n",
         "src/styles/global.css": (
-            ":root { font-family: system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; color: #101827; background: #f7f8fa; }\n"
+            ":root { font-family: \"Segoe UI\", system-ui, sans-serif; color: #14151a; background: #f4f1ea; }\n"
             "* { box-sizing: border-box; }\nbody { margin: 0; }\n"
             "body { background: linear-gradient(135deg, #f8fafc, #eef1f5 52%, #f7f8fa); }\n"
             ".app-shell { min-height: 100vh; padding: clamp(24px, 5vw, 60px); max-width: 1180px; margin: 0 auto; }\n"
@@ -954,6 +1161,32 @@ def _heuristic_plan(job: AgentJob, complexity: Complexity, stack: Stack) -> Sess
     theme = pick_theme(job)
     frontend_stack = resolve_frontend_stack(job)
     backend_stack = resolve_backend_stack(job)
+    if frontend_stack in {"angular", "sapui5"}:
+        files = (
+            (
+                "frontend/package.json",
+                "frontend/src/index.html" if frontend_stack == "angular" else "frontend/webapp/index.html",
+                "backend/package.json",
+            )
+            if backend_stack != "none"
+            else (
+                ("package.json", "src/index.html")
+                if frontend_stack == "angular"
+                else ("package.json", "webapp/index.html", "ui5.yaml")
+            )
+        )
+        return SessionPlan(
+            complexity="complex" if backend_stack != "none" else complexity,
+            stack="fullstack" if backend_stack != "none" else "react",
+            screens=("main", "api") if backend_stack != "none" else ("main",),
+            data=("server state and API routes",) if backend_stack != "none" else ("local UI state",),
+            files=files,
+            notes=f"{frontend_stack} + {backend_stack} ({theme}) for: {summary}",
+            layout=layout,
+            theme=theme,
+            frontend_stack=frontend_stack,
+            backend_stack=backend_stack,
+        )
     if backend_stack != "none":
         return SessionPlan(
             complexity="complex",
@@ -1083,7 +1316,7 @@ def _heuristic_plan(job: AgentJob, complexity: Complexity, stack: Stack) -> Sess
 
 
 def _maybe_llm_plan(job: AgentJob, fallback: SessionPlan) -> dict | None:
-    from terrarium_agents.llm import complete_json
+    from terrarium_agents import llm
 
     system = (
         "You are Terrarium's architecture step. Do not write application files yet. "
@@ -1103,7 +1336,7 @@ def _maybe_llm_plan(job: AgentJob, fallback: SessionPlan) -> dict | None:
         "Use the fallback files when they match the stack. "
         f"Layout hint is {fallback.layout}; keep website pages as real HTML files if layout is split."
     )
-    return complete_json(
+    return llm.complete_json(
         system=system,
         user=(
             f"requirements={job.prompt}\n"
@@ -1147,7 +1380,7 @@ def _plan_from_payload(raw: dict, fallback: SessionPlan) -> SessionPlan:
     )
 
 
-def _overlay_prompt(job: AgentJob, plan: SessionPlan) -> tuple[str, str]:
+def _overlay_prompt(job: AgentJob, plan: SessionPlan, reuse: ReusePlan | None = None) -> tuple[str, str]:
     """
     Enhanced prompt following Gemini's approach:
     - Component-based architecture
@@ -1227,11 +1460,7 @@ def _overlay_prompt(job: AgentJob, plan: SessionPlan) -> tuple[str, str]:
         "- Real functionality, not mock UI\n"
         "- Clean, readable code with comments\n"
         "- Proper error handling\n\n"
-        
-        "## Response Format:\n"
-        'Return JSON only: {"files": {"path": "content", ...}}\n'
-        "Include ALL files mentioned above. Each component gets its own file.\n\n"
-        
+        f"{_response_format_instructions()}"
         "## Styling:\n"
         "- Use CSS custom properties from the plan theme\n"
         "- Use the legal Apple-style system stack: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif. Do not import or embed SF Pro files.\n"
@@ -1243,20 +1472,202 @@ def _overlay_prompt(job: AgentJob, plan: SessionPlan) -> tuple[str, str]:
         "- Accessibility: proper labels, ARIA when needed\n"
     )
     
+    reuse_section = reuse_prompt_section(reuse) if reuse is not None else ""
     user = (
         f"Requirements: {job.prompt}\n\n"
         f"Summary: {job.intent.summary}\n\n"
         f"Architecture Plan:\n{json.dumps(plan.to_payload(), indent=2)}\n\n"
-        "Generate the complete application following the exact stack and file structure above."
+        f"{reuse_section}"
+        + (
+            "Generate only the files that are not provided above, following the exact stack and file structure."
+            if reuse_section
+            else "Generate the complete application following the exact stack and file structure above."
+        )
     )
     return system, user
 
 
-def _maybe_llm_overlay(job: AgentJob, plan: SessionPlan) -> FileMap:
-    from terrarium_agents.llm import complete_json, nvidia_api_key
+def _response_format_instructions() -> str:
+    from terrarium_agents.tagged_files import codegen_format
 
-    system, user = _overlay_prompt(job, plan)
-    payload = complete_json(system, user, purpose="codegen", nvidia_first=bool(nvidia_api_key()))
+    if codegen_format() == "json":
+        return (
+            "## Response Format:\n"
+            'Return JSON only: {"files": {"path": "content", ...}}\n'
+            "Include ALL files mentioned above. Each component gets its own file.\n\n"
+        )
+    return (
+        "## Response Format:\n"
+        "Emit one tagged block per file (no JSON wrapper). Example:\n"
+        '<<<FILE path="index.html">>>\n'
+        "<!doctype html>...\n"
+        "<<<END FILE>>>\n"
+        '<<<FILE path="src/App.jsx">>>\n'
+        "...\n"
+        "<<<END FILE>>>\n"
+        "Include ALL files mentioned above. Each component gets its own file.\n"
+        "Do not wrap the whole response in JSON. Do not use markdown fences around the blocks.\n\n"
+    )
+
+
+def _sanitize_overlay_files(raw_files: dict[object, object], *, session_id: str) -> FileMap:
+    overlay: FileMap = {}
+    skipped: list[str] = []
+    for name, value in raw_files.items():
+        body = _coerce_file_body(value)
+        if not isinstance(name, str) or body is None:
+            skipped.append(f"{name!r}: non-string path or body")
+            continue
+        rel = name.replace("\\", "/").lstrip("/")
+        if ".." in rel or not _SAFE_PATH.match(rel):
+            skipped.append(f"{name}: unsafe path")
+            continue
+        suffix = Path(rel).suffix.lower() or (".html" if rel.endswith("html") else "")
+        if suffix not in _ALLOWED_SUFFIX and Path(rel).name not in _ALLOWED_NAMES:
+            skipped.append(f"{name}: unsupported suffix")
+            continue
+        overlay[rel] = body
+    if skipped:
+        logger.warning("Codegen overlay %s skipped files=%s", session_id, skipped[:12])
+    return overlay
+
+
+def _maybe_llm_overlay(
+    job: AgentJob,
+    plan: SessionPlan,
+    *,
+    on_file: Callable[[str, str], None] | None = None,
+    reuse: ReusePlan | None = None,
+) -> FileMap:
+    from terrarium_agents import llm
+    from terrarium_agents.llm import codegen_providers, model_for_provider, record_llm_call
+    from terrarium_agents.llm_stream import stream_gemini_with_retry, stream_with_one_continuation
+    from terrarium_agents.tagged_files import TaggedFileParser, codegen_format
+
+    system, user = _overlay_prompt(job, plan, reuse)
+    if reuse is not None and on_file:
+        for path, body in reuse.files.items():
+            on_file(path, body)
+    if codegen_format() == "tagged":
+        from terrarium_agents.llm_fixtures import MissingFixture
+
+        replay_miss = False
+        providers = codegen_providers()
+        index = 0
+        while index < len(providers):
+            provider = providers[index]
+            index += 1
+            model = model_for_provider(provider, "codegen")
+            overlay: FileMap = {}
+            continued = False
+
+            def _on_complete(path: str, content: str, _overlay: FileMap = overlay) -> None:
+                sanitized = _sanitize_overlay_files({path: content}, session_id=job.sessionId)
+                for rel, body in sanitized.items():
+                    if reuse is not None and rel in reuse.files:
+                        continue
+                    _overlay[rel] = body
+                    if on_file:
+                        on_file(rel, body)
+
+            parser = TaggedFileParser(on_file=_on_complete)
+
+            def _on_chunk(entry: dict[str, object], _parser: TaggedFileParser = parser) -> None:
+                delta = entry.get("delta")
+                if isinstance(delta, str) and delta:
+                    _parser.feed(delta)
+
+            if provider == "bedrock":
+                try:
+                    first, continuation = stream_with_one_continuation(
+                        system,
+                        user,
+                        model,
+                        on_chunk=_on_chunk,
+                        on_before_continuation=lambda _paths: parser.drop_open(),
+                    )
+                except MissingFixture:
+                    # Replay has no saved monolith call. Do not hit Bedrock; the
+                    # JSON path below still serves unit tests that stub complete_json.
+                    replay_miss = True
+                    logger.warning("codegen replay missing fixture for %s; not calling Bedrock", job.sessionId)
+                    continue
+                result = first
+                continued = continuation is not None
+                if continuation is not None:
+                    record_llm_call(
+                        purpose="codegen",
+                        provider=continuation.provider,
+                        model=continuation.model,
+                        duration_ms=int(continuation.duration_s * 1000),
+                        ok=continuation.ok,
+                        input_tokens=continuation.input_tokens,
+                        output_tokens=continuation.output_tokens,
+                        total_tokens=continuation.total_tokens,
+                        usage_source=continuation.usage_source,
+                        fail_reason=continuation.fail_reason,
+                        time_to_first_token_s=continuation.time_to_first_token_s,
+                        chunk_count=continuation.chunk_count,
+                        continued=True,
+                    )
+                    logger.info(
+                        "Codegen overlay %s continued after max_tokens stop_reason=%s",
+                        job.sessionId,
+                        continuation.stop_reason,
+                    )
+            elif provider == "gemini":
+                result = stream_gemini_with_retry(
+                    system, user, model, on_chunk=_on_chunk, json_mode=False
+                )
+            else:
+                continue
+            record_llm_call(
+                purpose="codegen",
+                provider=result.provider,
+                model=result.model,
+                duration_ms=int(result.duration_s * 1000),
+                ok=result.ok,
+                input_tokens=result.input_tokens,
+                output_tokens=result.output_tokens,
+                total_tokens=result.total_tokens,
+                usage_source=result.usage_source,
+                fail_reason=result.fail_reason,
+                time_to_first_token_s=result.time_to_first_token_s,
+                chunk_count=result.chunk_count,
+                continued=continued,
+            )
+            parser.finish() if parser._open_path is None else None
+            if parser._open_path:
+                logger.warning(
+                    "Codegen overlay %s dropping unclosed file %s continued=%s",
+                    job.sessionId,
+                    parser._open_path,
+                    continued,
+                )
+            if result.ok and overlay:
+                logger.info(
+                    "Codegen overlay %s tagged files=%s via %s ttft=%s",
+                    job.sessionId,
+                    list(overlay),
+                    result.provider,
+                    result.time_to_first_token_s,
+                )
+                return overlay
+            _record_overlay_failure(provider, result.fail_reason)
+            if provider == "bedrock":
+                providers = codegen_providers(result.fail_reason, providers)
+            logger.warning(
+                "Tagged codegen failover from %s reason=%s files=%s",
+                result.provider,
+                result.fail_reason,
+                len(overlay),
+            )
+        if not replay_miss:
+            logger.warning("Codegen overlay %s returned no tagged files", job.sessionId)
+            return {}
+        logger.warning("Codegen overlay %s replay miss; trying the JSON fallback", job.sessionId)
+
+    payload = llm.complete_json(system, user, purpose="codegen")
     if not payload:
         logger.warning("Codegen overlay %s returned no parseable JSON payload", job.sessionId)
         return {}
@@ -1281,28 +1692,12 @@ def _maybe_llm_overlay(job: AgentJob, plan: SessionPlan) -> FileMap:
             )
             if isinstance(payload.get(name), str)
         }
-    overlay: FileMap = {}
-    skipped: list[str] = []
-    for name, value in raw_files.items():
-        body = _coerce_file_body(value)
-        if not isinstance(name, str) or body is None:
-            skipped.append(f"{name!r}: non-string path or body")
-            continue
-        rel = name.replace("\\", "/").lstrip("/")
-        if ".." in rel or not _SAFE_PATH.match(rel):
-            skipped.append(f"{name}: unsafe path")
-            continue
-        suffix = Path(rel).suffix.lower() or (".html" if rel.endswith("html") else "")
-        if suffix not in _ALLOWED_SUFFIX and Path(rel).name not in _ALLOWED_NAMES:
-            skipped.append(f"{name}: unsupported suffix")
-            continue
-        overlay[rel] = body
-    if skipped:
-        logger.warning(
-            "Codegen overlay %s skipped files=%s",
-            job.sessionId,
-            skipped[:12],
-        )
+    if not isinstance(raw_files, dict):
+        return {}
+    overlay = _sanitize_overlay_files(raw_files, session_id=job.sessionId)
+    if on_file:
+        for path, content in overlay.items():
+            on_file(path, content)
     if not overlay:
         logger.warning(
             "Codegen overlay %s has no safe file entries after sanitizing keys=%s",
@@ -1359,7 +1754,15 @@ def _has_html_document(body: str) -> bool:
 
 
 def _entry_html(files: FileMap) -> str:
-    return files.get("index.html") or files.get("frontend/index.html") or ""
+    return (
+        files.get("index.html")
+        or files.get("frontend/index.html")
+        or files.get("src/index.html")
+        or files.get("frontend/src/index.html")
+        or files.get("webapp/index.html")
+        or files.get("frontend/webapp/index.html")
+        or ""
+    )
 
 
 def _is_static_preview(files: FileMap) -> bool:
@@ -1403,6 +1806,8 @@ def _resolve_relative_import(source_path: str, specifier: str, files: FileMap) -
     if target in files:
         return target
     target_suffix = Path(target).suffix.lower()
+    if target_suffix not in _RESOLVABLE_IMPORT_SUFFIXES:
+        target_suffix = ""
     candidates = [target] if target_suffix else []
     if not target_suffix:
         candidates.extend(f"{target}{suffix}" for suffix in _RESOLVABLE_IMPORT_SUFFIXES)

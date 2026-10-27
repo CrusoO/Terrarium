@@ -1,0 +1,77 @@
+{
+  "apps": 1,
+  "loaded": 1,
+  "interactionValidated": 1,
+  "cold": {
+    "coldWallSeconds": 5.597,
+    "exit": 0,
+    "marks": [
+      "MARK docker-ready 1791725932280",
+      "MARK symlink 1791725932341",
+      "MARK build 1791725935752"
+    ],
+    "tail": "dist/assets/index-BKDlpSIl.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-DReYATeb.js   227.70 kB \u00e2\u201d\u201a gzip: 71.01 kB\n\u00e2\u0153\u201c built in 2.50s\nMARK build 1791725935752"
+  },
+  "poolSeconds": 2.318,
+  "rows": [
+    {
+      "slug": "charts-add-field-2",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\canary-edit-replay\\charts-add-field-2",
+      "copySeconds": 0.102,
+      "serverReadySeconds": 4.596,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "firstPaintMs": 2297,
+      "timing": {
+        "browserLaunchMs": 1423,
+        "firstPaintMs": 2297,
+        "routesMs": 261,
+        "interactionMs": 1205
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Revenue",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": true
+      },
+      "errors": [],
+      "browserProcessSeconds": 6.943,
+      "poolSeconds": 2.318,
+      "buildTail": "dist/assets/index-BKDlpSIl.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-BEsGdWIz.js   227.68 kB \u00e2\u201d\u201a gzip: 71.00 kB\n\u00e2\u0153\u201c built in 3.03s"
+    }
+  ]
+}

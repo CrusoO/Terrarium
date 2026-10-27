@@ -20,9 +20,9 @@ class AuthResponse(BaseModel):
     user: User
 
 Stack = Literal["react", "fullstack"]
-FrontendStack = Literal["vanilla", "react"]
+FrontendStack = Literal["vanilla", "react", "angular", "sapui5", "custom"]
 BackendNeed = Literal["auto", "yes", "no"]
-BackendStack = Literal["none", "node-express"]
+BackendStack = Literal["none", "node-express", "sap-cap"]
 IntentKind = Literal["new", "modify"]
 ToolRole = Literal["owner", "editor", "viewer"]
 ToolVisibility = Literal["all", "group", "private"]
@@ -32,10 +32,18 @@ SessionEventName = Literal[
     "smartmatch.hit",
     "smartmatch.miss",
     "intent.classified",
+    "brownie.knowledge",
+    "architecture.planned",
+    "brownie.review",
+    "brownie.applied",
     "codegen.started",
     "codegen.completed",
+    "codegen.retry",
     "editor.started",
     "editor.completed",
+    "edit.verified",
+    "blocked by security gate",
+    "heal.skipped",
     "sandbox.booting",
     "sandbox.ready",
     "sandbox.unhealthy",
@@ -45,6 +53,69 @@ SessionEventName = Literal[
     "preview.stream.file",
     "preview.stream.completed",
     "preview.ready",
+    "check.started",
+    "check.step",
+    "check.completed",
+    "publish.blocked",
+    "vuln.detected",
+    "vuln.remediation.attempt",
+    "vuln.remediated",
+    "vuln.suppressed",
+    "vuln.escalated",
+    "vuln.campaign.progress",
+    "change.queued",
+    "change.claimed",
+    "change.tests_proposed",
+    "change.tests_approved",
+    "change.ready",
+    "change.published",
+    "change.failed",
+]
+
+VulnSource = Literal["osv", "semgrep", "gitleaks", "trivy", "attack"]
+Severity = Literal["low", "medium", "high", "critical"]
+HealthStatus = Literal["checking", "healthy", "warning", "unsafe", "stale"]
+CheckStep = Literal[
+    "tests",
+    "regression",
+    "dependencies",
+    "code",
+    "secrets",
+    "image",
+    "attacks",
+]
+RemediationStrategy = Literal[
+    "patch_upgrade",
+    "code_fix",
+    "major_upgrade",
+    "replace_package",
+    "remove_dependency",
+    "suppress",
+    "contain",
+]
+LedgerEntryKind = Literal[
+    "detected",
+    "attempt",
+    "fixed",
+    "suppressed",
+    "reopened",
+    "escalated",
+    "contained",
+]
+ChangeChannel = Literal["whatsapp", "slack", "teams", "email", "web"]
+ChangeRequestStatus = Literal[
+    "received",
+    "queued",
+    "claimed",
+    "awaiting_test_approval",
+    "building",
+    "verifying",
+    "ready_for_review",
+    "published",
+    "failed",
+    "rejected",
+    "expired",
+    "cancelled",
 ]
 
 FileMap = dict[str, str]
@@ -58,6 +129,24 @@ class ConversationTurn(BaseModel):
     text: str
 
 
+class AcceptanceCheck(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    description: str
+    steps: list[str] | None = None
+
+
+class AcceptanceCheckResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    checkId: str
+    status: Literal["passed", "failed", "skipped"]
+    screenshotUrl: str | None = None
+    error: str | None = None
+    durationMs: int | None = None
+
+
 class Intent(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -67,6 +156,7 @@ class Intent(BaseModel):
     toolId: str | None = None
     frontendStack: FrontendStack | None = None
     backendStack: BackendStack | None = None
+    acceptanceChecks: list[AcceptanceCheck] | None = None
 
 
 class IntentAgentInput(BaseModel):
@@ -84,6 +174,32 @@ class IntentAgentInput(BaseModel):
     backendStack: BackendStack | None = None
 
 
+class ClarifyChoice(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str
+    subtitle: str
+    value: str
+    variant: Literal["default", "upload", "custom"] | None = None
+    recommended: bool = False
+
+
+class ClarifyQuestion(BaseModel):
+    """Clarify prompt with quick-pick options (UI always allows custom text)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    text: str
+    helperText: str | None = None
+    allowMultiple: bool = False
+    inputPlaceholder: str | None = None
+    acceptsFiles: bool = False
+    options: list[str] | None = Field(default=None, min_length=3, max_length=6)
+    choices: list[ClarifyChoice] | None = Field(default=None, min_length=3, max_length=6)
+    dataSource: bool = False
+    isStackSelector: bool = False
+
+
 class IntentAgentOutput(BaseModel):
     """Intent plus chat-only fields. Other agents must parse Intent, not this."""
 
@@ -95,9 +211,11 @@ class IntentAgentOutput(BaseModel):
     toolId: str | None = None
     frontendStack: FrontendStack | None = None
     backendStack: BackendStack | None = None
+    acceptanceChecks: list[AcceptanceCheck] | None = None
     phase: IntentPhase = "ready"
     reply: str | None = None
     questions: list[str] | None = None
+    questionItems: list[ClarifyQuestion] | None = None
 
     def as_intent(self) -> Intent:
         return Intent(
@@ -107,6 +225,7 @@ class IntentAgentOutput(BaseModel):
             toolId=self.toolId,
             frontendStack=self.frontendStack,
             backendStack=self.backendStack,
+            acceptanceChecks=self.acceptanceChecks,
         )
 
 
@@ -155,6 +274,8 @@ class CreateSessionRequest(BaseModel):
     frontendStack: FrontendStack | None = None
     backendNeed: BackendNeed | None = None
     backendStack: BackendStack | None = None
+    # Brownie asset ids the user accepted for reuse. Present only when resuming a paused Brownie review.
+    brownieAssetIds: list[str] | None = None
 
 
 class CreateSessionResponse(BaseModel):
@@ -231,6 +352,8 @@ class Tool(BaseModel):
     groupId: str | None = None
     groupName: str | None = None
     myRole: ToolRole | None = None
+    autoApproveTests: bool | None = None
+    draftVersionId: str | None = None
     createdAt: str
     updatedAt: str
     latestVersionId: str | None = None
@@ -284,6 +407,8 @@ class PublishToolRequest(BaseModel):
     visibility: Literal["all", "group"] = "all"
     groupId: str | None = None
     groupName: str | None = None
+    acknowledgeWarnings: bool | None = None
+    versionId: str | None = None
 
     @model_validator(mode="after")
     def group_required_for_group_visibility(self) -> PublishToolRequest:
@@ -367,3 +492,187 @@ class GitHubPushResponse(BaseModel):
     htmlUrl: str
     repo: str
     created: bool
+
+
+class VulnerabilityFinding(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    toolId: str
+    versionId: str
+    source: VulnSource
+    severity: Severity
+    title: str
+    advisoryId: str | None = None
+    packageName: str | None = None
+    installedVersion: str | None = None
+    fixedVersions: list[str] | None = None
+    file: str | None = None
+    rule: str | None = None
+    reachable: bool | None = None
+    detectedAt: str
+
+
+class ToolHealthTests(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    passed: int
+    total: int
+    failedIds: list[str]
+
+
+class ToolHealthAttacks(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    attempted: int
+    succeeded: int
+    notApplicable: list[str]
+
+
+class ToolHealthVulnerabilities(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    critical: int
+    high: int
+    medium: int
+    low: int
+
+
+class ToolHealth(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    toolId: str
+    versionId: str
+    fileMapHash: str
+    vulnDbVersion: str
+    status: HealthStatus
+    checkedAt: str
+    tests: ToolHealthTests
+    attacks: ToolHealthAttacks
+    vulnerabilities: ToolHealthVulnerabilities
+    secretsFound: int
+    codeIssues: int
+    activeSuppressions: int
+    blockingReasons: list[str]
+    warnings: list[str]
+
+
+class RemediationAttempt(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    findingId: str
+    strategy: RemediationStrategy
+    attempt: int
+    draftVersionId: str | None = None
+    checksPassed: int | None = None
+    checksTotal: int | None = None
+    rescanClean: bool | None = None
+    outcome: Literal["fixed", "failed", "needs_approval"]
+
+
+class Suppression(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    findingId: str
+    reason: str
+    evidence: str | None = None
+    approvedBy: str
+    expiresAt: str
+
+
+class RemediationCampaign(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    advisoryId: str
+    toolIds: list[str]
+    canaryToolId: str
+    fixed: int
+    failed: int
+    pendingApproval: int
+
+
+class LedgerEntry(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    toolId: str
+    at: str
+    kind: LedgerEntryKind
+    findingId: str | None = None
+    detail: str
+
+
+class ChangeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    channel: ChangeChannel
+    externalMessageId: str
+    actorId: str
+    toolId: str | None = None
+    text: str
+    status: ChangeRequestStatus
+    sessionId: str | None = None
+    draftVersionId: str | None = None
+    proposedChecks: list[AcceptanceCheck] | None = None
+    leaseOwner: str | None = None
+    leaseExpiresAt: str | None = None
+    createdAt: str
+    updatedAt: str
+
+
+class ChannelLink(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    actorId: str
+    channel: ChangeChannel
+    address: str
+    verifiedAt: str
+
+
+class CheckStepPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    step: CheckStep
+    status: Literal["running", "passed", "failed", "skipped"]
+    detail: str | None = None
+
+
+class CheckCompletedPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    health: ToolHealth
+
+
+class PublishBlockedPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    blockingReasons: list[str]
+
+
+class ToolHealthResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    live: ToolHealth | None = None
+    draft: ToolHealth | None = None
+
+
+class LedgerResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    entries: list[LedgerEntry]
+
+
+class PublishBlockedResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    blockingReasons: list[str]
+    health: ToolHealth
+
+
+class WhatsAppLinkCodeResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    code: str
+    expiresAt: str

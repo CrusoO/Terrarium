@@ -68,17 +68,19 @@ The worker logs the selected provider/model at startup and each LLM-backed event
 | Agent | Current provider/model | Reason |
 | --- | --- | --- |
 | Intent | `gemini/gemini-3.5-flash-lite` | Fast, cheap classification and clarification questions. |
-| Plan | `bedrock/anthropic.claude-sonnet-4-6` when AWS is configured; otherwise `nvidia/nvidia/llama-3.1-nemotron-ultra-253b-v1` | Architecture planning benefits from a stronger reasoning model. |
-| Code Generator | `nvidia/mistralai/codestral-22b-instruct-v0.1` when `NVIDIA_API_KEY` is configured | Codestral is a coding-specialized model available in the NVIDIA catalog and avoids the expired previous default. |
-| Code Generator fallback | Bedrock, then Gemini, then deterministic component fallback if no provider returns parseable JSON | Keeps generation moving without entering a slow repeated heal loop. |
+| Plan | `bedrock/anthropic.claude-sonnet-4-6` (inference profile in EU) when AWS is configured; otherwise `gemini/gemini-3.8-flash` | Architecture planning benefits from a stronger reasoning model. |
+| Code Generator | Same primary/fallback order as plan: **Bedrock → Gemini 3.8 Flash → NVIDIA (opt-in)** | Plan and codegen share routing; a stale `NVIDIA_API_KEY` must not run before Bedrock. |
+| Code Generator last resort | Deterministic component fallback if no provider returns parseable JSON | Keeps generation moving without entering a slow repeated heal loop. |
 
 Relevant env vars:
 
 ```env
-TERRARIUM_NVIDIA_PLAN_MODEL=nvidia/llama-3.1-nemotron-ultra-253b-v1
-TERRARIUM_NVIDIA_CODEGEN_MODEL=mistralai/codestral-22b-instruct-v0.1
-TERRARIUM_MODEL_PLAN=nvidia/llama-3.1-nemotron-ultra-253b-v1
-TERRARIUM_MODEL_CODEGEN=mistralai/codestral-22b-instruct-v0.1
+GEMINI_API_KEY=
+TERRARIUM_MODEL_CODEGEN=gemini-3.8-flash
+BEDROCK_CODEGEN_READ_TIMEOUT_S=300
+# NVIDIA only when explicitly enabled:
+# TERRARIUM_ENABLE_NVIDIA=1
+# NVIDIA_API_KEY=
 ```
 
 ## How this maps to a non-technical explanation

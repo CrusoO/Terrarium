@@ -12,12 +12,14 @@ from terrarium_contracts import (
     DEV_USER,
     RuntimeErrorRequest,
     SessionFilesResponse,
+    ToolHealth,
 )
 
 from terrarium_api.auth.deps import get_current_user
 from terrarium_api.db import get_db
 from terrarium_api.events import make_event
-from terrarium_api.models import ToolRecord
+from terrarium_api.models import SessionRecord, ToolRecord, utc_now
+from terrarium_api.preview_access import require_preview_access
 from terrarium_api.session_log import SessionEventLog
 from terrarium_api.session_lock import acquire_session_lock, release_session_lock
 from terrarium_api.tool_access import can_edit_tool
@@ -62,6 +64,21 @@ async def create_session(
         await log.append(
             make_event("session.created", session_id, {"actorId": actor_id})
         )
+        await log.save_actor_id(session_id, actor_id)
+        email = (user.get("email") or "").strip().lower()
+        if email:
+            await log.save_actor_email(session_id, email)
+        db.add(
+            SessionRecord(
+                id=session_id,
+                owner_id=actor_id,
+                tool_id=None,
+                status="running",
+                created_at=utc_now(),
+                updated_at=utc_now(),
+            )
+        )
+        db.commit()
     lock_token = await acquire_session_lock(redis, session_id)
     if lock_token is None:
         raise HTTPException(
@@ -76,6 +93,7 @@ async def create_session(
         body.frontendStack,
         body.backendNeed,
         body.backendStack,
+        body.brownieAssetIds,
         _job_id=f"session:{session_id}:{uuid4().hex}",
     )
     if job is None:
@@ -85,22 +103,34 @@ async def create_session(
 
 
 @router.get("/sessions/{session_id}/files", response_model=SessionFilesResponse)
-async def session_files(session_id: str, request: Request) -> SessionFilesResponse:
+async def session_files(
+    session_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+    user: dict[str, str] = Depends(get_current_user),
+) -> SessionFilesResponse:
     redis = _redis(request)
     log = SessionEventLog(redis)
-    if not await log.exists(session_id):
-        raise HTTPException(status_code=404, detail="Unknown sessionId")
+    await require_preview_access(log, db, session_id, user)
     return SessionFilesResponse(files=await log.load_files(session_id) or {})
 
 
 @router.post("/sessions/{session_id}/runtime-errors")
 async def report_runtime_error(
-    session_id: str, body: RuntimeErrorRequest, request: Request
+    session_id: str,
+    body: RuntimeErrorRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    user: dict[str, str] = Depends(get_current_user),
 ) -> dict[str, bool]:
     redis = _redis(request)
     log = SessionEventLog(redis)
-    if not await log.exists(session_id):
-        raise HTTPException(status_code=404, detail="Unknown sessionId")
+    await require_preview_access(log, db, session_id, user)
+    tool_id = await log.load_tool_id(session_id)
+    if tool_id:
+        tool = db.get(ToolRecord, tool_id)
+        if tool is not None and not can_edit_tool(tool, user, db):
+            raise HTTPException(status_code=403, detail="Forbidden")
     lock_token = await acquire_session_lock(redis, session_id)
     if lock_token is None:
         return {"accepted": False}
@@ -121,12 +151,12 @@ async def report_runtime_error(
 async def session_events(
     session_id: str,
     request: Request,
-    _user: dict[str, str] = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    user: dict[str, str] = Depends(get_current_user),
 ) -> StreamingResponse:
     redis = _redis(request)
     log = SessionEventLog(redis)
-    if not await log.exists(session_id):
-        raise HTTPException(status_code=404, detail="Unknown sessionId")
+    await require_preview_access(log, db, session_id, user)
 
     last_id = (
         request.query_params.get("lastEventId")
@@ -153,3 +183,29 @@ async def session_events(
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@router.post("/sessions/{session_id}/publish-check", response_model=ToolHealth)
+async def session_publish_check(
+    session_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+    user: dict[str, str] = Depends(get_current_user),
+) -> ToolHealth:
+    from terrarium_api.routes.workspace import _original_prompt
+    from terrarium_api.trust.session_gate import run_session_publish_check
+
+    redis = _redis(request)
+    log = SessionEventLog(redis)
+    await require_preview_access(log, db, session_id, user)
+    files = await log.load_files(session_id)
+    if not files:
+        raise HTTPException(status_code=409, detail="No FileMap is available to check.")
+    turns = await log.load_conversation(session_id)
+    prompt = _original_prompt(turns)
+    tool_id = await log.load_tool_id(session_id)
+    tool = db.get(ToolRecord, tool_id) if tool_id else None
+    if tool is not None and not can_edit_tool(tool, user, db):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    summary = prompt or "Terrarium app"
+    return await run_session_publish_check(log, session_id, db, tool, files, summary=summary, prompt=prompt)

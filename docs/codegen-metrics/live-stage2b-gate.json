@@ -1,0 +1,323 @@
+{
+  "apps": 5,
+  "loaded": 5,
+  "interactionValidated": 5,
+  "cold": {
+    "coldWallSeconds": 10.279,
+    "exit": 0,
+    "marks": [
+      "MARK docker-ready 1791731401005",
+      "MARK symlink 1791731401102",
+      "MARK build 1791731408895"
+    ],
+    "tail": "dist/assets/index-Cnd1uCxR.css    1.93 kB \u00e2\u201d\u201a gzip:  0.79 kB\ndist/assets/index-B_1u-9D0.js   229.37 kB \u00e2\u201d\u201a gzip: 71.63 kB\n\u00e2\u0153\u201c built in 6.79s\nMARK build 1791731408895"
+  },
+  "poolSeconds": 5.112,
+  "rows": [
+    {
+      "slug": "01-library",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2b\\01-library",
+      "copySeconds": 0.117,
+      "serverReadySeconds": 14.113,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 4280,
+      "timing": {
+        "browserLaunchMs": 2186,
+        "firstPaintMs": 4280,
+        "routesMs": 174,
+        "interactionMs": 1155
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Out",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 10.377,
+      "poolSeconds": 5.112,
+      "buildTail": "dist/assets/index-Cnd1uCxR.css    1.93 kB \u00e2\u201d\u201a gzip:  0.79 kB\ndist/assets/index-B_1u-9D0.js   229.37 kB \u00e2\u201d\u201a gzip: 71.63 kB\n\u00e2\u0153\u201c built in 17.98s"
+    },
+    {
+      "slug": "02-parts-bin",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2b\\02-parts-bin",
+      "copySeconds": 0.132,
+      "serverReadySeconds": 14.387,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 1169,
+      "timing": {
+        "browserLaunchMs": 1331,
+        "firstPaintMs": 1169,
+        "routesMs": 193,
+        "interactionMs": 1459
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "New",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "number",
+              "value": "7",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 7.199,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-BMDiB07f.css    1.94 kB \u00e2\u201d\u201a gzip:  0.81 kB\ndist/assets/index-ITeev7xK.js   229.10 kB \u00e2\u201d\u201a gzip: 71.60 kB\n\u00e2\u0153\u201c built in 19.72s"
+    },
+    {
+      "slug": "03-volunteers",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2b\\03-volunteers",
+      "copySeconds": 0.188,
+      "serverReadySeconds": 7.139,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 1338,
+      "timing": {
+        "browserLaunchMs": 2130,
+        "firstPaintMs": 1338,
+        "routesMs": 235,
+        "interactionMs": 1124
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Confirmed",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 6.975,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-BltkaES1.css    1.94 kB \u00e2\u201d\u201a gzip:  0.80 kB\ndist/assets/index-ChBVr2aq.js   229.33 kB \u00e2\u201d\u201a gzip: 71.66 kB\n\u00e2\u0153\u201c built in 8.87s"
+    },
+    {
+      "slug": "04-greenhouse",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2b\\04-greenhouse",
+      "copySeconds": 0.178,
+      "serverReadySeconds": 11.713,
+      "buildOk": false,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": false,
+      "firstPaintMs": 1531,
+      "timing": {
+        "browserLaunchMs": 2602,
+        "firstPaintMs": 1531,
+        "routesMs": 430,
+        "interactionMs": 1736
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Growing",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 10.283,
+      "poolSeconds": 0,
+      "buildTail": "  Type 'symbol' is not assignable to type 'Key | null | undefined'.\nsrc/components/PlantCard.tsx(15,41): error TS2322: Type 'string | number | symbol' is not assignable to type 'ReactNode'.\n  Type 'symbol' is not assignable to type 'ReactNode'."
+    },
+    {
+      "slug": "05-tool-crib",
+      "source": "C:\\Users\\thakur\\Downloads\\Terrarium\\Terrarium\\docs\\codegen-metrics\\live-stage2b\\05-tool-crib",
+      "copySeconds": 0.125,
+      "serverReadySeconds": 10.528,
+      "buildOk": true,
+      "buildSeconds": null,
+      "loaded": true,
+      "interactionValidated": true,
+      "relevanceOk": true,
+      "validated": true,
+      "firstPaintMs": 2381,
+      "timing": {
+        "browserLaunchMs": 2452,
+        "firstPaintMs": 2381,
+        "routesMs": 268,
+        "interactionMs": 15057
+      },
+      "behaviour": {
+        "before": 4,
+        "filtered": 2,
+        "filterNarrowed": true,
+        "added": true,
+        "after": 5,
+        "formState": {
+          "valid": true,
+          "fields": [
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "select-one",
+              "value": "Out",
+              "valid": true
+            },
+            {
+              "id": "",
+              "type": "text",
+              "value": "Canary Row",
+              "valid": true
+            }
+          ]
+        },
+        "detailHasText": true,
+        "totalsChanged": null
+      },
+      "errors": [],
+      "browserProcessSeconds": 41.857,
+      "poolSeconds": 0,
+      "buildTail": "dist/assets/index-Cnd1uCxR.css    1.93 kB \u00e2\u201d\u201a gzip:  0.79 kB\ndist/assets/index-HPUWV02R.js   229.47 kB \u00e2\u201d\u201a gzip: 71.75 kB\n\u00e2\u0153\u201c built in 21.91s"
+    }
+  ]
+}

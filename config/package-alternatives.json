@@ -1,0 +1,5 @@
+{
+  "lodash": ["es-toolkit", "remeda"],
+  "moment": ["date-fns", "dayjs"],
+  "request": ["node-fetch", "undici"]
+}

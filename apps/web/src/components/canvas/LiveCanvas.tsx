@@ -8,6 +8,7 @@ export function LiveCanvas({
   files = null,
   streamFiles = null,
   sessionId = null,
+  toolId = null,
   tab = "preview",
   onTabChange,
   onRuntimeError,
@@ -19,6 +20,7 @@ export function LiveCanvas({
   files?: FileMap | null;
   streamFiles?: FileMap | null;
   sessionId?: string | null;
+  toolId?: string | null;
   tab?: "preview" | "code";
   onTabChange?: (tab: "preview" | "code") => void;
   onRuntimeError?: (error: RuntimeErrorRequest) => void;
@@ -33,6 +35,7 @@ export function LiveCanvas({
         files={files}
         streamFiles={streamFiles}
         sessionId={sessionId}
+        toolId={toolId}
         tab={tab}
         onTabChange={onTabChange}
         onRuntimeError={onRuntimeError}

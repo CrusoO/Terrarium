@@ -1,0 +1,613 @@
+/* ─── CSS Custom Properties ─────────────────────────────────────────── */
+:root {
+  --color-bg: #f4f6f9;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-focus: #3b82f6;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-text: #ffffff;
+  --color-secondary-bg: #f1f5f9;
+  --color-secondary-hover: #e2e8f0;
+  --color-error: #dc2626;
+  --color-error-bg: #fef2f2;
+  --color-error-border: #fca5a5;
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+  --color-success-border: #86efac;
+  --color-submit: #059669;
+  --color-submit-hover: #047857;
+  --color-hint: #64748b;
+  --color-step-inactive: #cbd5e1;
+  --color-step-active: #2563eb;
+  --color-step-complete: #16a34a;
+  --color-connector: #e2e8f0;
+  --color-connector-filled: #86efac;
+  --shadow-card: 0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15, 23, 42, 0.04);
+  --shadow-input-focus: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ─── Reset & Base ───────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ─── App Shell ──────────────────────────────────────────────────────── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+}
+
+.app-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.app-logo {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.app-brand {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.3px;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px 48px;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+/* ─── Wizard Card ────────────────────────────────────────────────────── */
+.wizard-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-width: 520px;
+  overflow: hidden;
+}
+
+.wizard-header {
+  padding: 28px 32px 0;
+}
+
+.wizard-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.4px;
+}
+
+.wizard-subtitle {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+.wizard-body {
+  padding: 0 32px 32px;
+}
+
+/* ─── Step Indicator ─────────────────────────────────────────────────── */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  padding: 24px 32px 20px;
+  gap: 0;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--color-secondary-bg);
+  color: var(--color-text-muted);
+  border: 2px solid var(--color-step-inactive);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.step-active .step-circle {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.step-completed .step-circle {
+  background: var(--color-step-complete);
+  border-color: var(--color-step-complete);
+  color: #fff;
+}
+
+.step-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.step-active .step-label {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.step-completed .step-label {
+  color: var(--color-step-complete);
+}
+
+.step-connector {
+  flex: 1;
+  height: 2px;
+  background: var(--color-connector);
+  margin: 0 8px;
+  margin-bottom: 22px;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+
+.connector-filled {
+  background: var(--color-step-complete);
+}
+
+/* ─── Step Form ──────────────────────────────────────────────────────── */
+.step-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.step-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.step-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.3px;
+}
+
+.step-description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ─── Form Fields ────────────────────────────────────────────────────── */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.required-mark {
+  color: var(--color-error);
+  margin-left: 2px;
+}
+
+.field-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: var(--font);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.field-input:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-input-focus);
+}
+
+.field-input--error {
+  border-color: var(--color-error-border);
+  background: var(--color-error-bg);
+}
+
+.field-input--error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* Currency input wrapper */
+.currency-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background: var(--color-surface);
+}
+
+.currency-input-wrapper:focus-within {
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-input-focus);
+}
+
+.currency-input-wrapper--error {
+  border-color: var(--color-error-border);
+  background: var(--color-error-bg);
+}
+
+.currency-input-wrapper--error:focus-within {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.currency-symbol {
+  padding: 10px 12px 10px 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-secondary-bg);
+  border-right: 1.5px solid var(--color-border);
+  user-select: none;
+  line-height: 1;
+}
+
+.field-input--currency {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  flex: 1;
+  padding-left: 12px;
+}
+
+.field-input--currency:focus {
+  border: none;
+  box-shadow: none;
+}
+
+.field-error {
+  font-size: 13px;
+  color: var(--color-error);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.field-hint {
+  font-size: 13px;
+  color: var(--color-hint);
+}
+
+/* ─── Step Actions ───────────────────────────────────────────────────── */
+.step-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.step-actions--right {
+  justify-content: flex-end;
+}
+
+.step-actions--split {
+  justify-content: space-between;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.btn-secondary {
+  background: var(--color-secondary-bg);
+  color: var(--color-text-primary);
+  border: 1.5px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-secondary-hover);
+}
+
+.btn-submit {
+  background: var(--color-submit);
+  color: #fff;
+}
+
+.btn-submit:hover {
+  background: var(--color-submit-hover);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+}
+
+/* ─── Review Card ────────────────────────────────────────────────────── */
+.review-card {
+  background: var(--color-secondary-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+}
+
+.review-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.review-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+}
+
+.review-field:first-child {
+  padding-top: 0;
+}
+
+.review-field:last-child {
+  padding-bottom: 0;
+}
+
+.review-divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+.review-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-text-muted);
+}
+
+.review-value {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.review-value--amount {
+  color: var(--color-primary);
+  font-size: 20px;
+}
+
+.review-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sm);
+  color: #1e40af;
+}
+
+.review-notice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.review-notice p {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ─── Confirmation Screen ────────────────────────────────────────────── */
+.confirmation-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 32px;
+  gap: 16px;
+}
+
+.confirmation-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-success-bg);
+  border: 2px solid var(--color-success-border);
+  color: var(--color-success);
+  font-size: 28px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmation-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.4px;
+}
+
+.confirmation-message {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  max-width: 340px;
+}
+
+.confirmation-summary {
+  width: 100%;
+  background: var(--color-secondary-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.confirmation-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.confirmation-detail-label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.confirmation-detail-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.confirmation-ref {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.confirmation-ref strong {
+  color: var(--color-text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .app-main {
+    padding: 20px 12px 40px;
+    align-items: flex-start;
+  }
+
+  .wizard-header {
+    padding: 20px 20px 0;
+  }
+
+  .wizard-body {
+    padding: 0 20px 24px;
+  }
+
+  .step-indicator {
+    padding: 20px 20px 16px;
+  }
+
+  .step-actions--split {
+    flex-direction: column-reverse;
+  }
+
+  .step-actions--split .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .step-actions--right .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .confirmation-screen {
+    padding: 28px 20px;
+  }
+
+  .review-value--amount {
+    font-size: 18px;
+  }
+}

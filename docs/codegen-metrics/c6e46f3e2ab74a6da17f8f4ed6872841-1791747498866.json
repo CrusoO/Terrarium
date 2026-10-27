@@ -1,0 +1,33 @@
+{
+  "durationMs": 2439,
+  "events": [],
+  "finishedAtMs": 1791747501305,
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 2408,
+      "inputTokens": 1093,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 159,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "IT change request tracker with owner, system (Dev, QA, Prod), status and due date; search, status filter, add form and detail view.",
+  "runId": "c6e46f3e2ab74a6da17f8f4ed6872841-1791747498866",
+  "runType": "new",
+  "sessionId": "c6e46f3e2ab74a6da17f8f4ed6872841",
+  "stages": [
+    {
+      "durationMs": 2435,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791747498867
+    }
+  ],
+  "startedAtMs": 1791747498866,
+  "status": "clarify"
+}

@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 
 from terrarium_contracts import (
     BackendStack,
+    ClarifyChoice,
+    ClarifyQuestion,
     FrontendStack,
     IntentAgentInput,
     IntentAgentOutput,
@@ -19,8 +22,12 @@ from terrarium_contracts import (
 from terrarium_agents.llm import (
     DEFAULT_GEMINI_JSON_TIMEOUT_MS,
     agents_mode,
+    bedrock_ready,
+    fast_model,
     gemini_client,
     intent_model,
+    invoke_bedrock_text,
+    record_llm_call,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,8 +53,8 @@ INTENT_JSON_SCHEMA: dict[str, object] = {
         "stack": {"type": "string", "enum": ["react", "fullstack"]},
         "summary": {"type": "string"},
         "toolId": {"type": "string"},
-        "frontendStack": {"type": "string", "enum": ["vanilla", "react"]},
-        "backendStack": {"type": "string", "enum": ["none", "node-express"]},
+        "frontendStack": {"type": "string", "enum": ["vanilla", "react", "angular", "sapui5"]},
+        "backendStack": {"type": "string", "enum": ["none", "node-express", "sap-cap"]},
         "phase": {"type": "string", "enum": ["greeting", "clarify", "ready"]},
         "reply": {"type": "string"},
         "questions": {"type": "array", "items": {"type": "string"}},
@@ -57,7 +64,7 @@ INTENT_JSON_SCHEMA: dict[str, object] = {
 
 SYSTEM_PROMPT = """You are Terrarium's Intent Agent — a friendly product partner.
 
-You do not write application code, file trees, Docker, or shell. You help everyday people describe what they want. Many users are not technical (sales, HR, operations, teachers). Talk like a helpful colleague, never like an engineer.
+You do not write application code, file trees, Docker, or shell. You help everyday people describe what they want. Many users are not technical (sales, HR, operations, teachers). Talk like a helpful colleague, never like an engineer. Ask about their business. The UI also asks them to pick React, Angular, or SAP Fiori — you must not guess that pick from words in the first prompt.
 
 Return JSON only matching the schema. Decide phase first, then fill the rest.
 
@@ -76,24 +83,18 @@ WHEN TO USE EACH
 - Do not loop forever. After two rounds of answers, go ready even if a detail is missing — pick a sensible default and state it in reply.
 - Never reuse the greeting sentence once they have asked to build something.
 
-CLARIFY QUESTIONS (exactly 6, everyday words, specific to THIS tool)
-Write questions a non-technical person can answer in one short sentence. Cover, in their own words:
-1. Who it is for
-2. What they should be able to do first
-3. What they type, choose, or bring in
-4. What they should see when they are done
-5. Whether they need to save, print, or come back later
-6. Whether it stays only on their screen, or other people should sign in and share it
-Tune the wording to THIS request (calculator, converter, website, form, dashboard, and so on).
-Banned words in questions: frontend, backend, API, database, auth, JWT, Vite, React, endpoint, localStorage, Docker, fullstack.
-Never ask generic "tell me more". Never ask more or fewer than 6. Do not repeat questions they already answered.
-Do not use a canned website template (do not always ask landing/portfolio/pages unless that is what they asked for).
+CLARIFY QUESTIONS (exactly 6, everyday business words)
+Ask one thing per question. Keep each question under 12 words.
+Ask about what they do, who they serve, how customers buy, what they track, who on the team uses it, and what they want to see first.
+Use plain words only. Never ask about technology.
+Banned words in questions: frontend, backend, fullstack, API, database, records, entries, mock data, dummy data, import, ingest, schema, fields, columns, entity, object, model, workflow, pipeline, CRUD, dashboard, analytics, auth, JWT, Vite, React, endpoint, localStorage, Docker.
+Prefer concrete examples over abstract categories. Never ask generic "tell me more". Never ask more or fewer than 6. Do not repeat questions they already answered.
 
 KIND / STACK
 - modify ONLY if an existing FileMap or toolId is in context. Otherwise new.
 - fullstack only if they clearly need sign-in, shared users, saved data for a team, payments, email, or file uploads to a server. Else react.
-- Infer stack from their plain answers. Do not ask them to pick a technology.
-- React/Vite is the default frontend stack unless the user explicitly asks for plain HTML/CSS/JS.
+- Do not infer React, Angular, or SAP Fiori from the first prompt. Stay in clarify until they pick a stack in the chips (or say React / Angular / SAP Fiori in an answer).
+- If they have not picked a stack yet, phase is clarify. Never default to React and start a build.
 
 SUMMARY
 - One line, <= 160 chars, the tool itself. Greeting → "Chat greeting".
@@ -101,7 +102,7 @@ SUMMARY
 REPLY STYLE
 - Direct, warm, no filler, no "As an AI", no "Great question!".
 - Greeting: "Hey — what should we build?" Then the UI shows starter chips.
-- Clarify: "I can make that. Six simple questions so it matches what you have in mind."
+- Clarify: "I can make that. A few questions, including which kind of app to build."
 - Ready: confirm the plan in plain language, including any default you assumed.
 
 SAFETY
@@ -122,7 +123,8 @@ _FULLSTACK_RE = re.compile(
 _BACKEND_NEEDED_RE = re.compile(
     r"\b(auth|logins?|sign[- ]?up|users?|shared|database|db|backend|server|"
     r"api keys?|secrets?|payments?|email|upload|file processing|multi[- ]?user|"
-    r"roles?|permissions?|websocket|real[- ]?time)\b",
+    r"roles?|permissions?|websocket|real[- ]?time|"
+    r"express|node[- ]?express|odata|cap|sap\s*cap)\b",
     re.IGNORECASE,
 )
 
@@ -165,11 +167,21 @@ _SOCIAL_START_RE = re.compile(
     re.IGNORECASE,
 )
 
+_COMPOUND_GREETING_RE = re.compile(
+    r"^\s*(hi+|hello+|hey+)\s+("
+    r"there|"
+    r"how\s+(are|r)\s+(you|u)(?:\s+doing)?|"
+    r"what'?s\s+up"
+    r")[\s!.?,]*$",
+    re.IGNORECASE,
+)
+
 _BUILD_RE = re.compile(
     r"\b("
-    r"buil[dt]|create|make|generate|scaffold|converter?|calculator|"
+    r"buil[dt]|buid|create|make|generate|scaffold|converter?|calculator|"
     r"dashboard|form|tool|app|widget|bot|tracker|timer|"
-    r"website|web\s*site|webpage|landing\s*page|portfolio"
+    r"website|websit|web\s*site|webpage|landing\s*page|portfolio|"
+    r"e[-\s]?comm(?:erce|erce|rec)?|storefront"
     r")\b",
     re.IGNORECASE,
 )
@@ -192,15 +204,50 @@ class IntentError(RuntimeError):
 
 class IntentAgent:
     def classify(self, inp: IntentAgentInput) -> IntentAgentOutput:
-        raw = (
-            self._classify_stub(inp)
-            if agents_mode() == "stub"
-            else self._classify_gemini(inp)
-        )
+        if agents_mode() == "stub":
+            raw = self._classify_stub(inp)
+        elif os.environ.get("TERRARIUM_ALLOW_FREE_GEMINI") == "1" or intent_model().lower().startswith("gemini"):
+            try:
+                raw = self._classify_gemini(inp)
+            except IntentError:
+                if not bedrock_ready():
+                    raise
+                logger.warning("Intent provider failed; falling back to Bedrock")
+                raw = self._classify_bedrock(inp)
+        else:
+            raw = self._classify_bedrock(inp)
         return _enforce_rules(raw, inp)
 
     def _classify_stub(self, inp: IntentAgentInput) -> IntentAgentOutput:
         return _stub_intent(inp)
+
+    def _classify_bedrock(self, inp: IntentAgentInput) -> IntentAgentOutput:
+        model = fast_model()
+        result = invoke_bedrock_text(
+            SYSTEM_PROMPT
+            + "\nReturn one JSON object only, with no markdown. "
+            + 'kind is "new" or "modify". stack is "react" or "fullstack". '
+            + 'Example shape: {"kind":"new","stack":"react","summary":"Order tracker",'
+            + '"phase":"clarify","reply":"I can make that.","questions":["Who is it for?"]}',
+            _user_payload(inp),
+            model,
+            max_tokens=700,
+            temperature=0.2,
+        )
+        record_llm_call(
+            purpose="intent",
+            provider="bedrock",
+            model=str(result.get("model") or model),
+            duration_ms=int(float(result.get("durationSeconds") or 0) * 1000),
+            ok=bool(result.get("ok")),
+            input_tokens=result.get("inputTokens") if isinstance(result.get("inputTokens"), int) else None,
+            output_tokens=result.get("outputTokens") if isinstance(result.get("outputTokens"), int) else None,
+            usage_source="bedrock",
+            fail_reason=result.get("failReason") if isinstance(result.get("failReason"), str) else None,
+        )
+        if not result.get("ok"):
+            raise IntentError(f"Intent Bedrock failed: {result.get('failReason')}")
+        return IntentAgentOutput.model_validate(_loads_json(str(result.get("text") or "")))
 
     def _classify_gemini(self, inp: IntentAgentInput) -> IntentAgentOutput:
         from google.genai import types
@@ -313,9 +360,7 @@ def _is_greeting(prompt: str) -> bool:
         return False
     if _BUILD_RE.search(text):
         return False
-    if _GREETING_ONLY_RE.match(text):
-        return True
-    return bool(len(text) <= 80 and _SOCIAL_START_RE.search(text))
+    return bool(_GREETING_ONLY_RE.match(text) or _COMPOUND_GREETING_RE.match(text))
 
 
 def _had_build_request(inp: IntentAgentInput) -> bool:
@@ -384,6 +429,14 @@ def _question_answered(question: str, answer: str) -> bool:
         return True
     if "history" in q and re.search(r"yes|no|history|keep", a):
         return True
+    if re.search(r"kind of app|which screens|react|angular|fiori", q) and _STACK_PICK_RE.search(a):
+        return True
+    if re.search(r"shared data|keep on a server", q) and (
+        _BACKEND_NEEDED_RE.search(a)
+        or _BACKEND_NOT_NEEDED_RE.search(a)
+        or re.search(r"just this screen|no server|sap cap|shared data", a)
+    ):
+        return True
     if re.search(r"frontend|backend|server|auth|database|shared", q) and (
         _BACKEND_NEEDED_RE.search(a) or _BACKEND_NOT_NEEDED_RE.search(a)
     ):
@@ -396,6 +449,12 @@ def _question_answered(question: str, answer: str) -> bool:
 def _spec_enough(inp: IntentAgentInput) -> bool:
     prompt = inp.prompt.strip()
     if _PROCEED_RE.search(prompt):
+        return True
+    if _stack_picked(inp) and re.search(
+        r"\b(just\s+build(?:\s+it)?|go\s+ahead|skip(?:\s+the)?\s+questions?)\b",
+        prompt,
+        re.I,
+    ):
         return True
     if _is_detailed_spec(prompt):
         return True
@@ -490,24 +549,72 @@ def _stub_intent(inp: IntentAgentInput) -> IntentAgentOutput:
     )
 
 
+_STACK_PICK_RE = re.compile(
+    r"\b(react|angular|sapui5|sap\s*ui5|fiori|vanilla|plain html|simple web page)\b",
+    re.I,
+)
+
+
+def _user_picks_text(inp: IntentAgentInput) -> str:
+    """Answers after the first build request. The opening prompt is not a stack pick."""
+    turns = [turn.text.strip() for turn in (inp.conversation or []) if turn.role == "user"]
+    latest = inp.prompt.strip()
+    if turns and turns[-1] != latest:
+        turns.append(latest)
+    elif not turns and latest:
+        turns = [latest]
+    if len(turns) <= 1:
+        return ""
+    return "\n".join(turns[1:])
+
+
+def _stack_picked(inp: IntentAgentInput) -> bool:
+    if inp.frontendStack:
+        return True
+    return bool(_STACK_PICK_RE.search(_user_picks_text(inp)))
+
+
 def _selected_frontend(inp: IntentAgentInput, intent: IntentAgentOutput | None = None) -> FrontendStack:
-    selected = inp.frontendStack or (intent.frontendStack if intent else None)
-    return selected if selected in {"vanilla", "react"} else "react"
+    from terrarium_agents.stacks import infer_frontend_stack
+
+    _ = intent
+    if inp.frontendStack:
+        return infer_frontend_stack("", inp.frontendStack)
+    picks = _user_picks_text(inp)
+    if picks:
+        return infer_frontend_stack(picks, None)
+    return "react"
 
 
-def _selected_backend(inp: IntentAgentInput, intent: IntentAgentOutput | None = None) -> BackendStack:
-    if inp.backendStack in {"none", "node-express"}:
-        return inp.backendStack
-    if inp.backendNeed == "yes":
-        return "node-express"
-    if inp.backendNeed == "no":
-        return "none"
-    if intent and intent.backendStack in {"none", "node-express"}:
-        return intent.backendStack
-    blob = _stack_decision_text(inp)
-    if _BACKEND_NOT_NEEDED_RE.search(blob):
-        return "none"
-    return "node-express" if _BACKEND_NEEDED_RE.search(blob) else "none"
+def _selected_backend(
+    inp: IntentAgentInput,
+    intent: IntentAgentOutput | None = None,
+    *,
+    default_fullstack: bool = False,
+) -> BackendStack:
+    from terrarium_agents.stacks import infer_backend_stack
+
+    frontend = _selected_frontend(inp, intent)
+    # An unanswered server question on a framework app means full stack; a plain page stays static.
+    default: BackendStack = "node-express" if default_fullstack and frontend in {"react", "angular"} else "none"
+    if inp.backendNeed in {"yes", "no"}:
+        return infer_backend_stack("", frontend, selected=inp.backendStack, need=inp.backendNeed)
+    picks = _user_picks_text(inp)
+    if picks:
+        return infer_backend_stack(
+            picks, frontend, selected=inp.backendStack, need=inp.backendNeed, default=default
+        )
+    if inp.frontendStack:
+        return infer_backend_stack(
+            _stack_decision_text(inp),
+            frontend,
+            selected=inp.backendStack,
+            need=inp.backendNeed,
+            default=default,
+        )
+    return infer_backend_stack(
+        "", frontend, selected=inp.backendStack, need=inp.backendNeed, default=default
+    )
 
 
 def _stack_decision_text(inp: IntentAgentInput) -> str:
@@ -526,12 +633,162 @@ def _thread_idea(inp: IntentAgentInput) -> str:
 def _clarify_lead_in(idea: str) -> str:
     lower = idea.lower()
     if "convert" in lower or "json" in lower or "csv" in lower or "excel" in lower:
-        return "I can make that converter. Six simple questions so it matches what you have in mind."
+        return "I can make that converter. A few questions, including which kind of app to build."
     if "calc" in lower:
-        return "I can make that calculator. Six simple questions so we don't overbuild it."
+        return "I can make that calculator. A few questions, including which kind of app to build."
     if "website" in lower or "web site" in lower or "landing" in lower:
-        return "I can make that site. Six simple questions so the first look matches what you meant."
-    return "I can make that. Six simple questions so the first look matches what you meant."
+        return "I can make that site. A few questions, including which kind of app to build."
+    return "I can build that. A few quick questions first, so the app matches what you need."
+
+
+_STACK_ONBOARDING: tuple[dict[str, object], ...] = (
+    {
+        "text": "Which kind of app should we build?",
+        "helperText": "Pick one. We will not guess from your first message.",
+        "allowMultiple": False,
+        "inputPlaceholder": "e.g. React",
+        "suggestions": (
+            "React",
+            "Angular",
+            "SAP Fiori",
+            "Simple web page",
+        ),
+    },
+    {
+        "text": "Should this keep shared data on a server?",
+        "helperText": "Default is a server (full stack) for logins and team data. Frontend-only stays on this screen.",
+        "allowMultiple": False,
+        "inputPlaceholder": "e.g. Yes, keep shared data on a server",
+        "suggestions": (
+            "Yes — keep shared data on a server",
+            "Just this screen — no server",
+            "Yes — SAP CAP OData",
+        ),
+    },
+)
+
+_BUSINESS_ONBOARDING: tuple[dict[str, object], ...] = (
+    {
+        "text": "What does your business sell?",
+        "helperText": "Tap any that fit, or write your own.",
+        "allowMultiple": True,
+        "acceptsFiles": True,
+        "inputPlaceholder": "e.g. We sell handmade candles online",
+        "suggestions": (
+            "Clothing and accessories",
+            "Food and groceries",
+            "Office supplies",
+            "Handmade or custom items",
+            "Services like repairs or classes",
+        ),
+    },
+    {
+        "text": "Who are your main customers?",
+        "helperText": "Pick the people you serve most.",
+        "allowMultiple": True,
+        "inputPlaceholder": "e.g. Local parents and teachers",
+        "suggestions": (
+            "Local families",
+            "Small business owners",
+            "Office workers",
+            "Students and parents",
+            "Visitors and tourists",
+        ),
+    },
+    {
+        "text": "How do customers usually buy from you?",
+        "helperText": "Choose the closest match.",
+        "allowMultiple": True,
+        "inputPlaceholder": "e.g. Mostly through Instagram messages",
+        "suggestions": (
+            "In our shop",
+            "On our website",
+            "By phone or message",
+            "At events or markets",
+            "Through another seller",
+        ),
+    },
+    {
+        "text": "What do you want to keep track of?",
+        "helperText": "Pick what matters most.",
+        "allowMultiple": True,
+        "acceptsFiles": True,
+        "inputPlaceholder": "e.g. Orders, payments, and delivery dates",
+        "suggestions": (
+            "Products and prices",
+            "Customers and orders",
+            "Bookings and dates",
+            "Payments and invoices",
+            "Stock and supplies",
+        ),
+    },
+    {
+        "text": "Who on your team will use this?",
+        "helperText": "Choose who needs access.",
+        "allowMultiple": True,
+        "inputPlaceholder": "e.g. Store staff and the owner",
+        "suggestions": (
+            "Just me",
+            "Sales team",
+            "Shop staff",
+            "Managers",
+            "Customer support",
+        ),
+    },
+    {
+        "text": "What would you like to see first?",
+        "helperText": "Pick the first screen.",
+        "allowMultiple": False,
+        "inputPlaceholder": "e.g. Today's orders and low stock",
+        "suggestions": (
+            "Today's orders",
+            "My customer list",
+            "Products to check",
+            "Money coming in",
+            "Tasks for today",
+        ),
+    },
+)
+
+
+def _choice(label: str) -> ClarifyChoice:
+    return ClarifyChoice(title=label, subtitle="", value=label)
+
+
+def _business_question_item(spec: dict[str, object]) -> ClarifyQuestion:
+    suggestions = tuple(str(item) for item in spec.get("suggestions", ()))
+    return ClarifyQuestion(
+        text=str(spec["text"]),
+        helperText=str(spec["helperText"]),
+        allowMultiple=bool(spec.get("allowMultiple", False)),
+        inputPlaceholder=str(spec.get("inputPlaceholder", "")) or None,
+        acceptsFiles=bool(spec.get("acceptsFiles", False)),
+        dataSource=bool(spec.get("acceptsFiles", False)),
+        choices=[_choice(item) for item in suggestions],
+        options=list(suggestions),
+    )
+
+
+def build_clarify_question_items(questions: list[str], idea: str) -> list[ClarifyQuestion]:
+    _ = questions, idea
+    return [
+        _business_question_item(spec) for spec in (*_STACK_ONBOARDING, *_BUSINESS_ONBOARDING)
+    ]
+
+
+def clarify_reply_after_plan(idea: str, architecture: str) -> str:
+    """Lead-in once the architecture step has finished (questions come after, not before)."""
+    snippet = " ".join((architecture or "").split())
+    if len(snippet) > 220:
+        snippet = snippet[:217].rstrip() + "…"
+    if not snippet:
+        snippet = "Stack, layout, and main screens are sketched."
+    lead = _clarify_lead_in(idea).replace(
+        "Six simple questions",
+        "Six quick questions",
+        1,
+    )
+    return f"Architecture is ready — {snippet}\n\n{lead}"
 
 
 def _fallback_questions(prompt: str) -> list[str]:
@@ -542,19 +799,17 @@ def _fallback_questions(prompt: str) -> list[str]:
 def _live_or_stub_questions(questions: list[str], prompt: str) -> list[str]:
     if questions:
         return questions[:_MAX_QUESTIONS]
-    if agents_mode() == "stub":
-        return _fallback_questions(prompt)
-    return []
+    return _fallback_questions(prompt)
 
 
 def _everyday_pad() -> list[str]:
     return [
-        "Who is this mainly for — just you, your team, or customers?",
-        "What should someone be able to do first when they open it?",
-        "What do they type, choose, or bring in?",
-        "What should they see when they are done?",
-        "Should they be able to save, print, or come back to earlier work?",
-        "Should this stay only on their screen, or should other people sign in and share it?",
+        "What does your business sell?",
+        "Who are your main customers?",
+        "How do customers usually buy from you?",
+        "What do you want to keep track of?",
+        "Who on your team will use this?",
+        "What would you like to see first?",
     ]
 
 
@@ -580,56 +835,8 @@ def _exactly_six(questions: list[str], prompt: str) -> list[str]:
 
 
 def _stub_questions(prompt: str) -> list[str]:
-    lower = prompt.lower()
-    share = "Should this stay only on their screen, or should other people sign in and share it?"
-    if "convert" in lower or "json" in lower or "csv" in lower or "excel" in lower:
-        questions = [
-            "What will people start with — a spreadsheet, a list, or copied text?",
-            "What should they get back, and do they need to download it?",
-            "Any special rules for how things should be matched or changed?",
-            "Who is this mainly for — just you, or other people too?",
-            "Should they be able to save a conversion and use it again later?",
-            share,
-        ]
-    elif "calc" in lower:
-        questions = [
-            "What kinds of sums do you need — everyday math, science, or something else?",
-            "Should it remember past calculations so people can look back?",
-            "Any extras like percentages, units, or memory buttons?",
-            "Who will use this — just you, or a team?",
-            "What should they see first when they open it?",
-            share,
-        ]
-    elif "dashboard" in lower:
-        questions = [
-            "What should people see at a glance — numbers, lists, or both?",
-            "How does the information get in — they type it, paste it, or it comes from a file?",
-            "What is the one thing they should notice first?",
-            "Who is this for — you, a team, or customers?",
-            "Should they be able to filter, download, or save a view?",
-            share,
-        ]
-    elif "form" in lower:
-        questions = [
-            "What information should people fill in?",
-            "What happens after they press submit — a thank-you, a summary, or a download?",
-            "Which details are required?",
-            "Who will fill this in?",
-            "Should they get a copy or be able to come back later?",
-            share,
-        ]
-    elif "website" in lower or "web site" in lower or "landing" in lower or "portfolio" in lower:
-        questions = [
-            "What is this site for — a shop, a personal page, a restaurant, or a simple info page?",
-            "What should someone understand in the first few seconds?",
-            "Which sections do you need — for example home, about, and a way to contact you?",
-            "Any photos, prices, or hours that must be on the page?",
-            "Who is visiting — customers, hiring managers, or friends?",
-            "Should visitors only look, or also send a message or place an order?",
-        ]
-    else:
-        questions = _everyday_pad()
-    return questions[:_MAX_QUESTIONS]
+    _ = prompt
+    return _everyday_pad()
 
 
 def _lead_in(reply: str, questions: list[str]) -> str:
@@ -656,6 +863,8 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
     kind: IntentKind = intent.kind
     if kind == "modify" and not _has_existing_app(inp):
         kind = "new"
+    if _has_existing_app(inp) and not _NEW_APP_RE.search(inp.prompt):
+        kind = "modify"
     frontend_stack = _selected_frontend(inp, intent)
     backend_stack = _selected_backend(inp, intent)
     stack: Stack = "fullstack" if backend_stack != "none" else "react"
@@ -674,7 +883,10 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
         and not _spec_enough(inp)
     )
 
-    if greeting:
+    if _has_existing_app(inp) and kind == "modify":
+        phase = "ready"
+        questions = []
+    elif greeting:
         phase = "greeting"
         questions = []
         summary = "Chat greeting"
@@ -701,14 +913,40 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
         phase = "clarify"
         questions = _live_or_stub_questions(questions, inp.prompt)
 
+    if (
+        phase == "ready"
+        and kind == "new"
+        and not _has_existing_app(inp)
+        and not _stack_picked(inp)
+    ):
+        phase = "clarify"
+        questions = _live_or_stub_questions(questions, _thread_idea(inp)) or _exactly_six(
+            [], _thread_idea(inp)
+        )
+
     if phase == "clarify" and agents_mode() == "stub":
         questions = _exactly_six(questions, _thread_idea(inp))
         if len(questions) < _MIN_QUESTIONS:
             phase = "ready"
             questions = []
 
+    # A first request always gets questions. Architecture waits until they are answered.
+    if (
+        kind == "new"
+        and not _has_existing_app(inp)
+        and phase != "greeting"
+        and not _last_assistant_questions(inp)
+        and not _PROCEED_RE.search(inp.prompt.strip())
+    ):
+        phase = "clarify"
+        questions = questions or _exactly_six([], _thread_idea(inp))
+
     if phase != "clarify":
         questions = []
+
+    if phase == "ready" and kind == "new" and not _has_existing_app(inp):
+        backend_stack = _selected_backend(inp, intent, default_fullstack=True)
+        stack = "fullstack" if backend_stack != "none" else "react"
 
     if intent.phase == "ready" and phase == "clarify":
         reply = _clarify_lead_in(_thread_idea(inp))
@@ -728,14 +966,19 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
     elif phase == "greeting" and not (intent.reply or "").strip():
         reply = _greeting_reply()
 
+    if phase == "clarify" and not _last_assistant_questions(inp):
+        reply = "I can build that. A few quick questions first, so the app matches what you need."
     if phase == "ready" and kind == "new":
-        if backend_stack == "node-express":
-            reply = f"{reply} Stack: React/Vite frontend with a Node/Express backend."
-        elif frontend_stack == "react":
-            reply = f"{reply} Stack: React/Vite frontend only."
+        if backend_stack != "none":
+            reply = f"{reply} Shared information will be kept on a server, so the team sees the same thing."
         else:
-            reply = f"{reply} Stack: vanilla frontend only."
+            reply = f"{reply} This stays on the screen in front of you, with no shared server."
 
+    question_items = (
+        build_clarify_question_items(questions, _thread_idea(inp))
+        if phase == "clarify"
+        else None
+    )
     return IntentAgentOutput(
         kind=kind,
         stack=stack,
@@ -746,4 +989,5 @@ def _enforce_rules(intent: IntentAgentOutput, inp: IntentAgentInput) -> IntentAg
         phase=phase,
         reply=reply,
         questions=questions or None,
+        questionItems=question_items,
     )

@@ -1,0 +1,26 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.active   { background: var(--success-light); color: var(--success); }
+.active .dot { background: var(--success); }
+
+.inactive { background: var(--gray-100); color: var(--gray-500); }
+.inactive .dot { background: var(--gray-400); }
+
+.probation { background: var(--warning-light); color: var(--warning); }
+.probation .dot { background: var(--warning); }

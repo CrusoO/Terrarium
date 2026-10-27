@@ -1,0 +1,90 @@
+{
+  "rates": {
+    "inputUsdPerMtok": 3.0,
+    "outputUsdPerMtok": 15.0
+  },
+  "priorityCostMultiplier": 1.75,
+  "rows": [
+    {
+      "tier": "default",
+      "index": 1,
+      "seconds": 2.384,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    },
+    {
+      "tier": "default",
+      "index": 2,
+      "seconds": 0.786,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    },
+    {
+      "tier": "default",
+      "index": 3,
+      "seconds": 1.01,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    },
+    {
+      "tier": "default",
+      "index": 4,
+      "seconds": 0.844,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    },
+    {
+      "tier": "default",
+      "index": 5,
+      "seconds": 1.377,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    },
+    {
+      "tier": "default",
+      "index": 6,
+      "seconds": 0.952,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    },
+    {
+      "tier": "default",
+      "index": 7,
+      "seconds": 1.219,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    },
+    {
+      "tier": "default",
+      "index": 8,
+      "seconds": 0.767,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    },
+    {
+      "tier": "default",
+      "index": 9,
+      "seconds": 2.034,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    },
+    {
+      "tier": "default",
+      "index": 10,
+      "seconds": 0.784,
+      "inputTokens": 15,
+      "outputTokens": 5,
+      "estimatedUsd": 0.00012
+    }
+  ],
+  "totalEstimatedUsd": 0.0012
+}

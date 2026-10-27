@@ -62,6 +62,10 @@ class SmokeReportTests(unittest.TestCase):
             "react",
         )
         self.assertEqual(
+            project_runtime({"package.json": "{}", "src/main.tsx": "", "src/App.tsx": ""}),
+            "react",
+        )
+        self.assertEqual(
             project_runtime(
                 {
                     "frontend/package.json": "{}",
@@ -70,6 +74,34 @@ class SmokeReportTests(unittest.TestCase):
                 }
             ),
             "react-node",
+        )
+        self.assertEqual(
+            project_runtime({"angular.json": "{}", "src/main.ts": "", "package.json": "{}"}),
+            "angular",
+        )
+        self.assertEqual(
+            project_runtime({"ui5.yaml": "", "webapp/index.html": "<html></html>"}),
+            "sapui5",
+        )
+        self.assertEqual(
+            project_runtime(
+                {
+                    "frontend/package.json": "{}",
+                    "frontend/src/main.ts": "",
+                    "backend/package.json": "{}",
+                }
+            ),
+            "angular-node",
+        )
+        self.assertEqual(
+            project_runtime(
+                {
+                    "frontend/package.json": "{}",
+                    "frontend/webapp/index.html": "<html></html>",
+                    "backend/package.json": "{}",
+                }
+            ),
+            "sap-cap",
         )
 
 

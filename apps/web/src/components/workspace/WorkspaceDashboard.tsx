@@ -21,7 +21,9 @@ import {
 } from "@mui/material";
 import type { ToolSummary } from "@terrarium/contracts";
 import { getMyAccessRequests, requestAppAccess, type AccessRequest } from "../../api/groups";
+import { syncBrownieCatalog } from "../../api/brownie";
 import { fetchWorkspaceTools, sleepWorkspaceTool, wakeWorkspaceTool } from "../../api/sessions";
+import { TrustCard } from "../trust/TrustCard";
 
 type WorkspaceDashboardProps = {
   onOpenTool: (toolId: string) => Promise<void>;
@@ -76,6 +78,7 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
     setLoading(true);
     setStatus(null);
     try {
+      await syncBrownieCatalog().catch(() => null);
       const [listed, mine] = await Promise.all([
         fetchWorkspaceTools(),
         currentUserId ? getMyAccessRequests(currentUserId) : Promise.resolve([]),
@@ -86,6 +89,14 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
       setStatus(error instanceof Error ? error.message : "Could not load workspace tools.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function reloadTools() {
+    try {
+      setTools(await fetchWorkspaceTools());
+    } catch {
+      // The trust card already shows the fix result; the list refreshes on the next load.
     }
   }
 
@@ -379,6 +390,13 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
                           {tool.myRole && tool.myRole !== "owner" ? (
                             <Chip size="small" variant="outlined" label={tool.myRole === "editor" ? "Can edit" : "View only"} />
                           ) : null}
+                          {tool.id.startsWith("brownie-") ? (
+                            <Chip
+                              size="small"
+                              label="Published app"
+                              sx={{ bgcolor: "rgba(237, 108, 2, 0.1)", color: "warning.dark", fontWeight: 600 }}
+                            />
+                          ) : null}
                         </Stack>
                         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 640 }}>
                           {tool.summary || "Published Terrarium app"}
@@ -455,6 +473,7 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
                       )}
                     </Stack>
                   </Stack>
+                  <TrustCard toolId={tool.id} onChanged={() => void reloadTools()} />
                 </Paper>
               );
             })}

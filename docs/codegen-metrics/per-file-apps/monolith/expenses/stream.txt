@@ -1,0 +1,1377 @@
+<<<FILE path="index.html">>>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Log</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+<<<END FILE>>>
+
+<<<FILE path="package.json">>>
+{
+  "name": "expense-log",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
+}
+<<<END FILE>>>
+
+<<<FILE path="vite.config.js">>>
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+<<<END FILE>>>
+
+<<<FILE path="src/main.jsx">>>
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+<<<END FILE>>>
+
+<<<FILE path="src/index.css">>>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface2: #f8fafc;
+  --border: #e2e8f0;
+  --primary: #4f46e5;
+  --primary-light: #eef2ff;
+  --primary-dark: #3730a3;
+  --danger: #ef4444;
+  --danger-light: #fef2f2;
+  --success: #10b981;
+  --success-light: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-light: #fffbeb;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+<<<END FILE>>>
+
+<<<FILE path="src/data/initialExpenses.js">>>
+export const CATEGORIES = [
+  { id: 'travel',      label: 'Travel',       color: '#6366f1', bg: '#eef2ff', icon: '✈️' },
+  { id: 'meals',       label: 'Meals',        color: '#f59e0b', bg: '#fffbeb', icon: '🍽️' },
+  { id: 'software',   label: 'Software',     color: '#10b981', bg: '#ecfdf5', icon: '💻' },
+  { id: 'office',     label: 'Office',       color: '#3b82f6', bg: '#eff6ff', icon: '🖊️' },
+  { id: 'marketing',  label: 'Marketing',    color: '#ec4899', bg: '#fdf2f8', icon: '📣' },
+  { id: 'training',   label: 'Training',     color: '#8b5cf6', bg: '#f5f3ff', icon: '📚' },
+  { id: 'other',      label: 'Other',        color: '#64748b', bg: '#f8fafc', icon: '📦' },
+]
+
+export const STAFF = [
+  'Alice Johnson', 'Bob Martinez', 'Carol White', 'David Lee',
+  'Emma Davis', 'Frank Wilson', 'Grace Kim', 'Henry Brown',
+]
+
+let idCounter = 100
+
+const make = (staff, category, description, amount, date) => ({
+  id: idCounter++,
+  staff,
+  category,
+  description,
+  amount,
+  date,
+})
+
+export const INITIAL_EXPENSES = [
+  make('Alice Johnson',  'travel',    'Flight to NYC conference',        420.00, '2024-05-01'),
+  make('Bob Martinez',   'meals',     'Team lunch – Q2 kickoff',          87.50, '2024-05-02'),
+  make('Carol White',    'software',  'Figma annual subscription',       144.00, '2024-05-03'),
+  make('David Lee',      'office',    'Standing desk mat',                59.99, '2024-05-04'),
+  make('Emma Davis',     'marketing', 'LinkedIn ad campaign',            300.00, '2024-05-05'),
+  make('Frank Wilson',   'training',  'Udemy course bundle',              49.99, '2024-05-06'),
+  make('Grace Kim',      'travel',    'Hotel – client visit Chicago',    210.00, '2024-05-07'),
+  make('Henry Brown',    'meals',     'Client dinner',                   135.00, '2024-05-08'),
+  make('Alice Johnson',  'software',  'GitHub Copilot seats (3)',        114.00, '2024-05-09'),
+  make('Bob Martinez',   'office',    'Printer ink cartridges',           34.99, '2024-05-10'),
+  make('Carol White',    'travel',    'Uber rides – offsite',             62.40, '2024-05-11'),
+  make('David Lee',      'marketing', 'Swag printing',                   175.00, '2024-05-12'),
+  make('Emma Davis',     'training',  'Conference ticket',               499.00, '2024-05-13'),
+  make('Frank Wilson',   'meals',     'Working lunch x4',                 72.00, '2024-05-14'),
+  make('Grace Kim',      'other',     'Miscellaneous supplies',           28.50, '2024-05-15'),
+  make('Henry Brown',    'software',  'Slack Pro upgrade',                80.00, '2024-05-16'),
+]
+<<<END FILE>>>
+
+<<<FILE path="src/hooks/useExpenses.js">>>
+import { useState, useMemo } from 'react'
+import { INITIAL_EXPENSES } from '../data/initialExpenses'
+
+let nextId = 200
+
+export function useExpenses() {
+  const [expenses, setExpenses] = useState(INITIAL_EXPENSES)
+
+  const addExpense = (expense) => {
+    setExpenses(prev => [{ ...expense, id: nextId++ }, ...prev])
+  }
+
+  const deleteExpense = (id) => {
+    setExpenses(prev => prev.filter(e => e.id !== id))
+  }
+
+  const totals = useMemo(() => {
+    const byCategory = {}
+    let grand = 0
+    expenses.forEach(e => {
+      byCategory[e.category] = (byCategory[e.category] || 0) + e.amount
+      grand += e.amount
+    })
+    return { byCategory, grand }
+  }, [expenses])
+
+  return { expenses, addExpense, deleteExpense, totals }
+}
+<<<END FILE>>>
+
+<<<FILE path="src/App.jsx">>>
+import React, { useState, useMemo } from 'react'
+import { useExpenses } from './hooks/useExpenses'
+import { CATEGORIES, STAFF } from './data/initialExpenses'
+import Header from './components/Header'
+import Totals from './components/Totals'
+import Filters from './components/Filters'
+import ExpenseTable from './components/ExpenseTable'
+import AddExpenseModal from './components/AddExpenseModal'
+import styles from './App.module.css'
+
+export default function App() {
+  const { expenses, addExpense, deleteExpense, totals } = useExpenses()
+  const [search, setSearch] = useState('')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [filterStaff, setFilterStaff] = useState('all')
+  const [showModal, setShowModal] = useState(false)
+  const [sortField, setSortField] = useState('date')
+  const [sortDir, setSortDir] = useState('desc')
+
+  const filtered = useMemo(() => {
+    let list = expenses
+    if (filterCategory !== 'all') list = list.filter(e => e.category === filterCategory)
+    if (filterStaff !== 'all') list = list.filter(e => e.staff === filterStaff)
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(e =>
+        e.description.toLowerCase().includes(q) ||
+        e.staff.toLowerCase().includes(q) ||
+        e.category.toLowerCase().includes(q)
+      )
+    }
+    list = [...list].sort((a, b) => {
+      let va = a[sortField], vb = b[sortField]
+      if (sortField === 'amount') { va = +va; vb = +vb }
+      if (va < vb) return sortDir === 'asc' ? -1 : 1
+      if (va > vb) return sortDir === 'asc' ? 1 : -1
+      return 0
+    })
+    return list
+  }, [expenses, filterCategory, filterStaff, search, sortField, sortDir])
+
+  const filteredTotal = useMemo(() => filtered.reduce((s, e) => s + e.amount, 0), [filtered])
+
+  const handleSort = (field) => {
+    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortField(field); setSortDir('asc') }
+  }
+
+  return (
+    <div className={styles.app}>
+      <Header onAdd={() => setShowModal(true)} />
+      <main className={styles.main}>
+        <Totals totals={totals} categories={CATEGORIES} />
+        <Filters
+          search={search} onSearch={setSearch}
+          filterCategory={filterCategory} onCategory={setFilterCategory}
+          filterStaff={filterStaff} onStaff={setFilterStaff}
+          categories={CATEGORIES} staff={STAFF}
+        />
+        <ExpenseTable
+          expenses={filtered}
+          categories={CATEGORIES}
+          filteredTotal={filteredTotal}
+          onDelete={deleteExpense}
+          sortField={sortField}
+          sortDir={sortDir}
+          onSort={handleSort}
+        />
+      </main>
+      {showModal && (
+        <AddExpenseModal
+          categories={CATEGORIES}
+          staff={STAFF}
+          onAdd={addExpense}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/App.module.css">>>
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.jsx">>>
+import React from 'react'
+import styles from './Header.module.css'
+
+export default function Header({ onAdd }) {
+  return (
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        <div className={styles.brand}>
+          <span className={styles.logo}>💰</span>
+          <div>
+            <h1 className={styles.title}>Expense Log</h1>
+            <p className={styles.sub}>Track, manage and review team expenses</p>
+          </div>
+        </div>
+        <button className={styles.addBtn} onClick={onAdd}>
+          <span className={styles.plus}>+</span>
+          Add Expense
+        </button>
+      </div>
+    </header>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Header.module.css">>>
+.header {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow: 0 4px 20px rgba(79,70,229,.35);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo {
+  font-size: 2rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+}
+
+.title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.3px;
+}
+
+.sub {
+  font-size: .8rem;
+  color: rgba(255,255,255,.75);
+  margin-top: 1px;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #4f46e5;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: .9rem;
+  font-weight: 700;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  white-space: nowrap;
+}
+
+.addBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+
+.plus {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Totals.jsx">>>
+import React from 'react'
+import styles from './Totals.module.css'
+
+const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+
+export default function Totals({ totals, categories }) {
+  return (
+    <section className={styles.section}>
+      <div className={styles.grand}>
+        <div className={styles.grandLabel}>Total Expenses</div>
+        <div className={styles.grandAmount}>{fmt(totals.grand)}</div>
+        <div className={styles.grandSub}>{Object.keys(totals.byCategory).length} categories</div>
+      </div>
+      <div className={styles.cats}>
+        {categories.map(cat => {
+          const amt = totals.byCategory[cat.id] || 0
+          const pct = totals.grand > 0 ? (amt / totals.grand) * 100 : 0
+          return (
+            <div key={cat.id} className={styles.catCard} style={{ '--cat-color': cat.color, '--cat-bg': cat.bg }}>
+              <div className={styles.catTop}>
+                <span className={styles.catIcon}>{cat.icon}</span>
+                <span className={styles.catLabel}>{cat.label}</span>
+              </div>
+              <div className={styles.catAmount}>{fmt(amt)}</div>
+              <div className={styles.barTrack}>
+                <div className={styles.barFill} style={{ width: `${pct}%` }} />
+              </div>
+              <div className={styles.catPct}>{pct.toFixed(1)}%</div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Totals.module.css">>>
+.section {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .section { grid-template-columns: 1fr; }
+}
+
+.grand {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  color: #fff;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.grandLabel {
+  font-size: .8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .8;
+}
+
+.grandAmount {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  margin-top: 4px;
+}
+
+.grandSub {
+  font-size: .8rem;
+  opacity: .7;
+  margin-top: 2px;
+}
+
+.cats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.catCard {
+  background: var(--cat-bg);
+  border: 1.5px solid color-mix(in srgb, var(--cat-color) 20%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform .15s, box-shadow .15s;
+}
+
+.catCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.catTop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.catIcon { font-size: 1rem; }
+
+.catLabel {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--cat-color);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.catAmount {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.barTrack {
+  height: 4px;
+  background: color-mix(in srgb, var(--cat-color) 15%, transparent);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--cat-color);
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+
+.catPct {
+  font-size: .72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Filters.jsx">>>
+import React from 'react'
+import styles from './Filters.module.css'
+
+export default function Filters({
+  search, onSearch,
+  filterCategory, onCategory,
+  filterStaff, onStaff,
+  categories, staff,
+}) {
+  return (
+    <div className={styles.bar}>
+      <div className={styles.searchWrap}>
+        <span className={styles.searchIcon}>🔍</span>
+        <input
+          className={styles.search}
+          type="text"
+          placeholder="Search expenses…"
+          value={search}
+          onChange={e => onSearch(e.target.value)}
+        />
+        {search && (
+          <button className={styles.clear} onClick={() => onSearch('')}>✕</button>
+        )}
+      </div>
+
+      <div className={styles.selects}>
+        <div className={styles.selectWrap}>
+          <label className={styles.label}>Category</label>
+          <select className={styles.select} value={filterCategory} onChange={e => onCategory(e.target.value)}>
+            <option value="all">All Categories</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.selectWrap}>
+          <label className={styles.label}>Staff Member</label>
+          <select className={styles.select} value={filterStaff} onChange={e => onStaff(e.target.value)}>
+            <option value="all">All Staff</option>
+            {staff.map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {(filterCategory !== 'all' || filterStaff !== 'all' || search) && (
+        <button className={styles.resetBtn} onClick={() => { onCategory('all'); onStaff('all'); onSearch('') }}>
+          Reset Filters
+        </button>
+      )}
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/Filters.module.css">>>
+.bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow);
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .9rem;
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  padding: 10px 36px 10px 36px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+  background: var(--surface2);
+  color: var(--text);
+  transition: border-color .15s, box-shadow .15s;
+  outline: none;
+}
+
+.search:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+  background: #fff;
+}
+
+.clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: .8rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.clear:hover { color: var(--danger); }
+
+.selects {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.selectWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+}
+
+.select {
+  padding: 9px 32px 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .875rem;
+  background: var(--surface2);
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color .15s;
+}
+
+.select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+}
+
+.resetBtn {
+  padding: 9px 16px;
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1.5px solid #fecaca;
+  border-radius: var(--radius-sm);
+  font-size: .85rem;
+  font-weight: 600;
+  transition: background .15s;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+.resetBtn:hover { background: #fee2e2; }
+<<<END FILE>>>
+
+<<<FILE path="src/components/ExpenseTable.jsx">>>
+import React, { useState } from 'react'
+import styles from './ExpenseTable.module.css'
+
+const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+const fmtDate = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+
+function SortIcon({ field, sortField, sortDir }) {
+  if (sortField !== field) return <span className={styles.sortNeutral}>⇅</span>
+  return <span className={styles.sortActive}>{sortDir === 'asc' ? '↑' : '↓'}</span>
+}
+
+export default function ExpenseTable({ expenses, categories, filteredTotal, onDelete, sortField, sortDir, onSort }) {
+  const [confirmId, setConfirmId] = useState(null)
+
+  const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
+
+  const handleDelete = (id) => {
+    if (confirmId === id) {
+      onDelete(id)
+      setConfirmId(null)
+    } else {
+      setConfirmId(id)
+    }
+  }
+
+  return (
+    <div className={styles.wrapper}>
+      <div className={styles.tableHead}>
+        <div className={styles.tableTitle}>
+          Expenses
+          <span className={styles.count}>{expenses.length} record{expenses.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div className={styles.filteredTotal}>
+          Showing: <strong>{fmt(filteredTotal)}</strong>
+        </div>
+      </div>
+
+      {expenses.length === 0 ? (
+        <div className={styles.empty}>
+          <div className={styles.emptyIcon}>🔍</div>
+          <div className={styles.emptyText}>No expenses match your filters</div>
+          <div className={styles.emptySub}>Try adjusting your search or filters</div>
+        </div>
+      ) : (
+        <div className={styles.tableScroll}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th className={styles.th} onClick={() => onSort('date')}>
+                  Date <SortIcon field="date" sortField={sortField} sortDir={sortDir} />
+                </th>
+                <th className={styles.th} onClick={() => onSort('staff')}>
+                  Staff <SortIcon field="staff" sortField={sortField} sortDir={sortDir} />
+                </th>
+                <th className={styles.th} onClick={() => onSort('category')}>
+                  Category <SortIcon field="category" sortField={sortField} sortDir={sortDir} />
+                </th>
+                <th className={styles.th} onClick={() => onSort('description')}>
+                  Description <SortIcon field="description" sortField={sortField} sortDir={sortDir} />
+                </th>
+                <th className={`${styles.th} ${styles.right}`} onClick={() => onSort('amount')}>
+                  Amount <SortIcon field="amount" sortField={sortField} sortDir={sortDir} />
+                </th>
+                <th className={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {expenses.map((exp, i) => {
+                const cat = catMap[exp.category]
+                return (
+                  <tr key={exp.id} className={`${styles.row} ${i % 2 === 1 ? styles.rowAlt : ''}`}>
+                    <td className={styles.td}>
+                      <span className={styles.date}>{fmtDate(exp.date)}</span>
+                    </td>
+                    <td className={styles.td}>
+                      <div className={styles.staffCell}>
+                        <div className={styles.avatar}>
+                          {exp.staff.split(' ').map(w => w[0]).join('').slice(0,2)}
+                        </div>
+                        <span className={styles.staffName}>{exp.staff}</span>
+                      </div>
+                    </td>
+                    <td className={styles.td}>
+                      {cat && (
+                        <span className={styles.catBadge} style={{ '--c': cat.color, '--bg': cat.bg }}>
+                          {cat.icon} {cat.label}
+                        </span>
+                      )}
+                    </td>
+                    <td className={styles.td}>
+                      <span className={styles.desc}>{exp.description}</span>
+                    </td>
+                    <td className={`${styles.td} ${styles.right}`}>
+                      <span className={styles.amount}>{fmt(exp.amount)}</span>
+                    </td>
+                    <td className={`${styles.td} ${styles.actions}`}>
+                      {confirmId === exp.id ? (
+                        <div className={styles.confirmRow}>
+                          <button className={styles.confirmYes} onClick={() => handleDelete(exp.id)}>Delete</button>
+                          <button className={styles.confirmNo} onClick={() => setConfirmId(null)}>Cancel</button>
+                        </div>
+                      ) : (
+                        <button className={styles.deleteBtn} onClick={() => handleDelete(exp.id)} title="Delete">🗑</button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+            <tfoot>
+              <tr className={styles.footRow}>
+                <td colSpan={4} className={`${styles.td} ${styles.footLabel}`}>
+                  Filtered Total ({expenses.length} items)
+                </td>
+                <td className={`${styles.td} ${styles.right} ${styles.footAmount}`}>
+                  {fmt(filteredTotal)}
+                </td>
+                <td className={styles.td}></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/ExpenseTable.module.css">>>
+.wrapper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.tableHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tableTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.count {
+  font-size: .75rem;
+  font-weight: 600;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 2px 10px;
+  border-radius: 99px;
+}
+
+.filteredTotal {
+  font-size: .875rem;
+  color: var(--text-muted);
+}
+
+.filteredTotal strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--text-muted);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: color .15s;
+}
+
+.th:hover { color: var(--primary); }
+
+.sortNeutral { opacity: .35; margin-left: 4px; }
+.sortActive { color: var(--primary); margin-left: 4px; }
+
+.td {
+  padding: 13px 16px;
+  font-size: .875rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.row:last-child .td { border-bottom: none; }
+.rowAlt { background: var(--surface2); }
+.row:hover { background: var(--primary-light); }
+
+.right { text-align: right; }
+
+.date {
+  font-size: .82rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.staffCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.staffName {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.catBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--c);
+  background: var(--bg);
+  white-space: nowrap;
+}
+
+.desc {
+  color: var(--text);
+  max-width: 260px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.amount {
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.actions { width: 100px; }
+
+.deleteBtn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  opacity: .4;
+  transition: opacity .15s;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.deleteBtn:hover { opacity: 1; background: var(--danger-light); }
+
+.confirmRow {
+  display: flex;
+  gap: 6px;
+}
+
+.confirmYes {
+  padding: 4px 10px;
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+.confirmNo {
+  padding: 4px 10px;
+  background: var(--surface2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+.footRow { background: var(--primary-light); }
+
+.footLabel {
+  font-weight: 700;
+  font-size: .82rem;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.footAmount {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.empty {
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.emptyIcon { font-size: 2.5rem; margin-bottom: 12px; }
+.emptyText { font-size: 1rem; font-weight: 600; color: var(--text); }
+.emptySub { font-size: .85rem; color: var(--text-muted); margin-top: 4px; }
+<<<END FILE>>>
+
+<<<FILE path="src/components/AddExpenseModal.jsx">>>
+import React, { useState } from 'react'
+import styles from './AddExpenseModal.module.css'
+
+const today = () => new Date().toISOString().split('T')[0]
+
+export default function AddExpenseModal({ categories, staff, onAdd, onClose }) {
+  const [form, setForm] = useState({
+    staff: staff[0],
+    category: categories[0].id,
+    description: '',
+    amount: '',
+    date: today(),
+  })
+  const [errors, setErrors] = useState({})
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const validate = () => {
+    const e = {}
+    if (!form.description.trim()) e.description = 'Description is required'
+    if (!form.amount || isNaN(+form.amount) || +form.amount <= 0) e.amount = 'Enter a valid amount'
+    if (!form.date) e.date = 'Date is required'
+    return e
+  }
+
+  const handleSubmit = (ev) => {
+    ev.preventDefault()
+    const e = validate()
+    if (Object.keys(e).length) { setErrors(e); return }
+    onAdd({ ...form, amount: parseFloat(form.amount) })
+    onClose()
+  }
+
+  return (
+    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal}>
+        <div className={styles.modalHeader}>
+          <div className={styles.modalTitle}>
+            <span>➕</span> Add Expense
+          </div>
+          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.row2}>
+            <div className={styles.field}>
+              <label className={styles.label}>Staff Member</label>
+              <select className={styles.input} value={form.staff} onChange={e => set('staff', e.target.value)}>
+                {staff.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Date</label>
+              <input
+                className={`${styles.input} ${errors.date ? styles.inputErr : ''}`}
+                type="date"
+                value={form.date}
+                max={today()}
+                onChange={e => { set('date', e.target.value); setErrors(er => ({ ...er, date: '' })) }}
+              />
+              {errors.date && <span className={styles.err}>{errors.date}</span>}
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Category</label>
+            <div className={styles.catGrid}>
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  className={`${styles.catOption} ${form.category === cat.id ? styles.catSelected : ''}`}
+                  style={{ '--c': cat.color, '--bg': cat.bg }}
+                  onClick={() => set('category', cat.id)}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{cat.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Description</label>
+            <input
+              className={`${styles.input} ${errors.description ? styles.inputErr : ''}`}
+              type="text"
+              placeholder="What was this expense for?"
+              value={form.description}
+              onChange={e => { set('description', e.target.value); setErrors(er => ({ ...er, description: '' })) }}
+            />
+            {errors.description && <span className={styles.err}>{errors.description}</span>}
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Amount (USD)</label>
+            <div className={styles.amountWrap}>
+              <span className={styles.dollar}>$</span>
+              <input
+                className={`${styles.input} ${styles.amountInput} ${errors.amount ? styles.inputErr : ''}`}
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+                value={form.amount}
+                onChange={e => { set('amount', e.target.value); setErrors(er => ({ ...er, amount: '' })) }}
+              />
+            </div>
+            {errors.amount && <span className={styles.err}>{errors.amount}</span>}
+          </div>
+
+          <div className={styles.actions}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+            <button type="submit" className={styles.submitBtn}>Add Expense</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+<<<END FILE>>>
+
+<<<FILE path="src/components/AddExpenseModal.module.css">>>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+  animation: fadeIn .15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp .2s ease;
+}
+
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background .15s;
+}
+
+.closeBtn:hover { background: var(--border); }
+
+.form {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--text-muted);
+}
+
+.input {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+  color: var(--text);
+  background: var(--surface2);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.input[type="text"],
+.input[type="number"],
+.input[type="date"] {
+  background-image: none;
+}
+
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+  background: #fff;
+}
+
+.inputErr { border-color: var(--danger) !important; }
+
+.err {
+  font-size: .75rem;
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.catGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.catOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all .15s;
+  cursor: pointer;
+}
+
+.catOption:hover {
+  border-color: var(--c);
+  background: var(--bg);
+  color: var(--c);
+}
+
+.catSelected {
+  border-color: var(--c) !important;
+  background: var(--bg) !important;
+  color: var(--c) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 15%, transparent);
+}
+
+.amountWrap {
+  position: relative;
+}
+
+.dollar {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 700;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.amountInput {
+  padding-left: 28px !important;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.cancelBtn {
+  padding: 10px 20px;
+  background: var(--surface2);
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+  font-weight: 600;
+  transition: background .15s;
+}
+
+.cancelBtn:hover { background: var(--border); }
+
+.submitBtn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(79,70,229,.35);
+  transition: transform .15s, box-shadow .15s;
+}
+
+.submitBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(79,70,229,.45);
+}
+<<<END FILE>>>

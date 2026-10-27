@@ -1,0 +1,28 @@
+{
+  "durationMs": 1673,
+  "events": [],
+  "finishedAtMs": 1791666836473,
+  "headline": {
+    "generationSource": "fallback",
+    "healAttempts": 0,
+    "infrastructureStageSeconds": 0.0,
+    "modelStageSeconds": 1.668,
+    "timeToFirstFileSeconds": null,
+    "timeToHealthyPreviewSeconds": null
+  },
+  "modelCalls": [],
+  "prompt": "Add a status filter to the main list. Go ahead and build it.",
+  "runId": "e4594a9540e549ce938a6c4c12d4b2b6-1791666834800",
+  "runType": "new",
+  "sessionId": "e4594a9540e549ce938a6c4c12d4b2b6",
+  "stages": [
+    {
+      "durationMs": 1668,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791666834802
+    }
+  ],
+  "startedAtMs": 1791666834800,
+  "status": "clarify"
+}

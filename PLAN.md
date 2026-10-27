@@ -218,7 +218,7 @@ Until Phase 6: `actorId` is always `"dev-user"`.
 
 ## Phase checklist
 
-Current status: Phases 1 through 5 are complete. Phase 6 remains.
+Current status: Phases 1 through 7 and Phase 6 access enforcement ([P6-S4](docs/stories/P6-S4-enforce-access.md)) are complete. Trust detail lives in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ### Phase 1 — Foundation and Sandbox
 
@@ -260,7 +260,20 @@ Current status: Phases 1 through 5 are complete. Phase 6 remains.
 - [x] [P6-S1](docs/stories/P6-S1-accounts-login.md) Accounts and login
 - [x] [P6-S2](docs/stories/P6-S2-ownership-roles.md) Ownership and roles
 - [x] [P6-S3](docs/stories/P6-S3-share-teammates.md) Share with teammates
-- [ ] [P6-S4](docs/stories/P6-S4-enforce-access.md) Enforce API and preview access
+- [x] [P6-S4](docs/stories/P6-S4-enforce-access.md) Enforce API and preview access
+
+### Phase 7 — Trust, remediation, and change requests
+
+- [x] [P7-S1](docs/stories/P7-S1-trust-contracts.md) Trust contracts + round-trip
+- [x] [P7-S2](docs/stories/P7-S2-acceptance-checks-browser.md) Acceptance checks in browser
+- [x] [P7-S3](docs/stories/P7-S3-scanners-preboot-gate.md) Scanners + pre-boot gate
+- [x] [P7-S4](docs/stories/P7-S4-live-attack-pass.md) Live attack pass
+- [x] [P7-S5](docs/stories/P7-S5-health-publish-gate.md) Health + publish gate
+- [x] [P7-S6](docs/stories/P7-S6-trust-card-ui.md) Trust Card UI
+- [x] [P7-S7](docs/stories/P7-S7-remediation-ladder.md) Remediation ladder + ledger
+- [x] [P7-S8](docs/stories/P7-S8-whatsapp-relay.md) WhatsApp relay
+- [x] [P7-S9](docs/stories/P7-S9-change-request-worker.md) Change-request worker
+- [x] [P7-S10](docs/stories/P7-S10-fleet-campaigns-digest.md) Fleet campaigns + digest
 
 ## How developers work a story
 

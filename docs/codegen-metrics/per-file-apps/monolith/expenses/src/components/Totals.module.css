@@ -1,0 +1,106 @@
+.section {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .section { grid-template-columns: 1fr; }
+}
+
+.grand {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  color: #fff;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.grandLabel {
+  font-size: .8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .8;
+}
+
+.grandAmount {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  margin-top: 4px;
+}
+
+.grandSub {
+  font-size: .8rem;
+  opacity: .7;
+  margin-top: 2px;
+}
+
+.cats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.catCard {
+  background: var(--cat-bg);
+  border: 1.5px solid color-mix(in srgb, var(--cat-color) 20%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform .15s, box-shadow .15s;
+}
+
+.catCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.catTop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.catIcon { font-size: 1rem; }
+
+.catLabel {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--cat-color);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.catAmount {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.barTrack {
+  height: 4px;
+  background: color-mix(in srgb, var(--cat-color) 15%, transparent);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--cat-color);
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+
+.catPct {
+  font-size: .72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}

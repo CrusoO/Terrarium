@@ -78,10 +78,24 @@ export function useAuth() {
       await persistSessionCookie(token);
     });
 
+    // Background tabs and sleep stall Firebase's own refresh timer, so nudge it.
+    const keepFresh = () => {
+      void firebaseAuth.currentUser?.getIdToken().catch(() => undefined);
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") keepFresh();
+    };
+    const refreshTimer = setInterval(keepFresh, 4 * 60 * 1000);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", keepFresh);
+
     return () => {
       clearExpiry();
       unsubAuth();
       unsubToken();
+      clearInterval(refreshTimer);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", keepFresh);
     };
   }, []);
 
@@ -90,7 +104,6 @@ export function useAuth() {
     const token = await user.getIdToken();
     setCurrentToken(token);
     await persistSessionCookie(token);
-    return user;
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -98,7 +111,6 @@ export function useAuth() {
     const token = await user.getIdToken();
     setCurrentToken(token);
     await persistSessionCookie(token);
-    return user;
   }, []);
 
   const logout = useCallback(async () => {

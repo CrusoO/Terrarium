@@ -1,0 +1,81 @@
+{
+  "durationMs": 74339,
+  "events": [
+    {
+      "atMs": 1791840825055,
+      "name": "codegen.first_file",
+      "payload": {
+        "path": "src/components/StatusBadge.tsx",
+        "secondsSinceCodegenStage": 17.281
+      }
+    }
+  ],
+  "finishedAtMs": 1791840865039,
+  "headline": {
+    "generationSource": "fallback",
+    "healAttempts": 0,
+    "infrastructureStageSeconds": 3.459,
+    "modelStageSeconds": 40.912,
+    "timeToFirstFileSeconds": 34.355,
+    "timeToHealthyPreviewSeconds": null
+  },
+  "modelCalls": [
+    {
+      "attempt": 1,
+      "durationMs": 2361,
+      "inputTokens": 1082,
+      "model": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "ok": true,
+      "outputTokens": 142,
+      "provider": "bedrock",
+      "purpose": "intent",
+      "stage": "intent",
+      "usageSource": "bedrock"
+    },
+    {
+      "attempt": 1,
+      "durationMs": 10784,
+      "inputTokens": 475,
+      "model": "anthropic.claude-sonnet-4-6",
+      "ok": true,
+      "outputTokens": 1137,
+      "provider": "bedrock",
+      "purpose": "plan",
+      "stage": "plan",
+      "totalTokens": 1612,
+      "usageSource": "bedrock"
+    }
+  ],
+  "prompt": "Purchase order tracker with search, status filter (open, approved, received), add form, detail view and daily totals.",
+  "runId": "75912af2dfcb4b329bccd76c60bc762d-1791840790700",
+  "runType": "new",
+  "sessionId": "75912af2dfcb4b329bccd76c60bc762d",
+  "stages": [
+    {
+      "durationMs": 2826,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791840790701
+    },
+    {
+      "durationMs": 10786,
+      "kind": "model",
+      "name": "plan",
+      "startedAtMs": 1791840793531
+    },
+    {
+      "durationMs": 3459,
+      "kind": "infrastructure",
+      "name": "preview_skeleton_stream",
+      "startedAtMs": 1791840804316
+    },
+    {
+      "durationMs": 27300,
+      "kind": "model",
+      "name": "codegen",
+      "startedAtMs": 1791840807775
+    }
+  ],
+  "startedAtMs": 1791840790700,
+  "status": "not-validated"
+}

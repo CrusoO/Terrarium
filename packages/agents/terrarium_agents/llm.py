@@ -19,15 +19,20 @@ JsonPurpose = Literal["plan", "codegen"]
 
 DEFAULT_INTENT_MODEL = "gemini-3.5-flash-lite"
 DEFAULT_EDITOR_MODEL = "gemini-3.5-flash-lite"  # Updated: gemini-2.5-pro is deprecated
-DEFAULT_GEMINI_CODEGEN_MODEL = "gemini-3.5-flash-lite"
+DEFAULT_FAST_MODEL = "eu.anthropic.claude-haiku-4-5-20251001-v1:0"
+DEFAULT_LEAF_MODEL = "eu.anthropic.claude-haiku-5-5"
+DEFAULT_PAGE_MODEL = "eu.anthropic.claude-haiku-4-5-20251001-v1:0"
+DEFAULT_GEMINI_CODEGEN_MODEL = "gemini-3.8-flash"
 DEFAULT_NVIDIA_PLAN_MODEL = "nvidia/llama-3.1-nemotron-ultra-253b-v1"
 DEFAULT_NVIDIA_CODEGEN_MODEL = "mistralai/codestral-22b-instruct-v0.1"
 DEFAULT_NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 DEFAULT_BEDROCK_MODEL = "anthropic.claude-sonnet-4-6"
 DEFAULT_BEDROCK_REGION = "eu-central-1"
-DEFAULT_BEDROCK_READ_TIMEOUT_S = 45.0
+DEFAULT_BEDROCK_READ_TIMEOUT_PLAN_S = 90.0
+DEFAULT_BEDROCK_READ_TIMEOUT_CODEGEN_S = 300.0
 DEFAULT_BEDROCK_CONNECT_TIMEOUT_S = 10.0
-DEFAULT_GEMINI_JSON_TIMEOUT_MS = 90_000
+DEFAULT_GEMINI_JSON_TIMEOUT_MS = 180_000
+DEFAULT_GEMINI_PLAN_TIMEOUT_MS = 45_000
 DEFAULT_NVIDIA_JSON_TIMEOUT_S = 30.0
 
 _FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.I)
@@ -37,6 +42,7 @@ _LOG_EXCERPT_CHARS = 1800
 logger = logging.getLogger(__name__)
 _ACTIVE_BUNDLE: str | None = None
 _LLM_CALLS: list[dict[str, Any]] = []
+_LAST_USAGE: dict[str, Any] | None = None
 
 
 def record_llm_call(
@@ -46,22 +52,72 @@ def record_llm_call(
     model: str,
     duration_ms: int,
     ok: bool,
+    input_tokens: int | None = None,
+    output_tokens: int | None = None,
+    total_tokens: int | None = None,
+    usage_source: str | None = None,
+    fail_reason: str | None = None,
+    time_to_first_token_s: float | None = None,
+    chunk_count: int | None = None,
+    continued: bool | None = None,
 ) -> None:
-    _LLM_CALLS.append(
-        {
-            "purpose": purpose,
-            "provider": provider,
-            "model": model,
-            "durationMs": duration_ms,
-            "ok": ok,
-        }
-    )
+    payload = {
+        "purpose": purpose,
+        "provider": provider,
+        "model": model,
+        "durationMs": duration_ms,
+        "ok": ok,
+    }
+    if input_tokens is not None:
+        payload["inputTokens"] = input_tokens
+    if output_tokens is not None:
+        payload["outputTokens"] = output_tokens
+    if total_tokens is not None:
+        payload["totalTokens"] = total_tokens
+    if usage_source:
+        payload["usageSource"] = usage_source
+    if fail_reason:
+        payload["failReason"] = fail_reason
+    if time_to_first_token_s is not None:
+        payload["timeToFirstTokenSeconds"] = time_to_first_token_s
+    if chunk_count is not None:
+        payload["chunkCount"] = chunk_count
+    if continued:
+        payload["continued"] = True
+    _LLM_CALLS.append(payload)
 
 
 def drain_llm_calls() -> list[dict[str, Any]]:
     calls = list(_LLM_CALLS)
     _LLM_CALLS.clear()
     return calls
+
+
+def _set_last_usage(
+    *,
+    input_tokens: int | None = None,
+    output_tokens: int | None = None,
+    total_tokens: int | None = None,
+    source: str | None = None,
+) -> None:
+    global _LAST_USAGE
+    _LAST_USAGE = {
+        key: value
+        for key, value in {
+            "inputTokens": input_tokens,
+            "outputTokens": output_tokens,
+            "totalTokens": total_tokens,
+            "usageSource": source,
+        }.items()
+        if value is not None
+    } or None
+
+
+def _consume_last_usage() -> dict[str, Any]:
+    global _LAST_USAGE
+    usage = dict(_LAST_USAGE or {})
+    _LAST_USAGE = None
+    return usage
 
 
 def _load_dotenv() -> None:
@@ -147,6 +203,14 @@ def nvidia_api_key() -> str | None:
     return key or None
 
 
+def nvidia_enabled() -> bool:
+    """NVIDIA is opt-in so a stale key in .env does not hijack Bedrock → Gemini routing."""
+    if not nvidia_api_key():
+        return False
+    flag = (os.environ.get("TERRARIUM_ENABLE_NVIDIA") or "").strip().lower()
+    return flag in {"1", "true", "yes", "on"}
+
+
 def nvidia_base_url() -> str:
     return (
         os.environ.get("TERRARIUM_NVIDIA_BASE_URL", DEFAULT_NVIDIA_BASE_URL).strip()
@@ -181,14 +245,45 @@ def bedrock_model() -> str:
     return (os.environ.get("BEDROCK_MODEL") or DEFAULT_BEDROCK_MODEL).strip() or DEFAULT_BEDROCK_MODEL
 
 
-def bedrock_read_timeout_s() -> float:
-    raw = os.environ.get("BEDROCK_READ_TIMEOUT_S", "").strip()
+def bedrock_read_timeout_s(purpose: JsonPurpose | None = None) -> float:
+    if purpose == "codegen":
+        raw = (
+            os.environ.get("BEDROCK_CODEGEN_READ_TIMEOUT_S")
+            or os.environ.get("BEDROCK_READ_TIMEOUT_S")
+            or ""
+        ).strip()
+        default = DEFAULT_BEDROCK_READ_TIMEOUT_CODEGEN_S
+    elif purpose == "plan":
+        raw = (
+            os.environ.get("BEDROCK_PLAN_READ_TIMEOUT_S")
+            or os.environ.get("BEDROCK_READ_TIMEOUT_S")
+            or ""
+        ).strip()
+        default = DEFAULT_BEDROCK_READ_TIMEOUT_PLAN_S
+    else:
+        raw = os.environ.get("BEDROCK_READ_TIMEOUT_S", "").strip()
+        default = DEFAULT_BEDROCK_READ_TIMEOUT_PLAN_S
     if not raw:
-        return DEFAULT_BEDROCK_READ_TIMEOUT_S
+        return default
     try:
         return max(5.0, float(raw))
     except ValueError:
-        return DEFAULT_BEDROCK_READ_TIMEOUT_S
+        return default
+
+
+def gemini_json_timeout_ms(purpose: JsonPurpose | None = None) -> int:
+    if purpose == "plan":
+        raw = os.environ.get("GEMINI_PLAN_TIMEOUT_S", "").strip()
+        default = DEFAULT_GEMINI_PLAN_TIMEOUT_MS
+    else:
+        raw = os.environ.get("GEMINI_JSON_TIMEOUT_S", "").strip()
+        default = DEFAULT_GEMINI_JSON_TIMEOUT_MS
+    if not raw:
+        return default
+    try:
+        return int(max(10.0, float(raw)) * 1000)
+    except ValueError:
+        return default
 
 
 def bedrock_connect_timeout_s() -> float:
@@ -209,13 +304,32 @@ def bedrock_ready() -> bool:
 
 
 def bedrock_model_ids(model: str, region: str | None = None) -> list[str]:
-    """EU Bedrock often needs the inference-profile prefix `eu.`."""
+    """Bedrock model IDs to try (inference profiles before on-demand model IDs)."""
     name = model.strip()
-    ids = [name]
+    if not name:
+        return []
     where = (region or bedrock_region()).lower()
-    if where.startswith("eu") and not name.startswith(("eu.", "us.", "apac.")):
-        ids.append(f"eu.{name}")
-    return ids
+    ids: list[str] = []
+    profile = (os.environ.get("BEDROCK_INFERENCE_PROFILE") or "").strip()
+    if profile:
+        ids.append(profile)
+    if name.startswith("arn:aws:bedrock:"):
+        ids.append(name)
+    elif name.startswith(("eu.", "us.", "apac.", "global.")):
+        ids.append(name)
+    else:
+        if where.startswith("eu"):
+            ids.append(f"eu.{name}")
+        elif where.startswith("us"):
+            ids.append(f"us.{name}")
+        ids.append(name)
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for item in ids:
+        if item not in seen:
+            seen.add(item)
+            ordered.append(item)
+    return ordered
 
 
 def agents_mode() -> AgentsMode:
@@ -225,26 +339,243 @@ def agents_mode() -> AgentsMode:
     return "live" if gemini_api_key() or nvidia_api_key() or bedrock_ready() else "stub"
 
 
+def fast_model() -> str:
+    return os.environ.get("TERRARIUM_MODEL_FAST", DEFAULT_FAST_MODEL).strip() or DEFAULT_FAST_MODEL
+
+
+def leaf_model() -> str:
+    return os.environ.get("TERRARIUM_MODEL_LEAF", DEFAULT_LEAF_MODEL).strip() or DEFAULT_LEAF_MODEL
+
+
+def page_model() -> str:
+    return os.environ.get("TERRARIUM_MODEL_PAGE", DEFAULT_PAGE_MODEL).strip() or DEFAULT_PAGE_MODEL
+
+
+def sampling_fields(model: str) -> dict[str, Any]:
+    """Per-model request fields. Haiku 5.5 rejects a temperature field."""
+    thinking = (os.environ.get("TERRARIUM_BEDROCK_THINKING") or "").strip().lower()
+    if thinking == "minimal":
+        return {"temperature": 1}
+    if "haiku-5" in model.lower():
+        return {}
+    return {"temperature": 0.2 if "haiku" in model.lower() else 0.3}
+
+
+def invoke_bedrock_text(
+    system: str,
+    user: str,
+    model: str,
+    *,
+    max_tokens: int = 800,
+    temperature: float = 0.2,
+    purpose: str = "repair",
+) -> dict[str, Any]:
+    """One non-streaming Bedrock call. Replay is the default; live is opt-in."""
+    from terrarium_agents.llm_fixtures import is_live, remember_invoke, resolve_invoke
+
+    resolved = resolve_invoke(
+        system,
+        user,
+        model,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        purpose=purpose,
+    )
+    if not is_live(resolved):
+        return resolved
+    result = _invoke_bedrock_text_live(
+        system,
+        user,
+        model,
+        max_tokens=max_tokens,
+        temperature=temperature,
+    )
+    remember_invoke(
+        system,
+        user,
+        model,
+        result,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        purpose=purpose,
+    )
+    return result
+
+
+def _invoke_bedrock_text_live(
+    system: str,
+    user: str,
+    model: str,
+    *,
+    max_tokens: int = 800,
+    temperature: float = 0.2,
+) -> dict[str, Any]:
+    """One non-streaming Bedrock call. Used by intent and the editor."""
+    if not bedrock_ready():
+        return {"ok": False, "text": "", "failReason": "not_configured", "model": model}
+    import boto3
+    from botocore.config import Config
+    from botocore.exceptions import ClientError
+
+    region = bedrock_region()
+    body_obj: dict[str, Any] = {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": max_tokens,
+        "system": system,
+        "messages": [{"role": "user", "content": user}],
+    }
+    fields = sampling_fields(model)
+    if "temperature" in fields and "haiku-5" not in model.lower():
+        fields = {**fields, "temperature": temperature}
+    body_obj.update(fields)
+    body = json.dumps(body_obj)
+    client = boto3.client(
+        "bedrock-runtime",
+        region_name=region,
+        config=Config(connect_timeout=bedrock_connect_timeout_s(), read_timeout=60, retries={"max_attempts": 0}),
+    )
+    started = time.monotonic()
+    last_error: Exception | None = None
+    for model_id in bedrock_model_ids(model, region):
+        try:
+            response = client.invoke_model(
+                modelId=model_id,
+                contentType="application/json",
+                accept="application/json",
+                body=body,
+            )
+            raw = json.loads(response["body"].read())
+            usage = raw.get("usage") if isinstance(raw, dict) else {}
+            text = "".join(
+                part.get("text", "") if isinstance(part, dict) else ""
+                for part in (raw.get("content") or [])
+            )
+            duration_s = time.monotonic() - started
+            return {
+                "ok": True,
+                "text": text.strip(),
+                "model": model_id,
+                "durationSeconds": round(duration_s, 3),
+                "inputTokens": usage.get("input_tokens") if isinstance(usage, dict) else None,
+                "outputTokens": usage.get("output_tokens") if isinstance(usage, dict) else None,
+                "failReason": None,
+            }
+        except ClientError as error:
+            last_error = error
+            logger.warning("Bedrock text failed model=%s: %s", model_id, error)
+            continue
+    return {
+        "ok": False,
+        "text": "",
+        "model": model,
+        "durationSeconds": round(time.monotonic() - started, 3),
+        "failReason": f"{type(last_error).__name__}:{last_error}" if last_error else "no_model",
+    }
+
+
 def intent_model() -> str:
     return os.environ.get("TERRARIUM_MODEL_INTENT", DEFAULT_INTENT_MODEL).strip() or DEFAULT_INTENT_MODEL
 
 
+def model_for_provider(provider: str, purpose: JsonPurpose) -> str:
+    if provider == "bedrock":
+        return bedrock_model()
+    if provider == "nvidia":
+        return nvidia_plan_model() if purpose == "plan" else nvidia_codegen_model()
+    env_key = "TERRARIUM_MODEL_PLAN" if purpose == "plan" else "TERRARIUM_MODEL_CODEGEN"
+    explicit = (os.environ.get(env_key) or "").strip()
+    if explicit:
+        return explicit
+    return DEFAULT_GEMINI_CODEGEN_MODEL
+
+
+_BEDROCK_AUTH_MARKERS = (
+    "UnrecognizedClientException",
+    "InvalidClientTokenId",
+    "ExpiredTokenException",
+    "IncompleteSignature",
+    "SignatureDoesNotMatch",
+)
+
+
+def bedrock_rejected_credentials(reason: str | None) -> bool:
+    """True when Bedrock refused the credentials, rather than the model missing."""
+    text = reason or ""
+    return any(marker in text for marker in _BEDROCK_AUTH_MARKERS)
+
+
+def codegen_providers(failed_reason: str | None = None, order: list[str] | None = None) -> list[str]:
+    """Codegen provider order.
+
+    Gemini stays off the normal codegen order because of its free-tier cap.
+    An authentication failure is not a model miss, so Gemini is added then:
+    otherwise a rejected AWS token leaves codegen with no provider at all.
+    """
+    providers = list(order if order is not None else llm_provider_order("codegen"))
+    if (
+        bedrock_rejected_credentials(failed_reason)
+        and gemini_api_key()
+        and "gemini" not in providers
+    ):
+        providers.append("gemini")
+    return providers
+
+
+def llm_provider_order(purpose: JsonPurpose) -> list[str]:
+    """Provider order for plan and codegen.
+
+    An explicit ``TERRARIUM_LLM_PROVIDER_ORDER`` is used as written.
+    Otherwise Bedrock is first when it is configured, and it is appended
+    when no order was set.
+    """
+    custom = (os.environ.get("TERRARIUM_LLM_PROVIDER_ORDER") or "").strip()
+    explicit = bool(custom)
+    if custom:
+        allowed = {"bedrock", "gemini", "nvidia"}
+        ordered = [
+            part.strip().lower()
+            for part in custom.split(",")
+            if part.strip().lower() in allowed
+        ]
+    else:
+        ordered = []
+        if bedrock_ready():
+            ordered.append("bedrock")
+        if gemini_api_key():
+            ordered.append("gemini")
+        if nvidia_enabled():
+            ordered.append("nvidia")
+    available: list[str] = []
+    for name in ordered:
+        if name == "bedrock" and bedrock_ready():
+            available.append("bedrock")
+        elif name == "gemini" and gemini_api_key():
+            available.append("gemini")
+        elif name == "nvidia" and nvidia_enabled():
+            available.append("nvidia")
+    # Codegen stays on Bedrock. Gemini 3.8 Flash codegen is on a free-tier
+    # daily cap; intent and the editor keep their own Gemini models.
+    if purpose == "codegen" and os.environ.get("TERRARIUM_ENABLE_GEMINI_CODEGEN") != "1":
+        available = [name for name in available if name != "gemini"]
+    # An explicit provider list is used as written. Bedrock is appended only
+    # when no order was set, so a Gemini-only build does not call AWS.
+    if not explicit and bedrock_ready() and "bedrock" not in available:
+        available.append("bedrock")
+    return available
+
+
 def plan_model() -> str:
-    explicit = os.environ.get("TERRARIUM_MODEL_PLAN", "").strip()
-    if nvidia_api_key():
-        if explicit and not _looks_like_gemini(explicit):
-            return explicit
-        return DEFAULT_NVIDIA_PLAN_MODEL
-    return explicit or DEFAULT_GEMINI_CODEGEN_MODEL
+    order = llm_provider_order("plan")
+    if order:
+        return model_for_provider(order[0], "plan")
+    return DEFAULT_GEMINI_CODEGEN_MODEL
 
 
 def codegen_model() -> str:
-    explicit = os.environ.get("TERRARIUM_MODEL_CODEGEN", "").strip()
-    if nvidia_api_key():
-        if explicit and not _looks_like_gemini(explicit):
-            return explicit
-        return DEFAULT_NVIDIA_CODEGEN_MODEL
-    return explicit or DEFAULT_GEMINI_CODEGEN_MODEL
+    order = llm_provider_order("codegen")
+    if order:
+        return model_for_provider(order[0], "codegen")
+    return DEFAULT_GEMINI_CODEGEN_MODEL
 
 
 def editor_model() -> str:
@@ -300,68 +631,90 @@ def complete_json(
     purpose: JsonPurpose = "codegen",
     nvidia_first: bool | None = None,
 ) -> dict[str, Any] | None:
-    """Structured JSON from Bedrock (Claude), then Gemini / NVIDIA. None in stub mode."""
+    """Structured JSON via llm_provider_order. Bedrock is the fallback when another provider fails.
+
+    For purpose=codegen, uses streaming with first-token (~25s) and total (~120s)
+    timeouts plus automatic failover (see llm_stream). Plan stays non-streaming.
+    """
     if agents_mode() != "live":
         return None
-    prefer_nvidia = bool(nvidia_first)
-    providers: list[str] = []
-    if prefer_nvidia:
-        if nvidia_api_key():
-            providers.append("nvidia")
-        if bedrock_ready():
-            providers.append("bedrock")
-        if gemini_api_key():
-            providers.append("gemini")
-    else:
-        if bedrock_ready():
-            providers.append("bedrock")
-        if gemini_api_key():
-            providers.append("gemini")
-        if nvidia_api_key():
-            providers.append("nvidia")
-    model = (
-        nvidia_codegen_model()
-        if prefer_nvidia and nvidia_api_key() and purpose == "codegen"
-        else bedrock_model()
-        if bedrock_ready()
-        else (plan_model() if purpose == "plan" else codegen_model())
-    )
+    if nvidia_first:
+        logger.warning(
+            "LLM %s nvidia_first is deprecated; use TERRARIUM_ENABLE_NVIDIA=1 instead",
+            purpose,
+        )
+    if purpose == "codegen":
+        from terrarium_agents.llm_stream import codegen_stream_enabled, stream_codegen_with_failover
+
+        if codegen_stream_enabled():
+            result = stream_codegen_with_failover(system, user)
+            if result.ok and result.text.strip():
+                parsed = _loads_object(result.text)
+                _log_model_text(result.provider, result.model, result.text, parsed)
+                if parsed is not None:
+                    _set_last_usage(
+                        input_tokens=result.input_tokens,
+                        output_tokens=result.output_tokens,
+                        total_tokens=result.total_tokens,
+                        source=result.usage_source,
+                    )
+                    return parsed
+                logger.warning(
+                    "Codegen stream from %s returned text but no JSON; trying non-stream fallback path",
+                    result.provider,
+                )
+            # If stream path exhausted providers with no JSON, fall through to legacy
+            # non-stream attempts only when explicitly requested.
+            if (os.environ.get("TERRARIUM_CODEGEN_STREAM_FALLBACK_JSON") or "").strip().lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }:
+                logger.info("Codegen attempting legacy non-stream JSON after stream miss")
+            else:
+                return None
+
+    providers = llm_provider_order(purpose)
+    primary = providers[0] if providers else "none"
+    primary_model = model_for_provider(primary, purpose) if providers else "none"
     logger.info(
-        "LLM %s starting providers=%s model=%s",
+        "LLM %s starting providers=%s primary=%s/%s",
         purpose,
         ",".join(providers) or "none",
-        model,
+        primary,
+        primary_model,
     )
     started = time.monotonic()
-    last_provider = providers[-1] if providers else "none"
-    last_model = model
+    last_provider = primary
+    last_model = primary_model
     for provider in providers:
+        used_model = model_for_provider(provider, purpose)
         if provider == "bedrock":
-            used_model = bedrock_model()
-            payload = _bedrock_json(system, user, used_model)
+            payload = _bedrock_json(system, user, used_model, purpose=purpose)
         elif provider == "nvidia":
-            used_model = (
-                nvidia_plan_model()
-                if purpose == "plan"
-                else nvidia_codegen_model()
-            )
             payload = _nvidia_json(system, user, used_model)
         else:
-            used_model = model if _looks_like_gemini(model) else DEFAULT_GEMINI_CODEGEN_MODEL
-            payload = _gemini_json(system, user, used_model)
+            payload = _gemini_json(system, user, used_model, purpose=purpose)
         last_provider = provider
         last_model = used_model
         elapsed_ms = int((time.monotonic() - started) * 1000)
         if payload is not None:
+            usage = _consume_last_usage()
             record_llm_call(
                 purpose=purpose,
                 provider=provider,
                 model=used_model,
                 duration_ms=elapsed_ms,
                 ok=True,
+                input_tokens=usage.get("inputTokens"),
+                output_tokens=usage.get("outputTokens"),
+                total_tokens=usage.get("totalTokens"),
+                usage_source=usage.get("usageSource"),
             )
             logger.info("LLM %s succeeded via %s", purpose, provider)
             return payload
+        _consume_last_usage()
         logger.warning("LLM %s got no JSON from %s; trying next provider", purpose, provider)
     record_llm_call(
         purpose=purpose,
@@ -374,7 +727,13 @@ def complete_json(
     return None
 
 
-def _bedrock_json(system: str, user: str, model: str) -> dict[str, Any] | None:
+def _bedrock_json(
+    system: str,
+    user: str,
+    model: str,
+    *,
+    purpose: JsonPurpose = "codegen",
+) -> dict[str, Any] | None:
     if not bedrock_ready():
         return None
     try:
@@ -399,14 +758,20 @@ def _bedrock_json(system: str, user: str, model: str) -> dict[str, Any] | None:
         region_name=region,
         config=Config(
             connect_timeout=bedrock_connect_timeout_s(),
-            read_timeout=bedrock_read_timeout_s(),
+            read_timeout=bedrock_read_timeout_s(purpose),
             retries={"max_attempts": 1, "mode": "standard"},
         ),
     )
     last_error: Exception | None = None
     started = time.monotonic()
     for model_id in bedrock_model_ids(model, region):
-        logger.info("Bedrock invoke_model start model=%s region=%s", model_id, region)
+        logger.info(
+            "Bedrock invoke_model start model=%s region=%s purpose=%s timeout=%ss",
+            model_id,
+            region,
+            purpose,
+            bedrock_read_timeout_s(purpose),
+        )
         try:
             response = client.invoke_model(
                 modelId=model_id,
@@ -415,6 +780,21 @@ def _bedrock_json(system: str, user: str, model: str) -> dict[str, Any] | None:
                 body=body,
             )
             raw = json.loads(response["body"].read())
+            usage = raw.get("usage") if isinstance(raw, dict) else None
+            if isinstance(usage, dict):
+                input_tokens = usage.get("input_tokens")
+                output_tokens = usage.get("output_tokens")
+                if isinstance(input_tokens, int) or isinstance(output_tokens, int):
+                    _set_last_usage(
+                        input_tokens=input_tokens if isinstance(input_tokens, int) else None,
+                        output_tokens=output_tokens if isinstance(output_tokens, int) else None,
+                        total_tokens=(
+                            input_tokens + output_tokens
+                            if isinstance(input_tokens, int) and isinstance(output_tokens, int)
+                            else None
+                        ),
+                        source="bedrock",
+                    )
             chunks = raw.get("content") or []
             text = "".join(
                 part.get("text", "") if isinstance(part, dict) else str(part)
@@ -443,10 +823,22 @@ def _bedrock_json(system: str, user: str, model: str) -> dict[str, Any] | None:
     return None
 
 
-def _gemini_json(system: str, user: str, model: str) -> dict[str, Any] | None:
+def _gemini_json(
+    system: str,
+    user: str,
+    model: str,
+    *,
+    purpose: JsonPurpose | None = None,
+) -> dict[str, Any] | None:
     if not gemini_api_key():
         return None
-    logger.info("Gemini generate_content start model=%s", model)
+    timeout_ms = gemini_json_timeout_ms(purpose)
+    logger.info(
+        "Gemini generate_content start model=%s purpose=%s timeout=%ss",
+        model,
+        purpose,
+        timeout_ms / 1000,
+    )
     started = time.monotonic()
     try:
         from google.genai import types
@@ -461,10 +853,21 @@ def _gemini_json(system: str, user: str, model: str) -> dict[str, Any] | None:
                 automatic_function_calling=types.AutomaticFunctionCallingConfig(
                     disable=True
                 ),
-                http_options=types.HttpOptions(timeout=DEFAULT_GEMINI_JSON_TIMEOUT_MS),
+                http_options=types.HttpOptions(timeout=timeout_ms),
             ),
         )
         text = (response.text or "").strip()
+        usage = getattr(response, "usage_metadata", None)
+        if usage is not None:
+            input_tokens = getattr(usage, "prompt_token_count", None)
+            output_tokens = getattr(usage, "candidates_token_count", None)
+            total_tokens = getattr(usage, "total_token_count", None)
+            _set_last_usage(
+                input_tokens=input_tokens if isinstance(input_tokens, int) else None,
+                output_tokens=output_tokens if isinstance(output_tokens, int) else None,
+                total_tokens=total_tokens if isinstance(total_tokens, int) else None,
+                source="gemini",
+            )
         parsed = _loads_object(text)
         _log_model_text("Gemini", model, text, parsed)
         logger.info(
@@ -533,6 +936,17 @@ def _nvidia_json(system: str, user: str, model: str) -> dict[str, Any] | None:
                 break
         if data is None:
             return None
+        usage = data.get("usage")
+        if isinstance(usage, dict):
+            input_tokens = usage.get("prompt_tokens")
+            output_tokens = usage.get("completion_tokens")
+            total_tokens = usage.get("total_tokens")
+            _set_last_usage(
+                input_tokens=input_tokens if isinstance(input_tokens, int) else None,
+                output_tokens=output_tokens if isinstance(output_tokens, int) else None,
+                total_tokens=total_tokens if isinstance(total_tokens, int) else None,
+                source="nvidia",
+            )
         message = ((data.get("choices") or [{}])[0].get("message") or {})
         content = message.get("content") or ""
         if isinstance(content, list):

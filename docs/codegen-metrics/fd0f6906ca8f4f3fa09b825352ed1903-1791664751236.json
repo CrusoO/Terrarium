@@ -1,0 +1,20 @@
+{
+  "durationMs": 1353,
+  "events": [],
+  "finishedAtMs": 1791664752589,
+  "modelCalls": [],
+  "prompt": "Go ahead and build it. Skip remaining questions. Use Vite + React, in-memory mock data (no backend), desktop-first English UI, and ship a working MVP preview now.",
+  "runId": "fd0f6906ca8f4f3fa09b825352ed1903-1791664751236",
+  "runType": "new",
+  "sessionId": "fd0f6906ca8f4f3fa09b825352ed1903",
+  "stages": [
+    {
+      "durationMs": 1347,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791664751237
+    }
+  ],
+  "startedAtMs": 1791664751236,
+  "status": "clarify"
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "p16",
+    "prompt": "Put together a simple announcement page for a weekend ceramics open studio, with the address, the hours, and a note about what visitors can try.",
+    "expectedArchetype": "landing",
+    "supportedExpected": true,
+    "messyKind": null
+  },
+  {
+    "id": "p17",
+    "prompt": "Let neighbors reserve an hour on the public tennis courts, pick a court and a start time, and see which hours are already taken.",
+    "expectedArchetype": "booking",
+    "supportedExpected": true,
+    "messyKind": null
+  },
+  {
+    "id": "p18",
+    "prompt": "Build a multiplayer 3D racing game with vehicle physics, online lobbies, and voice chat.",
+    "expectedArchetype": "unsupported",
+    "supportedExpected": false,
+    "messyKind": null
+  },
+  {
+    "id": "p19",
+    "prompt": "Make a desktop video editor that trims clips, mixes several audio tracks, and exports a 4K timeline.",
+    "expectedArchetype": "unsupported",
+    "supportedExpected": false,
+    "messyKind": null
+  },
+  {
+    "id": "p20",
+    "prompt": "Create a compiler for a new programming language, including a debugger and a WebAssembly backend.",
+    "expectedArchetype": "unsupported",
+    "supportedExpected": false,
+    "messyKind": null
+  }
+]

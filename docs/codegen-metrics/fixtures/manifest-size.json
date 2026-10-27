@@ -1,0 +1,6 @@
+{
+  "records": 283,
+  "bytes": 1425523,
+  "secrets": [],
+  "git": "records/ is gitignored and rebuilt by scripts/codegen-fixtures.py"
+}

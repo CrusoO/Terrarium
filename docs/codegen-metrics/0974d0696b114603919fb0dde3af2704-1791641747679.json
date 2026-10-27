@@ -1,0 +1,20 @@
+{
+  "durationMs": 1684,
+  "events": [],
+  "finishedAtMs": 1791641749363,
+  "modelCalls": [],
+  "prompt": "Build a customer/order tracker web app: customers, orders, statuses, simple list/detail views, and a clear dashboard summary. Web UI only.",
+  "runId": "0974d0696b114603919fb0dde3af2704-1791641747679",
+  "runType": "new",
+  "sessionId": "0974d0696b114603919fb0dde3af2704",
+  "stages": [
+    {
+      "durationMs": 1680,
+      "kind": "model",
+      "name": "intent",
+      "startedAtMs": 1791641747680
+    }
+  ],
+  "startedAtMs": 1791641747679,
+  "status": "clarify"
+}

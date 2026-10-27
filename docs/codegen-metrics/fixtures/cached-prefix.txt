@@ -1,0 +1,226 @@
+Shared contract. Follow it exactly. Do not redefine scaffold files, types, hooks, or CSS.
+App: Orders. Language: jsdoc.
+Entity Order type fields: id: string, customer: string, city: string, paymentStatus: string, pickupDate: string
+Sample Order: {"id": "ORD-1001", "customer": "Alice Marsh", "city": "Portland", "paymentStatus": "Paid", "pickupDate": "2024-06-10"}
+Status field paymentStatus is one of Paid, Unpaid, Partial.
+Hooks and the shape they return:
+- useOrders(): Order[] (array)
+- useSelectedOrder(): Order | null (single)
+- useOrderActions(): { addItem: (draft) => void, select: (id) => void } (single)
+- useTotals(): DailyTotal[] (array)
+Components, props, example call, exports:
+- AppShell file src/components/AppShell.jsx kind scaffold props (children: ReactNode [single]) example <AppShell>{children}</AppShell> exports default
+- Navbar file src/components/Navbar.jsx kind scaffold props (title: string [primitive]) example <Navbar title="Orders" /> exports default
+- SearchBar file src/components/SearchBar.jsx kind scaffold props (value: string [primitive], onChange: (value: string) => void [callback], placeholder: string [primitive]) example <SearchBar value={query} onChange={setQuery} /> exports default
+- StatusBadge file src/components/StatusBadge.jsx kind leaf props (status: string [primitive]) example <StatusBadge status="Paid" /> exports default
+- FilterTabs file src/components/FilterTabs.jsx kind scaffold props (statuses: string[] [array], active: string [primitive], onChange: (value: string) => void [callback]) example <FilterTabs statuses={STATUSES} active={active} onChange={setActive} /> exports default
+- OrderCard file src/components/OrderCard.jsx kind leaf props (item: Order [single], onSelect: (id: string) => void [callback]) example <OrderCard item={item} onSelect={setSelectedId} /> exports default
+- PageHero file src/components/PageHero.jsx kind leaf props (none) example <PageHero /> exports default
+- EmptyState file src/components/EmptyState.jsx kind leaf props (none) example <EmptyState /> exports default
+- TotalsCard file src/components/TotalsCard.jsx kind leaf props (totals: DailyTotal[] [array]) example <TotalsCard totals={totals} /> exports default
+- ListPage file src/views/ListPage.jsx kind scaffold props (none) example <ListPage /> exports default
+- DetailPage file src/views/DetailPage.jsx kind scaffold props (none) example <DetailPage /> exports default
+- FormPage file src/views/FormPage.jsx kind scaffold props (none) example <FormPage /> exports default
+- DashboardPage file src/views/DashboardPage.jsx kind scaffold props (none) example <DashboardPage /> exports default
+SearchBar onChange receives the string value, never an event. TotalsCard totals is DailyTotal[] from useTotals(), never one row. A selected hook returns one object or null, and has no .map. FilterTabs statuses is string[].
+Write one file. No markdown fence. No extra files. Close every brace.
+Prefix rule 1: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 2: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 3: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 4: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 5: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 6: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 7: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 8: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 9: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 10: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 11: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 12: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 13: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 14: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 15: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 16: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 17: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 18: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 19: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 20: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 21: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 22: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 23: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 24: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 25: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 26: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 27: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 28: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 29: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 30: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 31: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 32: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 33: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 34: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 35: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 36: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 37: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 38: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 39: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 40: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 41: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 42: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 43: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 44: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 45: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 46: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 47: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 48: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 49: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 50: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 51: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 52: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 53: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 54: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 55: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 56: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 57: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 58: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 59: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 60: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 61: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 62: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 63: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 64: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 65: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 66: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 67: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 68: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 69: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 70: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 71: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 72: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 73: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 74: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 75: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 76: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 77: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 78: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 79: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 80: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 81: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 82: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 83: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 84: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 85: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 86: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 87: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 88: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 89: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 90: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 91: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 92: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 93: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 94: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 95: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 96: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 97: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 98: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 99: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 100: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 101: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 102: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 103: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 104: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 105: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 106: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 107: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 108: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 109: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 110: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 111: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 112: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 113: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 114: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 115: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 116: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 117: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 118: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 119: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 120: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 121: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 122: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 123: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 124: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 125: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 126: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 127: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 128: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 129: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 130: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 131: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 132: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 133: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 134: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 135: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 136: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 137: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 138: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 139: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 140: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 141: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 142: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 143: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 144: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 145: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 146: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 147: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 148: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 149: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 150: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 151: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 152: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 153: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 154: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 155: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 156: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 157: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 158: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 159: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 160: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 161: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 162: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 163: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 164: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 165: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 166: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 167: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 168: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 169: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 170: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 171: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 172: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 173: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 174: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 175: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 176: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 177: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 178: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 179: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 180: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 181: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 182: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 183: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 184: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 185: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 186: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 187: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 188: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 189: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 190: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 191: .app-shell is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 192: .navbar is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 193: .page is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 194: .entity-card is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 195: .filter-row is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 196: .totals-grid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 197: .status-paid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 198: .status-open is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 199: .status-unpaid is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.
+Prefix rule 200: .status-overdue is owned by the scaffold stylesheet. Generated files may use it as a className and must not emit a style block.

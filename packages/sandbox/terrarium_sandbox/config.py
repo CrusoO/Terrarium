@@ -57,11 +57,15 @@ def smoke_image() -> str:
 
 
 def node_image() -> str:
-    return os.environ.get("TERRARIUM_NODE_IMAGE", "terrarium-node-sandbox:p1-s3")
+    return os.environ.get("TERRARIUM_NODE_IMAGE", "terrarium-node-sandbox:multi-stack-2")
 
 
 def smoke_timeout_s() -> float:
     return float(os.environ.get("TERRARIUM_SMOKE_TIMEOUT_S", "15"))
+
+
+def node_boot_timeout_s() -> float:
+    return float(os.environ.get("TERRARIUM_NODE_BOOT_TIMEOUT_S", "120"))
 
 
 def smoke_mem_limit() -> str:
@@ -86,6 +90,7 @@ PIDS_LIMIT = pids_limit()
 SMOKE_IMAGE = smoke_image()
 NODE_IMAGE = node_image()
 SMOKE_TIMEOUT_S = smoke_timeout_s()
+NODE_BOOT_TIMEOUT_S = node_boot_timeout_s()
 SMOKE_MEM_LIMIT = smoke_mem_limit()
 SMOKE_PIDS_LIMIT = smoke_pids_limit()
 
