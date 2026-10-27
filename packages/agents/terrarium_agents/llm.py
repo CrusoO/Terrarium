@@ -524,10 +524,12 @@ def codegen_providers(failed_reason: str | None = None, order: list[str] | None 
 def llm_provider_order(purpose: JsonPurpose) -> list[str]:
     """Provider order for plan and codegen.
 
-    Bedrock is first when it is configured. Any other provider that fails is
-    followed by Bedrock, which is always appended when AWS credentials are set.
+    An explicit ``TERRARIUM_LLM_PROVIDER_ORDER`` is used as written.
+    Otherwise Bedrock is first when it is configured, and it is appended
+    when no order was set.
     """
     custom = (os.environ.get("TERRARIUM_LLM_PROVIDER_ORDER") or "").strip()
+    explicit = bool(custom)
     if custom:
         allowed = {"bedrock", "gemini", "nvidia"}
         ordered = [
@@ -555,7 +557,9 @@ def llm_provider_order(purpose: JsonPurpose) -> list[str]:
     # daily cap; intent and the editor keep their own Gemini models.
     if purpose == "codegen" and os.environ.get("TERRARIUM_ENABLE_GEMINI_CODEGEN") != "1":
         available = [name for name in available if name != "gemini"]
-    if bedrock_ready() and "bedrock" not in available:
+    # An explicit provider list is used as written. Bedrock is appended only
+    # when no order was set, so a Gemini-only build does not call AWS.
+    if not explicit and bedrock_ready() and "bedrock" not in available:
         available.append("bedrock")
     return available
 

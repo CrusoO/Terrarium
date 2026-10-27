@@ -68,10 +68,13 @@ class BrownieProjectTests(unittest.TestCase):
         for key in ("acme-internal-pm", "northstar-commerce"):
             self.assertIsNone(_static_preview_error(PROJECTS[key].files), key)
 
-    def test_project_code_is_labelled_fictional(self) -> None:
+    def test_project_code_reads_as_a_published_app(self) -> None:
         for asset in ASSETS.values():
             body = PROJECTS[asset.project_key].files[asset.files[0]]
-            self.assertIn("Fictional Brownie demo project", body)
+            lowered = body.lower()
+            self.assertNotIn("fictional", lowered)
+            self.assertNotIn("simulated", lowered)
+            self.assertNotIn("mock data", lowered)
 
 
 class BrownieReuseTests(unittest.TestCase):

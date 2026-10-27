@@ -857,7 +857,7 @@ async def _run_stub_session_locked(
                 "frontendStack": plan.frontend_stack,
                 "backendStack": plan.backend_stack,
                 "screens": list(plan.screens),
-                "reuseSupported": plan.frontend_stack == "react",
+                "reuseSupported": plan.frontend_stack in _REUSE_STACKS,
                 "recommendation": recommendation,
             },
         )
@@ -946,6 +946,9 @@ async def _replan_if_stack_changed(
     return plan
 
 
+_REUSE_STACKS = frozenset({"react", "sapui5"})
+
+
 def _dashboard_reuse(owner_id: str | None, asset_ids: list[str], backend_stack: str) -> ReusePlan:
     from terrarium_api.brownie_catalog import reuse_from_dashboard
     from terrarium_api.db import SessionLocal
@@ -956,13 +959,19 @@ def _dashboard_reuse(owner_id: str | None, asset_ids: list[str], backend_stack: 
 
 def _knowledge_step_delay() -> float:
     try:
-        return max(0.0, float(os.environ.get("TERRARIUM_KNOWLEDGE_STEP_DELAY_S", "0.7")))
+        return max(0.0, float(os.environ.get("TERRARIUM_KNOWLEDGE_STEP_DELAY_S", "1.1")))
     except ValueError:
-        return 0.7
+        return 1.1
+
+
+# Relative pace per stage so the search reads like a person working through each source:
+# quick to open a search, a beat to skim the hit list, noticeably longer to actually read
+# and extract — this is the part that should feel like real thinking during a demo.
+_KNOWLEDGE_STAGE_WEIGHT = {"query": 0.8, "results": 1.2, "extracted": 2.6, "done": 1.3}
 
 
 async def _search_knowledge(log: SessionEventLog, session_id: str, prompt: str) -> str:
-    """Search Confluence, Jira, and mail through the mock connectors, one visible step at a time."""
+    """Search Jira, Confluence, and mail through the mock connectors, one visible step at a time."""
     from terrarium_agents.brownie_knowledge import search_steps
 
     delay = _knowledge_step_delay()
@@ -972,19 +981,21 @@ async def _search_knowledge(log: SessionEventLog, session_id: str, prompt: str) 
             session_id,
             {
                 "stage": "started",
-                "message": "Searching Confluence, Jira, and mail for this project.",
-                "sources": ["confluence", "jira", "mail"],
+                "message": "Searching Jira, Confluence, and mail for this project.",
+                "sources": ["jira", "confluence", "mail"],
                 "simulated": True,
             },
         )
     )
+    if delay:
+        await asyncio.sleep(delay * 0.8)
     context = ""
     for stage, payload in search_steps(prompt):
         if delay:
-            await asyncio.sleep(delay)
+            await asyncio.sleep(delay * _KNOWLEDGE_STAGE_WEIGHT.get(stage, 1.0))
         if stage == "done":
             context = str(payload.get("context") or "")
-            message = f"Found {payload['factCount']} requirements in Confluence, Jira, and mail."
+            message = f"Found {payload['factCount']} requirements in Jira, Confluence, and mail."
         elif stage == "query":
             message = f"Searching {payload['label']}"
         elif stage == "results":
@@ -1051,20 +1062,21 @@ async def _continue_after_brownie(
     )
     plan = await asyncio.to_thread(session_plan_from_payload, saved_plan_raw)
     await log.clear_session_plan(session_id)
-    reuse_supported = plan.frontend_stack == "react"
+    reuse_supported = plan.frontend_stack in _REUSE_STACKS
     if reuse_supported and asset_ids:
         owner_id = await log.load_actor_id(session_id)
         reuse = await asyncio.to_thread(_dashboard_reuse, owner_id, asset_ids, plan.backend_stack)
     else:
-        reuse = ReusePlan(ignored=tuple((asset_id, "React builds only.") for asset_id in asset_ids))
+        reuse = ReusePlan(ignored=tuple((asset_id, "React and SAP Fiori builds only.") for asset_id in asset_ids))
     if reuse.applied:
         sources = sorted({asset.tool_name for asset in reuse.applied})
+        noun = "module" if plan.frontend_stack == "sapui5" else "component"
         message = (
-            f"Reusing {len(reuse.applied)} component(s) from {', '.join(sources)}; "
+            f"Reusing {len(reuse.applied)} {noun}(s) from {', '.join(sources)}; "
             "the generator writes only the remaining files."
         )
     elif asset_ids and not reuse_supported:
-        message = "Brownie reuse applies to React builds only. Generating every file."
+        message = "Brownie reuse applies to React and SAP Fiori builds only. Generating every file."
     else:
         message = "No Brownie assets accepted. Generating every file."
     await log.append(

@@ -225,6 +225,153 @@ def tool_ledger(
     return LedgerResponse(entries=[LedgerEntry.model_validate(item) for item in entries])
 
 
+def _report_version(tool: ToolRecord) -> ToolVersionRecord:
+    version = next((v for v in reversed(tool.versions) if v.is_live), None) or (tool.versions[-1] if tool.versions else None)
+    if version is None:
+        raise HTTPException(status_code=409, detail="This app has no version yet.")
+    return version
+
+
+def _report_for(tool: ToolRecord, version: ToolVersionRecord, **kwargs) -> dict:
+    from terrarium_api.trust.app_report import build_report
+
+    return build_report(
+        dict(version.files or {}),
+        tool_id=tool.id,
+        version_id=version.id,
+        version_number=version.version_number,
+        **kwargs,
+    )
+
+
+@router.get("/tools/{tool_id}/trust-report")
+async def trust_report(
+    tool_id: str,
+    db: Session = Depends(get_db),
+    user: dict[str, str] = Depends(get_current_user),
+) -> dict:
+    import asyncio
+
+    tool = _require_visible(db.get(ToolRecord, tool_id), user, db)
+    version = _report_version(tool)
+    report = await asyncio.to_thread(_report_for, tool, version)
+    return {**report, "canFix": can_edit_tool(tool, user, db), "demo": tool.id.startswith("brownie-")}
+
+
+def _fixed_versions(files: dict[str, str], tool_id: str, version_id: str) -> dict[str, str]:
+    from terrarium_sandbox.trust import scan
+
+    findings, _, _ = scan(files, tool_id=tool_id, version_id=version_id)
+    return {
+        finding.packageName: finding.fixedVersions[0]
+        for finding in findings
+        if finding.source == "osv" and finding.packageName and finding.fixedVersions
+    }
+
+
+@router.post("/tools/{tool_id}/trust-report/fix")
+async def fix_trust_report(
+    tool_id: str,
+    db: Session = Depends(get_db),
+    user: dict[str, str] = Depends(get_current_user),
+) -> dict:
+    """Fix every failing check Terrarium can, re-run the trust card, and publish the result as a new version."""
+    import asyncio
+
+    from terrarium_api.trust.app_fix import file_diffs, fix_all
+    from terrarium_api.trust.app_report import failed_checks
+    from terrarium_api.trust.remediation import _write_ledger
+
+    tool = _require_visible(db.get(ToolRecord, tool_id), user, db)
+    if not can_edit_tool(tool, user, db):
+        raise HTTPException(status_code=403, detail="Only the owner or an editor can fix this app.")
+    version = _report_version(tool)
+    files = dict(version.files or {})
+    before = await asyncio.to_thread(_report_for, tool, version)
+    failed = failed_checks(before)
+    if not failed:
+        return {"before": before, "after": before, "changes": [], "diffs": [], "unresolved": [], "version": None}
+
+    advisories = await asyncio.to_thread(_fixed_versions, files, tool.id, version.id)
+    outcome = await asyncio.to_thread(fix_all, files, failed, advisories=advisories)
+
+    from terrarium_api.trust.app_report import build_report
+
+    after = await asyncio.to_thread(
+        build_report,
+        outcome.files,
+        tool_id=tool.id,
+        version_id=f"{version.id}:fix",
+        version_number=version.version_number + 1,
+    )
+    kept = bool(outcome.changes) and int(after["score"]) >= int(before["score"])
+    after_failed = {str(check["id"]) for check in failed_checks(after)}
+    unresolved = [
+        {"id": check["id"], "name": check["name"], "kind": check["kind"], "detail": check["detail"]}
+        for check in failed_checks(after)
+    ]
+    new_version = None
+    if kept:
+        for other in tool.versions:
+            other.is_live = False
+        fixed_names = [str(check["name"]) for check in failed if str(check["id"]) not in after_failed]
+        new_version = ToolVersionRecord(
+            id=uuid4().hex,
+            tool_id=tool.id,
+            version_number=version.version_number + 1,
+            prompt=f"Terrarium trust fix: {len(fixed_names)} check(s) fixed",
+            summary=version.summary,
+            files=outcome.files,
+            is_live=True,
+            acceptance_checks=version.acceptance_checks,
+        )
+        db.add(new_version)
+        for check in failed:
+            fixed = str(check["id"]) not in after_failed
+            _write_ledger(
+                db,
+                tool.id,
+                "fixed" if fixed else "attempt",
+                f"{'Fixed' if fixed else 'Still failing'}: {check['name']} (v{version.version_number} -> v{version.version_number + 1})",
+                str(check["id"])[:64],
+            )
+        tool.updated_at = utc_now()
+        db.commit()
+        db.refresh(new_version)
+        after = {**after, "versionId": new_version.id}
+    return {
+        "before": before,
+        "after": {**after, "canFix": True, "demo": tool.id.startswith("brownie-")},
+        "kept": kept,
+        "changes": [change.__dict__ for change in outcome.changes],
+        "diffs": file_diffs(files, outcome.files),
+        "unresolved": unresolved,
+        "editor": outcome.editor,
+        "version": _version_dto(new_version).model_dump() if new_version else None,
+    }
+
+
+@router.post("/tools/{tool_id}/trust-report/restore")
+async def restore_trust_report(
+    tool_id: str,
+    db: Session = Depends(get_db),
+    user: dict[str, str] = Depends(get_current_user),
+) -> dict:
+    """Brownie demo apps only: put back the original (flawed) files so the fix can be shown again."""
+    import asyncio
+
+    from terrarium_api.brownie_catalog import restore_project
+
+    tool = _require_visible(db.get(ToolRecord, tool_id), user, db)
+    if not can_edit_tool(tool, user, db):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    version = restore_project(db, tool)
+    if version is None:
+        raise HTTPException(status_code=404, detail="Only Brownie demo apps can be restored.")
+    report = await asyncio.to_thread(_report_for, tool, version)
+    return {**report, "canFix": True, "demo": True}
+
+
 @router.post("/settings/whatsapp/link-code", response_model=WhatsAppLinkCodeResponse)
 def whatsapp_link_code(
     user: dict[str, str] = Depends(get_current_user),

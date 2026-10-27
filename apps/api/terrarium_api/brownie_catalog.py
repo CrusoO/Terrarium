@@ -1,14 +1,16 @@
-"""Publish the three fictional Brownie source projects to a user's dashboard and read them back.
+"""Publish the fictional Brownie source projects to a user's dashboard and read them back.
 
 The projects are ordinary dashboard tools owned by the user, so they open and
 run like any other published app. Brownie reuse reads the latest stored
 version of each tool, never the in-code copy, so what is reused is exactly what
-the dashboard shows.
+the dashboard shows. A part is only reusable while the trust card of its app
+has no failing check on that part's files.
 """
 
 from __future__ import annotations
 
 import hashlib
+import logging
 import re
 from uuid import uuid4
 
@@ -16,10 +18,18 @@ from sqlalchemy.orm import Session
 
 from terrarium_agents.brownie_projects import ASSETS, PROJECTS, BrownieProject
 from terrarium_agents.brownie_reuse import PublishedProject, ReusePlan, resolve_reuse, sha256_text
+from terrarium_agents.sap_fiori import detect_domain, module_for_path
 from terrarium_api.models import ToolRecord, ToolVersionRecord, utc_now
 from terrarium_api.tool_access import ensure_owner_member
+from terrarium_api.trust.app_report import TestRunner, blocked_files, build_report
 
-DEMO_PROMPT = "Brownie demo source project (fictional organization, mock data)."
+logger = logging.getLogger(__name__)
+
+DEMO_PROMPT = "Published company app used as a Brownie source."
+# Earlier publishes stored this prompt. Still treat them as ours so a file change can refresh them.
+_OWNED_PROMPTS = {DEMO_PROMPT, "Brownie demo source project (fictional organization, mock data)."}
+# Tests replace this to avoid starting containers.
+trust_runner: TestRunner | None = None
 _QUERY_WORDS = frozenset(
     {
         "a", "an", "and", "app", "application", "build", "for", "from", "in",
@@ -46,7 +56,10 @@ def _latest(tool: ToolRecord) -> ToolVersionRecord | None:
 
 
 def sync_projects(db: Session, user: dict[str, str]) -> None:
-    """Create or refresh the three demo tools. Re-running is safe and adds a version only when files change."""
+    """Create or refresh the demo tools. Re-running is safe and adds a version only when files change.
+
+    A tool whose latest version was made by someone else (a trust fix, an edit) is left alone.
+    """
     owner_id = user["id"]
     email = (user.get("email") or "").strip().lower() or None
     for project in PROJECTS.values():
@@ -65,7 +78,7 @@ def sync_projects(db: Session, user: dict[str, str]) -> None:
             db.flush()
         ensure_owner_member(db, tool)
         latest = _latest(tool)
-        if latest is not None and latest.files == project.files:
+        if latest is not None and (latest.files == project.files or latest.prompt not in _OWNED_PROMPTS):
             continue
         for version in tool.versions:
             version.is_live = False
@@ -102,12 +115,84 @@ def published_projects(db: Session, owner_id: str) -> dict[str, PublishedProject
     return found
 
 
+def restore_project(db: Session, tool: ToolRecord) -> ToolVersionRecord | None:
+    """Put a demo tool back to its original files as a new live version, so the demo can run again."""
+    project = next((item for item in PROJECTS.values() if tool_id_for(tool.owner_id, item.key) == tool.id), None)
+    if project is None:
+        return None
+    latest = _latest(tool)
+    for version in tool.versions:
+        version.is_live = False
+    version = ToolVersionRecord(
+        id=uuid4().hex,
+        tool_id=tool.id,
+        version_number=(latest.version_number + 1) if latest else 1,
+        prompt=DEMO_PROMPT,
+        summary=project.summary,
+        files=dict(project.files),
+        is_live=True,
+    )
+    db.add(version)
+    tool.updated_at = utc_now()
+    db.commit()
+    db.refresh(tool)
+    return version
+
+
+def trust_reports(published: dict[str, PublishedProject]) -> dict[str, dict[str, object]]:
+    reports: dict[str, dict[str, object]] = {}
+    for key, source in published.items():
+        try:
+            reports[key] = build_report(
+                source.files,
+                tool_id=source.tool_id,
+                version_id=f"{source.tool_id}:v{source.version_number}",
+                version_number=source.version_number,
+                runner=trust_runner,
+            )
+        except Exception:  # noqa: BLE001
+            logger.exception("Trust report failed for %s", source.tool_id)
+    return reports
+
+
+def trust_blocks(
+    published: dict[str, PublishedProject],
+    reports: dict[str, dict[str, object]] | None = None,
+) -> dict[str, str]:
+    """Asset id -> plain reason, for parts whose files fail a check on their app's trust card."""
+    reports = trust_reports(published) if reports is None else reports
+    blocks: dict[str, str] = {}
+    for asset in ASSETS.values():
+        report = reports.get(asset.project_key)
+        source = published.get(asset.project_key)
+        if report is None or source is None:
+            continue
+        failing = blocked_files(report)
+        hit = next(((path, failing[path]) for path in asset.files if path in failing), None)
+        if hit is None:
+            continue
+        path, check = hit
+        blocks[asset.asset_id] = (
+            f"The trust card for {source.tool_name} v{source.version_number} fails \u201c{check['name']}\u201d "
+            f"on {path.rsplit('/', 1)[-1]}. Fix it from Published apps and it can be reused."
+        )
+    return blocks
+
+
 def catalog(db: Session, owner_id: str) -> dict[str, object]:
     published = published_projects(db, owner_id)
+    reports = trust_reports(published)
+    blocks = trust_blocks(published, reports)
 
     def project_dto(project: BrownieProject) -> dict[str, object]:
         source = published.get(project.key)
+        report = reports.get(project.key)
         return {
+            "trust": (
+                {"score": report["score"], "grade": report["grade"], "status": report["status"]}
+                if report
+                else None
+            ),
             "key": project.key,
             "name": project.name,
             "organization": project.organization,
@@ -137,8 +222,15 @@ def catalog(db: Session, owner_id: str) -> dict[str, object]:
                 "toolVersion": source.version_number if source else None,
                 "files": files,
                 "dependsOn": list(asset.depends_on),
-                "reusable": asset.reusable and source is not None and all(item["sha256"] for item in files),
-                "gateReason": asset.gate_reason or ("" if source else "Source project is not published."),
+                "stack": asset.stack,
+                "reusable": asset.reusable
+                and source is not None
+                and all(item["sha256"] for item in files)
+                and asset.asset_id not in blocks,
+                "gateReason": asset.gate_reason
+                or blocks.get(asset.asset_id)
+                or ("" if source else "Source project is not published."),
+                "trustBlocked": asset.asset_id in blocks,
             }
         )
     return {
@@ -154,6 +246,13 @@ _PLAIN_REASONS = {
     "pm-dashboard-shell": "This gives the app a home screen and a simple menu.",
     "commerce-product-card": "This shows a product, its price, and an add-to-cart button.",
     "commerce-notification-service": "This tells people when an order changes.",
+    "sap-approval-rules": "Contoso's approval matrix already routes by amount and stops people approving their own requests.",
+    "sap-audit-trail": "This keeps a tamper-proof record of who did what, which auditors ask for.",
+    "sap-status-formatter": "This gives statuses the same Fiori colours as the other apps.",
+    "sap-stock-variance": "Fabrikam's variance rule already sorts counts into OK, Review, and Critical, with tests.",
+    "sap-stock-adjustment": "This posts a corrected count back to stock.",
+    "sap-three-way-match": "This compares the order, the goods receipt, and the invoice.",
+    "sap-s4-destination-client": "This reads purchase orders from S/4HANA through a destination.",
 }
 _PLAIN_HELD_BACK = {
     "pm-notification-banner-legacy": "This older notice banner is retired, so it should not be reused.",
@@ -182,12 +281,16 @@ def recommend_from_dashboard(
     data = catalog(db, owner_id)
     query = _words(f"{prompt}\n{architecture}")
     projects = {project.key: project for project in PROJECTS.values()}
+    sap = frontend_stack == "sapui5"
+    domain = detect_domain(prompt, architecture) if sap else None
     recommended: list[dict[str, object]] = []
     reusable_by_id: dict[str, dict[str, object]] = {}
     held_back: list[dict[str, object]] = []
     for raw in data["assets"]:
         asset = ASSETS[str(raw["id"])]
         project = projects[asset.project_key]
+        if (asset.stack == "sapui5") != sap:
+            continue
         metadata = " ".join(
             [
                 asset.name,
@@ -207,6 +310,11 @@ def recommend_from_dashboard(
             score += 3
         if {"support", "ticket", "case"} & query and asset.project_key == "helio-support-desk":
             score += 3
+        if domain is not None:
+            module = next((found for path in asset.files if (found := module_for_path(path))), None)
+            if module is None or module.role not in domain.roles:
+                continue
+            score += 4
         entry = {
             "assetId": asset.asset_id,
             "name": asset.name,
@@ -221,17 +329,20 @@ def recommend_from_dashboard(
                 f"This part from {project.name} looks close to what you described.",
             ),
         }
-        if bool(raw["reusable"]) and frontend_stack == "react":
+        supported = frontend_stack in {"react", "sapui5"}
+        if bool(raw["reusable"]) and supported:
             reusable_by_id[asset.asset_id] = entry
-        if bool(raw["reusable"]) and frontend_stack == "react" and score:
+        if bool(raw["reusable"]) and supported and score:
             recommended.append(entry)
         elif score:
             held_back.append(
                 {
                     **entry,
-                    "reason": _PLAIN_HELD_BACK.get(
-                        asset.asset_id,
-                        "This part is not ready to reuse.",
+                    "trustBlocked": bool(raw.get("trustBlocked")),
+                    "reason": (
+                        str(raw["gateReason"])
+                        if raw.get("trustBlocked")
+                        else _PLAIN_HELD_BACK.get(asset.asset_id, "This part is not ready to reuse.")
                     ),
                 }
             )
@@ -240,7 +351,7 @@ def recommend_from_dashboard(
     best: list[dict[str, object]] = []
     seen: set[str] = set()
     for entry in recommended:
-        if len(best) >= 3:
+        if len(best) >= (4 if sap else 3):
             break
         for dependency_id in ASSETS[str(entry["assetId"])].depends_on:
             dependency = reusable_by_id.get(dependency_id)
@@ -262,8 +373,9 @@ def recommend_from_dashboard(
                 "fileCount": project["fileCount"],
             }
             for project in data["projects"]
-            if project["published"]
+            if project["published"] and ("SAP" in str(project["stack"])) == sap
         ],
+        "domain": domain.label if domain else None,
         "recommended": best,
         "recommendedAssetIds": [str(entry["assetId"]) for entry in best],
         "heldBack": held_back[:3],
@@ -280,4 +392,10 @@ def reuse_from_dashboard(db: Session, owner_id: str | None, asset_ids: list[str]
         return ReusePlan()
     if not owner_id:
         return ReusePlan(ignored=tuple((asset_id, "Session owner unknown.") for asset_id in asset_ids))
-    return resolve_reuse(asset_ids, published=published_projects(db, owner_id), backend_stack=backend_stack)
+    published = published_projects(db, owner_id)
+    return resolve_reuse(
+        asset_ids,
+        published=published,
+        backend_stack=backend_stack,
+        blocked=trust_blocks(published),
+    )

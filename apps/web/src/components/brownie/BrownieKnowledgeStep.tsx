@@ -8,8 +8,8 @@ import type { ChatItem, KnowledgeAnswer, KnowledgeReading, KnowledgeSource, Know
 const ACCENT = "#6e1429";
 const MONO = { fontFamily: "ui-monospace, monospace", fontSize: "0.68rem" } as const;
 const SOURCES: { id: KnowledgeSource; label: string; badge: string; color: string; queryLabel: string }[] = [
-  { id: "confluence", label: "Confluence", badge: "C", color: "#1868db", queryLabel: "Search" },
   { id: "jira", label: "Jira board", badge: "J", color: "#2684ff", queryLabel: "Search" },
+  { id: "confluence", label: "Confluence", badge: "C", color: "#1868db", queryLabel: "Search" },
   { id: "mail", label: "Mail", badge: "M", color: "#0f6cbd", queryLabel: "Search" },
 ];
 
@@ -225,12 +225,12 @@ export function BrownieKnowledgeStep({ item }: { item: KnowledgeItem }) {
           Brownie is reading project knowledge
         </Typography>
         <Typography variant="caption" sx={{ px: 0.75, py: 0.1, borderRadius: 1, bgcolor: "rgba(237, 108, 2, 0.1)", color: "warning.dark", fontWeight: 600 }}>
-          connectors
+          company sources
         </Typography>
       </Stack>
       <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.75 }}>
         {done
-          ? `Found ${done.factCount ?? 0} requirements. They are reference only, and they decide the three answers below.`
+          ? `Found ${done.factCount ?? 0} requirements. They decide the three answers below.`
           : "Checking the written rules, earlier requirements, and agreed decisions before choosing the shape of the app."}
       </Typography>
       <Stack spacing={1.25} sx={{ mt: 1.25 }}>

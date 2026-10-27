@@ -47,7 +47,7 @@ def patch_upgrade(files: dict[str, str], finding: VulnerabilityFinding) -> dict[
         return None
     target = finding.fixedVersions[0]
     updated = dict(files)
-    for path in ("package.json", "frontend/package.json"):
+    for path in ("package.json", "frontend/package.json", "backend/package.json"):
         if path not in updated:
             continue
         try:

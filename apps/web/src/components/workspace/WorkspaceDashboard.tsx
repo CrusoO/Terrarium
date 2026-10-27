@@ -23,7 +23,7 @@ import type { ToolSummary } from "@terrarium/contracts";
 import { getMyAccessRequests, requestAppAccess, type AccessRequest } from "../../api/groups";
 import { syncBrownieCatalog } from "../../api/brownie";
 import { fetchWorkspaceTools, sleepWorkspaceTool, wakeWorkspaceTool } from "../../api/sessions";
-import { ToolCardHealth } from "../trust/ToolCardHealth";
+import { TrustCard } from "../trust/TrustCard";
 
 type WorkspaceDashboardProps = {
   onOpenTool: (toolId: string) => Promise<void>;
@@ -89,6 +89,14 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
       setStatus(error instanceof Error ? error.message : "Could not load workspace tools.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function reloadTools() {
+    try {
+      setTools(await fetchWorkspaceTools());
+    } catch {
+      // The trust card already shows the fix result; the list refreshes on the next load.
     }
   }
 
@@ -351,7 +359,6 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
                       <Box sx={{ minWidth: 0 }}>
                         <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.35, flexWrap: "wrap" }}>
                           <Typography sx={{ fontWeight: 700, fontSize: "0.98rem" }}>{tool.name}</Typography>
-                          <ToolCardHealth toolId={tool.id} />
                           <Box
                             component="span"
                             sx={{
@@ -386,7 +393,7 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
                           {tool.id.startsWith("brownie-") ? (
                             <Chip
                               size="small"
-                              label="Brownie source · fictional"
+                              label="Published app"
                               sx={{ bgcolor: "rgba(237, 108, 2, 0.1)", color: "warning.dark", fontWeight: 600 }}
                             />
                           ) : null}
@@ -466,6 +473,7 @@ export function WorkspaceDashboard({ onOpenTool, currentUserId, currentUserEmail
                       )}
                     </Stack>
                   </Stack>
+                  <TrustCard toolId={tool.id} onChanged={() => void reloadTools()} />
                 </Paper>
               );
             })}

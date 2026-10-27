@@ -25,6 +25,7 @@ type WorkRow = {
   does: string;
   asset?: BrownieCatalogAsset;
   closest?: string;
+  blocked?: boolean;
 };
 
 function closestDecision(decisions: BrownieDecision[], featureId: string): BrownieDecision | undefined {
@@ -76,6 +77,28 @@ function workRows(
   return { reuse, create };
 }
 
+const SAP_NEW_PARTS: WorkRow[] = [
+  { id: "sap-new-ui", name: "Fiori worklist screen", does: "The list, status colours, and detail panel for this process." },
+  { id: "sap-new-service", name: "CAP service and data model", does: "The entities and OData service for this app." },
+  { id: "sap-new-auth", name: "Sign-in and roles", does: "@requires on the service, with XSUAA role templates for BTP." },
+];
+
+function sapRows(
+  recommendation: BrownieItem["recommendation"],
+  byId: Map<string, BrownieCatalogAsset>,
+): { reuse: WorkRow[]; create: WorkRow[] } {
+  const reuse: WorkRow[] = [];
+  for (const entry of recommendation?.recommended ?? []) {
+    const asset = byId.get(entry.assetId);
+    if (asset?.reusable) reuse.push({ id: entry.assetId, name: entry.name, does: entry.reason, asset });
+  }
+  const create: WorkRow[] = [...SAP_NEW_PARTS];
+  for (const entry of recommendation?.heldBack ?? []) {
+    create.push({ id: entry.assetId, name: entry.name, does: `Written new instead of copying it from ${entry.toolName}.`, closest: entry.reason, blocked: entry.trustBlocked });
+  }
+  return { reuse, create };
+}
+
 function toggled(current: Set<string>, id: string, byId: Map<string, BrownieCatalogAsset>): Set<string> {
   const next = new Set(current);
   if (next.has(id)) {
@@ -90,7 +113,9 @@ function toggled(current: Set<string>, id: string, byId: Map<string, BrownieCata
 
 export function BrownieChatStep({ item, onConfirm }: BrownieChatStepProps) {
   const { id, prompt, reuseSupported, status, recommendation } = item;
-  const { snapshot, brainStages, name } = useMemo(() => matchScenarioForPrompt(prompt), [prompt]);
+  const sap = item.stack === "sapui5";
+  const { snapshot, brainStages, name: scenarioName } = useMemo(() => matchScenarioForPrompt(prompt), [prompt]);
+  const name = sap && recommendation?.domain ? `SAP Fiori · ${recommendation.domain}` : scenarioName;
   const [stage, setStage] = useState(completedRuns.has(id) || status !== "review" ? brainStages.length : 0);
   const [catalog, setCatalog] = useState<BrownieCatalog | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
@@ -111,8 +136,11 @@ export function BrownieChatStep({ item, onConfirm }: BrownieChatStepProps) {
   const checking = stage < brainStages.length || catalogPending;
   const byId = useMemo(() => new Map((catalog?.assets ?? []).map((asset) => [asset.id, asset])), [catalog]);
   const { reuse, create } = useMemo(
-    () => workRows(snapshot.request.features, snapshot.decisions, byId, reuseSupported),
-    [byId, reuseSupported, snapshot],
+    () =>
+      sap
+        ? sapRows(recommendation, byId)
+        : workRows(snapshot.request.features, snapshot.decisions, byId, reuseSupported),
+    [byId, recommendation, reuseSupported, sap, snapshot],
   );
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -147,7 +175,7 @@ export function BrownieChatStep({ item, onConfirm }: BrownieChatStepProps) {
           {name}
         </Typography>
         <Typography variant="caption" sx={{ px: 0.75, py: 0.1, borderRadius: 1, bgcolor: "rgba(237, 108, 2, 0.1)", color: "warning.dark", fontWeight: 600 }}>
-          example apps
+          published apps
         </Typography>
       </Stack>
 
@@ -212,7 +240,11 @@ export function BrownieChatStep({ item, onConfirm }: BrownieChatStepProps) {
                     <Box sx={{ minWidth: 0, flex: 1 }}>
                       <Typography variant="caption" component="div" sx={{ fontWeight: 700 }}>{row.name}</Typography>
                       <Typography variant="caption" component="div" color="text.secondary">{row.does}</Typography>
-                      <Typography variant="caption" component="div" color="text.secondary">Copy {asset.name} from {asset.toolName}</Typography>
+                      <Typography variant="caption" component="div" color="text.secondary">
+                        Copy {asset.name} from {asset.toolName}
+                        {asset.toolVersion ? ` v${asset.toolVersion}` : ""}
+                        {sap ? " · trust card passing" : ""}
+                      </Typography>
                     </Box>
                   </ButtonBase>
                 );
@@ -228,7 +260,9 @@ export function BrownieChatStep({ item, onConfirm }: BrownieChatStepProps) {
                   <Typography variant="caption" component="div" sx={{ fontWeight: 700 }}>{row.name}</Typography>
                   <Typography variant="caption" component="div" color="text.secondary">{row.does}</Typography>
                   {row.closest ? (
-                    <Typography variant="caption" component="div" color="text.secondary">{row.closest}</Typography>
+                    <Typography variant="caption" component="div" sx={{ color: row.blocked ? "error.dark" : "text.secondary" }}>
+                      {row.closest}
+                    </Typography>
                   ) : null}
                 </Box>
               ))}

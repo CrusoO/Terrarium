@@ -1,5 +1,5 @@
 /**
- * Brownie catalog backed by three fictional projects published to the user's dashboard.
+ * Brownie catalog backed by fictional projects published to the user's dashboard.
  * Sync is idempotent: it publishes the projects once and adds a version only when their files change.
  */
 import { getAuthHeaders, refreshAuthToken } from "./auth";
@@ -14,6 +14,7 @@ export interface BrownieCatalogProject {
   toolVersion: number | null;
   fileCount: number;
   published: boolean;
+  trust?: { score: number; grade: string; status: "healthy" | "attention" | "unsafe" } | null;
 }
 
 export interface BrownieCatalogAsset {
@@ -26,8 +27,10 @@ export interface BrownieCatalogAsset {
   toolVersion: number | null;
   files: { path: string; sha256: string | null }[];
   dependsOn: string[];
+  stack?: string;
   reusable: boolean;
   gateReason: string;
+  trustBlocked?: boolean;
 }
 
 export interface BrownieCatalog {
@@ -62,7 +65,9 @@ export interface BrownieRecommendation {
     score: number;
     matchedTerms: string[];
     reason: string;
+    trustBlocked?: boolean;
   }[];
+  domain?: string | null;
   message: string;
 }
 

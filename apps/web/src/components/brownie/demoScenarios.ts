@@ -106,7 +106,7 @@ function stagesFor(snapshot: BrownieDemoSnapshot): BrownieBrainStage[] {
   const covered = request.features.length - comparison.generatedFeatures;
   return [
     { title: "Reading the architecture plan", detail: "Map the planned build to the capabilities Brownie can search for.", signal: `${request.features.length} capabilities` },
-    { title: "Searching the reuse catalog", detail: "Look across permitted fictional projects for matching assets.", signal: `${candidates.length} candidates` },
+    { title: "Searching the reuse catalog", detail: "Look across published apps for matching parts.", signal: `${candidates.length} candidates` },
     { title: "Applying trust gates", detail: "Block private assets, deprecated components, incompatible stacks, and anything awaiting approval.", signal: `${comparison.rejectedCandidates + comparison.reviewCandidates} held back` },
     { title: "Choosing reuse vs. generate", detail: "Offer approved matches for reuse; everything else is left for code generation.", signal: `${covered} reusable · ${comparison.generatedFeatures} to generate` },
   ];

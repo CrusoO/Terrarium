@@ -152,19 +152,23 @@ def run_editor(job: AgentJob) -> AgentResult:
 
     if agents_mode() == "stub":
         return _run_stub(job)
-    if os.environ.get("TERRARIUM_ALLOW_FREE_GEMINI") == "1":
-        try:
-            if _patch_mode(job):
-                return _run_gemini_patches(job)
-            return _run_gemini(job)
-        except EditorAgentError:
-            from terrarium_agents.llm import bedrock_ready
-
-            if not bedrock_ready():
-                raise
-            logger.warning("Editor provider failed; falling back to Bedrock")
-            return _run_bedrock(job)
+    # The default editor model is a Gemini model. Use that key for edits and
+    # preview repairs instead of sending them to Bedrock.
+    if _use_gemini_editor():
+        if _patch_mode(job):
+            return _run_gemini_patches(job)
+        return _run_gemini(job)
     return _run_bedrock(job)
+
+
+def _use_gemini_editor() -> bool:
+    from terrarium_agents.llm import editor_gemini_api_key
+
+    if not editor_gemini_api_key():
+        return False
+    if os.environ.get("TERRARIUM_ALLOW_FREE_GEMINI") == "1":
+        return True
+    return editor_model().lower().startswith("gemini")
 
 
 def _run_stub(job: AgentJob) -> AgentResult:
@@ -365,6 +369,13 @@ def apply_patches(files: dict[str, str], patches: list[dict[str, str]]) -> dict[
                 f"Patch {index} search is not unique in {path} (count={body.count(search)})"
             )
         updated[path] = body.replace(search, replace, 1)
+        if path.endswith(".json"):
+            try:
+                json.loads(updated[path])
+            except json.JSONDecodeError as exc:
+                raise EditorAgentError(
+                    f"Patch {index} would make {path} invalid JSON: {exc}"
+                ) from exc
     return updated
 
 

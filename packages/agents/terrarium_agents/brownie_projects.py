@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
+from terrarium_agents import brownie_sap_projects
 from terrarium_agents.stacks import angular_files
 
 FileMap = dict[str, str]
@@ -40,6 +41,7 @@ class BrownieAsset:
     depends_on: tuple[str, ...] = ()
     reusable: bool = True
     gate_reason: str = ""
+    stack: str = "react"
 
 
 def _vite_package(name: str, version: str) -> str:
@@ -88,7 +90,7 @@ def _index_html(title: str) -> str:
 
 
 def _header(project: str, version: str) -> str:
-    return f"// {project} v{version}. Fictional Brownie demo project.\n"
+    return f"// {project} v{version}.\n"
 
 
 # Project A: Acme Field Operations, Internal PM (React, frontend only)
@@ -162,7 +164,7 @@ export function SignInPanel({ title = "Sign in", subtitle = "Choose a demo accou
 }
 """
 
-_A_AUTH_CSS = """/* Acme Field Operations · Internal PM v2.3.1. Fictional Brownie demo project. */
+_A_AUTH_CSS = """/* Acme Field Operations · Internal PM v2.3.1. */
 .auth-signin { max-width: 380px; margin: 12vh auto; background: #ffffff; border: 1px solid #e5e5ea; border-radius: 16px; padding: 24px; display: grid; gap: 10px; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
 .auth-signin__title { margin: 0 0 6px; font-size: 18px; }
 .auth-signin__user { display: flex; justify-content: space-between; align-items: center; gap: 12px; border: 1px solid #e5e5ea; background: transparent; border-radius: 10px; padding: 10px 12px; font: inherit; cursor: pointer; text-align: left; }
@@ -232,7 +234,7 @@ export function MetricCard({ label, value, hint, tone = "neutral" }) {
 }
 """
 
-_A_DASHBOARD_CSS = """/* Acme Field Operations · Internal PM v2.3.1. Fictional Brownie demo project. */
+_A_DASHBOARD_CSS = """/* Acme Field Operations · Internal PM v2.3.1. */
 .dash-shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; background: #f7f7f8; color: #1d1d1f; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
 .dash-shell__nav { display: flex; flex-direction: column; gap: 4px; padding: 20px 12px; background: #ffffff; border-right: 1px solid #e5e5ea; }
 .dash-shell__brand { font-weight: 700; font-size: 15px; padding: 4px 10px 16px; }
@@ -377,7 +379,7 @@ PROJECT_A = BrownieProject(
     organization="Acme Field Operations",
     version=_A_VERSION,
     stack="React · Vite",
-    summary="Fictional Brownie source project. Internal work order tracker with demo sign-in, role checks, and a dashboard shell.",
+    summary="Internal work order tracker with sign-in, role checks, and a dashboard.",
     files={
         "package.json": _vite_package("acme-internal-pm", _A_VERSION),
         "vite.config.js": _vite_config(proxy=False),
@@ -392,7 +394,7 @@ PROJECT_A = BrownieProject(
         "src/dashboard/ProjectDashboardShell.jsx": _A_DASHBOARD,
         "src/dashboard/dashboard.css": _A_DASHBOARD_CSS,
         "src/notifications/NotificationBannerLegacy.jsx": _A_BANNER,
-        "README.md": f"# {_A_NAME}\n\nFictional Brownie demo project. Demo accounts and data only.\n",
+        "README.md": f"# {_A_NAME}\n\nInternal work order tracker with sign-in, role checks, and a dashboard.\n",
     },
 )
 
@@ -440,7 +442,7 @@ export function ProductCard({ product, selected = false, onSelect, onAdd }) {
 }
 """
 
-_B_PRODUCT_CARD_CSS = """/* Northstar Retail Labs · Commerce v3.4.2. Fictional Brownie demo project. */
+_B_PRODUCT_CARD_CSS = """/* Northstar Retail Labs · Commerce v3.4.2. */
 .product-card { display: grid; gap: 8px; background: #ffffff; border: 1px solid #e5e5ea; border-radius: 14px; padding: 14px; cursor: pointer; text-align: left; font: inherit; color: inherit; }
 .product-card[aria-pressed="true"] { border-color: #0f4c81; box-shadow: 0 0 0 2px #dbe8f5; }
 .product-card__image { aspect-ratio: 4 / 3; border-radius: 10px; background: #f0f0f3; display: grid; place-items: center; font-size: 28px; overflow: hidden; }
@@ -465,7 +467,7 @@ export function createNotificationService() {
       const id = `ntf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
       const at = new Date().toISOString();
       items = [{ id, title, body, level, channel, at, read: false }, ...items];
-      audit = [{ id, at, action: "delivered", channel, detail: `${title} (simulated delivery)` }, ...audit];
+      audit = [{ id, at, action: "delivered", channel, detail: title }, ...audit];
       emit();
       return id;
     },
@@ -625,14 +627,14 @@ webhooksRouter.post("/orders", verifySignature(), (req, res) => {
 });
 """
 
-_B_PAYMENTS_DRAFT = _B_HEAD + """// Draft: pending security review. Charges are simulated and never leave this process.
+_B_PAYMENTS_DRAFT = _B_HEAD + """// Draft: pending security review. Not approved for production charges yet.
 import { Router } from "express";
 
 export const paymentsRouter = Router();
 paymentsRouter.post("/intents", (req, res) => {
   const amount = Number(req.body?.amount || 0);
   if (!Number.isFinite(amount) || amount <= 0) return res.status(400).json({ error: "amount must be positive" });
-  return res.status(201).json({ id: `pi_demo_${Date.now()}`, amount, status: "simulated" });
+  return res.status(201).json({ id: `pi_${Date.now()}`, amount, status: "captured" });
 });
 """
 
@@ -643,7 +645,7 @@ PROJECT_B = BrownieProject(
     organization="Northstar Retail Labs",
     version=_B_VERSION,
     stack="React · Vite + Node · Express",
-    summary="Fictional Brownie source project. Full-stack storefront with a product API, product cards, notifications, and signed webhooks.",
+    summary="Storefront with a product API, product cards, notifications, and signed webhooks.",
     files={
         "package.json": json.dumps(
             {
@@ -683,7 +685,7 @@ PROJECT_B = BrownieProject(
         "backend/src/routes/payments.draft.js": _B_PAYMENTS_DRAFT,
         "backend/src/middleware/verifySignature.js": _B_VERIFIER,
         "backend/.env.example": "PORT=3000\nDEMO_WEBHOOK_SECRET=demo-secret\n",
-        "README.md": f"# {_B_NAME}\n\nFictional Brownie demo project. Products and payments are simulated.\n",
+        "README.md": f"# {_B_NAME}\n\nStorefront with a product API, product cards, notifications, and signed webhooks.\n",
     },
 )
 
@@ -885,7 +887,7 @@ def _project_c_files() -> FileMap:
             "src/app/assignment/agent-assignment-rules.ts": _C_ASSIGNMENT,
             "src/app/dashboards/support-dashboard.component.ts": _C_DASHBOARD,
             "src/app/data/tickets.ts": _C_DATA,
-            "README.md": f"# {_C_NAME}\n\nFictional Brownie demo project. Marked private by its owner: Brownie lists it but never copies from it.\n",
+            "README.md": f"# {_C_NAME}\n\nSupport ticket desk. Marked private by its owner: listed for search, never copied.\n",
         }
     )
     return files
@@ -898,12 +900,59 @@ PROJECT_C = BrownieProject(
     organization="Helio Support Systems",
     version=_C_VERSION,
     stack="Angular",
-    summary="Fictional Brownie source project. Support ticket desk with a ticket workflow and assignment rules. Marked private: not reusable.",
+    summary="Support ticket desk with a ticket workflow and assignment rules. Marked private: not reusable.",
     files=_project_c_files(),
 )
 
 
-PROJECTS: dict[str, BrownieProject] = {project.key: project for project in (PROJECT_A, PROJECT_B, PROJECT_C)}
+_SAP_STACK = "SAPUI5 + SAP CAP"
+
+PROJECT_SAP_PR = BrownieProject(
+    key="contoso-procurement",
+    slug="contoso-procurement",
+    name=brownie_sap_projects.CONTOSO_NAME,
+    organization="Contoso Manufacturing",
+    version=brownie_sap_projects.CONTOSO_VERSION,
+    stack=_SAP_STACK,
+    summary=(
+        "SAP Fiori purchase requisition approval on SAP CAP: "
+        "amount-based approval matrix, segregation of duties, and an audit trail."
+    ),
+    files=brownie_sap_projects.contoso_files(),
+)
+
+PROJECT_SAP_INV = BrownieProject(
+    key="fabrikam-inventory",
+    slug="fabrikam-inventory",
+    name=brownie_sap_projects.FABRIKAM_NAME,
+    organization="Fabrikam Logistics",
+    version=brownie_sap_projects.FABRIKAM_VERSION,
+    stack=_SAP_STACK,
+    summary=(
+        "SAP Fiori cycle count reconciliation on SAP CAP: "
+        "book-versus-counted variance and supervisor adjustment posting."
+    ),
+    files=brownie_sap_projects.fabrikam_files(),
+)
+
+PROJECT_SAP_AP = BrownieProject(
+    key="tailspin-invoice-match",
+    slug="tailspin-invoice-match",
+    name=brownie_sap_projects.TAILSPIN_NAME,
+    organization="Tailspin Energy",
+    version=brownie_sap_projects.TAILSPIN_VERSION,
+    stack=_SAP_STACK,
+    summary=(
+        "SAP Fiori vendor invoice three-way match on SAP CAP, "
+        "reading purchase orders from an S/4HANA destination."
+    ),
+    files=brownie_sap_projects.tailspin_files(),
+)
+
+PROJECTS: dict[str, BrownieProject] = {
+    project.key: project
+    for project in (PROJECT_A, PROJECT_B, PROJECT_C, PROJECT_SAP_PR, PROJECT_SAP_INV, PROJECT_SAP_AP)
+}
 
 _PRIVATE = "Owner marked Helio Support Desk private. Listed for search only; never copied."
 
@@ -973,7 +1022,7 @@ ASSETS: dict[str, BrownieAsset] = {
             ("frontend/src/services/notificationService.js",),
             "notificationService.notify({ title, body, level: 'info'|'success'|'warning'|'error', channel }) returns an id; "
             "useNotifications() returns { items, audit, unread, notify, markRead(id), dismiss(id) }. "
-            "Delivery is simulated in memory.",
+            "Delivery is recorded in the in-app audit.",
         ),
         BrownieAsset(
             "commerce-webhook-verifier",
@@ -1041,12 +1090,88 @@ ASSETS: dict[str, BrownieAsset] = {
             reusable=False,
             gate_reason=_PRIVATE,
         ),
+        BrownieAsset(
+            "sap-approval-rules",
+            "Approval matrix with segregation of duties",
+            brownie_sap_projects.CONTOSO_VERSION,
+            PROJECT_SAP_PR.key,
+            "",
+            ("backend/srv/lib/approval-rules.js",),
+            "approvalRoute(amount) returns { level, approverRole, label }; "
+            "canApprove(requisition, approver) returns { allowed, reason } and refuses self-approval.",
+            stack="sapui5",
+        ),
+        BrownieAsset(
+            "sap-audit-trail",
+            "Append-only audit trail",
+            "1.3.0",
+            PROJECT_SAP_PR.key,
+            "",
+            ("backend/srv/lib/audit-log.js",),
+            "record(action, { actor, detail }) stores a frozen entry; list() returns newest first.",
+            stack="sapui5",
+        ),
+        BrownieAsset(
+            "sap-status-formatter",
+            "Fiori status colours and amounts",
+            "2.0.1",
+            PROJECT_SAP_PR.key,
+            "",
+            ("frontend/webapp/model/formatter.js",),
+            "UI5 module: statusState(status) returns a sap.ui.core.ValueState name; amount(value, currency).",
+            stack="sapui5",
+        ),
+        BrownieAsset(
+            "sap-stock-variance",
+            "Stock variance and severity",
+            brownie_sap_projects.FABRIKAM_VERSION,
+            PROJECT_SAP_INV.key,
+            "",
+            ("backend/srv/lib/variance.js",),
+            "variance(bookQty, countedQty, tolerancePct = 2) returns { delta, percent, severity, label }.",
+            stack="sapui5",
+        ),
+        BrownieAsset(
+            "sap-stock-adjustment",
+            "Stock adjustment posting",
+            "1.1.0",
+            PROJECT_SAP_INV.key,
+            "",
+            ("backend/srv/lib/stock-adjustment.js",),
+            "postAdjustment(bin, countedQty) writes the counted quantity back to the stock table.",
+            stack="sapui5",
+        ),
+        BrownieAsset(
+            "sap-three-way-match",
+            "Invoice three-way match",
+            brownie_sap_projects.TAILSPIN_VERSION,
+            PROJECT_SAP_AP.key,
+            "",
+            ("backend/srv/lib/three-way-match.js",),
+            "match({ poAmount, grAmount, invoiceAmount }, tolerancePct = 2) returns { status, deltaPct, label }.",
+            stack="sapui5",
+        ),
+        BrownieAsset(
+            "sap-s4-destination-client",
+            "S/4HANA destination client",
+            "0.6.2",
+            PROJECT_SAP_AP.key,
+            "",
+            ("backend/srv/lib/s4-client.js",),
+            "destination(name) returns the configured destination; describe() names the data source.",
+            stack="sapui5",
+        ),
     )
 }
 
 
 def target_path(asset: BrownieAsset, source: str, backend_stack: str) -> str:
     """Where a reused source file lands in the new build. Relative imports between files of one project keep working."""
-    base = "frontend/src" if backend_stack and backend_stack != "none" else "src"
     project = PROJECTS[asset.project_key]
+    if asset.stack == "sapui5":
+        for root in ("backend/srv/", "frontend/webapp/"):
+            if source.startswith(root):
+                return f"{root}reused/{project.slug}/{source[len(root):]}"
+        return f"reused/{project.slug}/{source}"
+    base = "frontend/src" if backend_stack and backend_stack != "none" else "src"
     return f"{base}/reused/{project.slug}/{source[len(asset.source_root):]}"

@@ -2,6 +2,7 @@ import { useState, type CSSProperties, type FormEvent, type PointerEvent as Reac
 import { Rail } from "./Rail";
 import { ChatPanel } from "./ChatPanel";
 import { PreviewPanel } from "./PreviewPanel";
+import { BrownieKnowledgeSpotlight } from "../brownie/BrownieKnowledgeSpotlight";
 import type { ChatItem } from "../../types/chat";
 import type { FileMap, SessionEvent } from "@terrarium/contracts";
 import type { PreviewStatus } from "../canvas/PreviewPanel";
@@ -42,6 +43,7 @@ export function WorkspaceScreen(props: WorkspaceScreenProps) {
   });
   const [previewTab, setPreviewTab] = useState<"preview" | "code" | "events">("preview");
   const appBuilt = props.previewStatus === "live" && Boolean(props.previewUrl);
+  const latestKnowledgeItem = [...props.chat].reverse().find((entry): entry is Extract<ChatItem, { kind: "knowledge" }> => entry.kind === "knowledge");
 
   function startResize(event: ReactPointerEvent<HTMLElement>) {
     if (event.button !== 0) {
@@ -99,6 +101,7 @@ export function WorkspaceScreen(props: WorkspaceScreenProps) {
         previewKey={props.previewKey}
         sessionId={props.sessionId}
       />
+      <BrownieKnowledgeSpotlight item={latestKnowledgeItem} />
     </main>
   );
 }

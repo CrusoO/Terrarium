@@ -86,6 +86,43 @@ _KNOWN_ADVISORIES: dict[str, dict[str, object]] = {
     }
 }
 
+# Advisories that cover every version below the fixed one.
+_RANGE_ADVISORIES: dict[str, dict[str, object]] = {
+    "@sap/xssec": {
+        "advisoryId": "CVE-2023-49583",
+        "severity": "critical",
+        "title": "Privilege escalation in @sap/xssec (SAP Security Note 3411067)",
+        "fixedVersions": ["3.6.0"],
+    }
+}
+
+# CAP and Cloud Foundry local config that commonly ends up committed with real credentials.
+_CREDENTIAL_FILES = ("default-env.json", ".cdsrc-private.json", "vcap-services.json")
+_CREDENTIAL_VALUE = re.compile(
+    r'"(?:password|clientsecret|client_secret|secret|apikey|api_key)"\s*:\s*"(?!\{\{)[^"\s]{6,}"',
+    re.IGNORECASE,
+)
+
+_PACKAGE_FILES = ("package.json", "frontend/package.json", "backend/package.json")
+
+
+def _version_tuple(value: str) -> tuple[int, ...] | None:
+    match = re.match(r"(\d+)(?:\.(\d+))?(?:\.(\d+))?", value)
+    if not match:
+        return None
+    return tuple(int(part or 0) for part in match.groups())
+
+
+def _range_advisory(name: str, version: str) -> dict[str, object] | None:
+    advisory = _RANGE_ADVISORIES.get(name)
+    if advisory is None:
+        return None
+    installed = _version_tuple(version)
+    fixed = _version_tuple(str(advisory["fixedVersions"][0]))  # type: ignore[index]
+    if installed is None or fixed is None or installed >= fixed:
+        return None
+    return advisory
+
 
 def vuln_db_version() -> str:
     return os.environ.get("TERRARIUM_VULN_DB_VERSION", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
@@ -175,6 +212,21 @@ def scan(
                         detectedAt=now,
                     )
                 )
+        if path.rsplit("/", 1)[-1] in _CREDENTIAL_FILES and _CREDENTIAL_VALUE.search(content):
+            secrets += 1
+            findings.append(
+                VulnerabilityFinding(
+                    id=stable_finding_id("gitleaks", rule="config-credential", file=path),
+                    toolId=tool_id,
+                    versionId=version_id,
+                    source="gitleaks",
+                    severity="critical",
+                    title="System credentials committed in local config",
+                    file=path,
+                    rule="config-credential",
+                    detectedAt=now,
+                )
+            )
 
     for path, content in files.items():
         for rule_id, pattern, severity, title in _CODE_RULES:
@@ -219,7 +271,7 @@ def scan(
             pass
 
     lock = _parse_package_lock(files)
-    for pkg_path in ("package.json", "frontend/package.json"):
+    for pkg_path in _PACKAGE_FILES:
         raw = files.get(pkg_path)
         if not raw:
             continue
@@ -231,7 +283,7 @@ def scan(
         for name, version in deps.items():
             version = str(version).lstrip("^~>=")
             key = f"{name}@{version}"
-            adv = _KNOWN_ADVISORIES.get(key)
+            adv = _KNOWN_ADVISORIES.get(key) or _range_advisory(name, version)
             if not adv:
                 continue
             fid = stable_finding_id("osv", package_name=name)

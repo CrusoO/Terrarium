@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import unittest
 from pathlib import Path
@@ -646,6 +647,14 @@ class CodeGeneratorTests(unittest.TestCase):
         self.assertIn("frontend/odata-proxy.mjs", result.files)
         self.assertIn("/odata", result.files["frontend/odata-proxy.mjs"])
         self.assertIn("node odata-proxy.mjs", result.files["frontend/package.json"])
+        manifest = json.loads(result.files["frontend/webapp/manifest.json"])
+        self.assertEqual(
+            manifest["sap.app"]["dataSources"]["mainService"]["uri"],
+            "/odata/v4/catalog/",
+        )
+        self.assertEqual(manifest["sap.ui5"]["models"][""]["dataSource"], "mainService")
+        cdsrc = json.loads(result.files["backend/.cdsrc.json"])
+        self.assertFalse(cdsrc["features"]["odata_new_adapter"])
 
     def test_react_express_keeps_current_generator_path(self) -> None:
         from unittest.mock import patch

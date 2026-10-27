@@ -660,9 +660,9 @@ def generate(
     decision = record_shadow(job.sessionId, job.prompt)
     frontend = resolve_frontend_stack(job)
     backend = resolve_backend_stack(job)
-    if reuse is not None and reuse.files and frontend != "react":
+    if reuse is not None and reuse.files and frontend not in {"react", "sapui5"}:
         logger.info(
-            "Generate %s ignoring Brownie reuse for frontend=%s (React builds only)",
+            "Generate %s ignoring Brownie reuse for frontend=%s (React and SAP Fiori builds only)",
             job.sessionId,
             frontend,
         )
@@ -702,7 +702,16 @@ def generate(
             prompt=job.prompt,
             frontend=frontend,
             backend=backend,
+            reused=reuse.files if reusing and reuse is not None else None,
         )
+        if reusing and reuse is not None:
+            logger.info(
+                "Generate %s merged Brownie reuse into the %s scaffold assets=%s files=%s",
+                job.sessionId,
+                frontend,
+                reuse.applied_ids,
+                list(reuse.files),
+            )
         files = _finalize_files(files)
         if not _has_html_document(_entry_html(files)):
             raise CodeGeneratorError("Generator output is missing a valid index.html")

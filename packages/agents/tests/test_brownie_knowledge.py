@@ -42,8 +42,8 @@ class BrownieKnowledgeTests(unittest.TestCase):
         self.assertEqual(
             [(stage, payload.get("source")) for stage, payload in steps],
             [
-                ("query", "confluence"), ("results", "confluence"), ("extracted", "confluence"),
                 ("query", "jira"), ("results", "jira"), ("extracted", "jira"),
+                ("query", "confluence"), ("results", "confluence"), ("extracted", "confluence"),
                 ("query", "mail"), ("results", "mail"), ("extracted", "mail"),
                 ("done", None),
             ],

@@ -54,6 +54,69 @@ export async function runSessionPublishCheck(sessionId: string): Promise<ToolHea
   return parsed.data;
 }
 
+export type TrustCheckStatus = "passed" | "failed" | "skipped";
+export type TrustSeverity = "critical" | "high" | "medium" | "low" | "info";
+
+export type TrustCheck = {
+  id: string;
+  kind: "functional" | "security";
+  name: string;
+  status: TrustCheckStatus;
+  severity: TrustSeverity;
+  detail: string;
+  source: "static" | "scanner" | "node:test";
+  rootProblem: string | null;
+  evidence: { file: string; line: number | null; snippet: string }[];
+  related: string[];
+  fix: "codemod" | "editor" | null;
+  fixSummary: string;
+};
+
+export type TrustCounts = { passed: number; failed: number; skipped: number; total: number };
+
+export type TrustReport = {
+  toolId: string;
+  versionId: string;
+  versionNumber: number;
+  checkedAt: string;
+  score: number;
+  grade: "A" | "B" | "C" | "D" | "F";
+  status: "healthy" | "attention" | "unsafe";
+  headline: string;
+  tests: TrustCounts;
+  security: TrustCounts;
+  vulnerabilities: { critical: number; high: number; medium: number; low: number };
+  fixable: number;
+  testRunner: { status: string; detail: string; durationMs: number; files: string[] };
+  rootProblems: { id: string; title: string; detail: string; status: "failing" | "covered" }[];
+  checks: TrustCheck[];
+  canFix?: boolean;
+  demo?: boolean;
+};
+
+export type TrustFixResult = {
+  before: TrustReport;
+  after: TrustReport;
+  kept?: boolean;
+  changes: { checkId: string; name: string; how: "codemod" | "editor"; summary: string; files: string[] }[];
+  diffs: { path: string; status: "added" | "modified" | "deleted"; diff: string }[];
+  unresolved: { id: string; name: string; kind: string; detail: string }[];
+  editor?: { used: boolean; model?: string; error?: string; commitMessage?: string } | null;
+  version: { id: string; versionNumber: number } | null;
+};
+
+export function fetchTrustReport(toolId: string): Promise<TrustReport> {
+  return api(`/tools/${toolId}/trust-report`);
+}
+
+export function fixTrustReport(toolId: string): Promise<TrustFixResult> {
+  return api(`/tools/${toolId}/trust-report/fix`, { method: "POST" });
+}
+
+export function restoreTrustReport(toolId: string): Promise<TrustReport> {
+  return api(`/tools/${toolId}/trust-report/restore`, { method: "POST" });
+}
+
 export function publishTool(
   toolId: string,
   body: { acknowledgeWarnings?: boolean; versionId?: string },

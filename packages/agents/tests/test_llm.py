@@ -57,7 +57,7 @@ class LlmParseTests(unittest.TestCase):
         self.assertEqual(order, ["bedrock"])
         self.assertEqual(plan_order, ["bedrock", "gemini"])
 
-    def test_custom_order_always_falls_back_to_bedrock(self) -> None:
+    def test_explicit_gemini_order_does_not_call_bedrock(self) -> None:
         env = {
             "TERRARIUM_AGENTS": "live",
             "AWS_ACCESS_KEY_ID": "test",
@@ -69,8 +69,8 @@ class LlmParseTests(unittest.TestCase):
         with patch.dict("os.environ", env, clear=True):
             order = llm_provider_order("codegen")
             plan_order = llm_provider_order("plan")
-        self.assertEqual(order, ["gemini", "bedrock"])
-        self.assertEqual(plan_order, ["gemini", "bedrock"])
+        self.assertEqual(order, ["gemini"])
+        self.assertEqual(plan_order, ["gemini"])
 
     def test_nvidia_only_when_explicitly_enabled(self) -> None:
         env = {

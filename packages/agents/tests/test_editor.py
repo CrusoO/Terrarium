@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import unittest
 
-from terrarium_agents.editor import EditorAgentError, run_editor
+from terrarium_agents.editor import EditorAgentError, apply_patches, run_editor
 from terrarium_contracts import AgentJob, Intent
 
 
@@ -91,6 +91,16 @@ class EditorAgentTests(unittest.TestCase):
         result = run_editor(job)
         for path in _EXISTING_FILES:
             self.assertNotIn(path, result.files)
+
+    def test_patch_that_breaks_json_is_rejected(self) -> None:
+        files = {"webapp/manifest.json": '{"title": "Catalog", "ok": true}\n'}
+        with self.assertRaises(EditorAgentError) as ctx:
+            apply_patches(
+                files,
+                [{"path": "webapp/manifest.json", "search": ",", "replace": ""}],
+            )
+        self.assertIn("invalid JSON", str(ctx.exception))
+        self.assertIn('"ok": true', files["webapp/manifest.json"])
 
     # --- acceptance: does not call Docker ---
 

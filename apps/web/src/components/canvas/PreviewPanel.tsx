@@ -272,6 +272,8 @@ export function PreviewPanel({
   const userEmail =
     auth.state.status === "authenticated" ? auth.state.user.email ?? "" : "";
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const frameTimer = useRef<number | null>(null);
+  const [frameReady, setFrameReady] = useState(false);
   const src = previewUrl ? iframeSrc(previewUrl) : null;
   const streamDocument = useMemo(() => fileMapToPreviewDocument(streamFiles), [streamFiles]);
   const showFrame = Boolean(src || streamDocument) && (status === "live" || status === "draft" || status === "updating");
@@ -361,6 +363,24 @@ export function PreviewPanel({
   }, [showFrame, streamDocument, tab]);
 
   useEffect(() => {
+    setFrameReady(false);
+    return () => {
+      if (frameTimer.current) window.clearTimeout(frameTimer.current);
+    };
+  }, [src, refreshKey, streamDocument]);
+
+  useEffect(() => {
+    function onReady(event: MessageEvent) {
+      const data = event.data as { type?: string } | null;
+      if (data?.type === "terrarium-preview-ready") {
+        setFrameReady(true);
+      }
+    }
+    window.addEventListener("message", onReady);
+    return () => window.removeEventListener("message", onReady);
+  }, []);
+
+  useEffect(() => {
     function onMessage(event: MessageEvent) {
       const data = event.data as Partial<RuntimeErrorRequest> & { type?: string };
       if (data?.type !== "terrarium-preview-error" || !sessionId) {
@@ -380,8 +400,14 @@ export function PreviewPanel({
   }, [onRuntimeError, sessionId]);
 
   function handleFrameLoad() {
+    const sap = Object.values(files ?? {}).some((body) => body.includes("sap-ui-bootstrap"));
+    // A new SAP app posts terrarium-preview-ready once Horizon has painted. Until then, or for an
+    // older app that never posts, keep the spinner up instead of a blank frame.
+    if (frameTimer.current) window.clearTimeout(frameTimer.current);
+    frameTimer.current = window.setTimeout(() => setFrameReady(true), sap ? 8000 : 0);
     const frameWindow = iframeRef.current?.contentWindow;
     if (!frameWindow || streamDocument) {
+      setFrameReady(true);
       return;
     }
     try {
@@ -614,6 +640,7 @@ export function PreviewPanel({
                 onClick={() => {
                   const frame = iframeRef.current;
                   if (!frame?.src) return;
+                  setFrameReady(false);
                   const url = new URL(frame.src, window.location.href);
                   url.searchParams.set("refresh", String(Date.now()));
                   frame.src = url.toString();
@@ -666,9 +693,28 @@ export function PreviewPanel({
               height: "100%",
               minHeight: 0,
               border: 0,
-              bgcolor: "background.paper",
+              bgcolor: "#f5f6f7",
+              opacity: frameReady ? 1 : 0,
             }}
           />
+          {frameReady ? null : (
+            <Stack
+              spacing={1.5}
+              sx={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: "#f5f6f7",
+              }}
+            >
+              <CircularProgress size={32} thickness={4} sx={{ color: "#0070f2" }} />
+              <Typography variant="body2" sx={{ color: "#556b82", fontWeight: 600 }}>
+                Opening preview
+              </Typography>
+            </Stack>
+          )}
         </Box>
       ) : null}
 

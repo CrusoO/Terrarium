@@ -92,8 +92,13 @@ def resolve_reuse(
     *,
     published: Mapping[str, PublishedProject],
     backend_stack: str = "none",
+    blocked: Mapping[str, str] | None = None,
 ) -> ReusePlan:
-    """Resolve accepted ids against published projects, adding required dependencies first."""
+    """Resolve accepted ids against published projects, adding required dependencies first.
+
+    ``blocked`` maps asset ids to the reason their published files fail the trust card.
+    """
+    blocked = blocked or {}
     if not asset_ids:
         return ReusePlan()
     applied: dict[str, ReusedAsset] = {}
@@ -113,6 +118,12 @@ def resolve_reuse(
             return False
         if not asset.reusable:
             refuse(asset_id, asset.gate_reason or "Not approved for reuse.")
+            return False
+        if asset_id in blocked:
+            refuse(asset_id, blocked[asset_id])
+            return False
+        if asset.stack == "sapui5" and backend_stack != "sap-cap":
+            refuse(asset_id, "SAP parts need the SAP CAP backend in the new app.")
             return False
         for dependency in asset.depends_on:
             if not add(dependency, (*trail, asset_id)):

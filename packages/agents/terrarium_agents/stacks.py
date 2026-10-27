@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping
 from html import escape
 
 from terrarium_contracts import BackendStack, FileMap, FrontendStack
+
+from terrarium_agents.sap_fiori import cdsrc, fiori_cap_files
 
 _ANGULAR_RE = re.compile(r"\bangular\b", re.I)
 _SAP_RE = re.compile(r"\b(sapui5|sap\s*ui5|sap\s*fiori|fiori)\b", re.I)
@@ -108,6 +111,30 @@ def modern_css(accent: str = "#2563eb") -> str:
         "input, textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; "
         "padding: 12px 14px; font: inherit; }\n"
         "@media (max-width: 720px) { .shell { padding: 16px; } }\n"
+    )
+
+
+def fiori_horizon_css() -> str:
+    """Horizon-like chrome on top of sap_horizon: page canvas, cards, and a quieter list."""
+    return (
+        ".sapUiBody, .sapMPageBgStandard, .sapMPageBgSolid { background: #f5f6f7 !important; }\n"
+        ".fioriCanvas { padding: 8px 4px 24px; gap: 12px; }\n"
+        ".fioriCard {\n"
+        "  background: #fff; border-radius: 16px; overflow: hidden;\n"
+        "  box-shadow: 0 1px 2px rgba(34, 53, 72, .08), 0 8px 24px rgba(34, 53, 72, .06);\n"
+        "  border: 1px solid rgba(34, 53, 72, .06);\n"
+        "}\n"
+        ".fioriCard .sapMListHdr, .fioriCard .sapMPanelHdr {\n"
+        "  font-size: .95rem; font-weight: 700; border-bottom: 1px solid #eef0f2; background: #fff;\n"
+        "}\n"
+        ".fioriCard .sapMLIB { padding-top: 6px; padding-bottom: 6px; }\n"
+        ".fioriIntro { color: #556b82; max-width: 720px; }\n"
+        ".fioriKpis { gap: 12px; }\n"
+        ".fioriKpi {\n"
+        "  background: #fff; border-radius: 16px; min-width: 140px; padding: 14px 16px;\n"
+        "  box-shadow: 0 1px 2px rgba(34, 53, 72, .08); border: 1px solid rgba(34, 53, 72, .06);\n"
+        "}\n"
+        ".fioriKpi .sapMTitle { font-size: 1.35rem; }\n"
     )
 
 
@@ -260,28 +287,29 @@ def angular_files(title: str, *, with_api: bool = False) -> FileMap:
 
 def sapui5_files(title: str, *, with_odata: bool = False) -> FileMap:
     safe = escape(title)
-    data_source = (
-        """
-        "dataSources": {
-          "mainService": {
-            "uri": "/odata/v4/catalog/",
-            "type": "OData",
-            "settings": { "odataVersion": "4.0" }
-          }
+    sap_app: dict = {
+        "id": "terrarium.fiori",
+        "type": "application",
+        "title": title,
+    }
+    sap_ui5: dict = {
+        "rootView": {
+            "viewName": "terrarium.fiori.view.App",
+            "type": "XML",
+            "async": True,
+            "id": "app",
         },
-"""
-        if with_odata
-        else ""
-    )
-    models = (
-        """
-        "models": {
-          "": { "dataSource": "mainService" }
-        },
-"""
-        if with_odata
-        else ""
-    )
+        "resources": {"css": [{"uri": "css/style.css"}]},
+    }
+    if with_odata:
+        sap_app["dataSources"] = {
+            "mainService": {
+                "uri": "/odata/v4/catalog/",
+                "type": "OData",
+                "settings": {"odataVersion": "4.0"},
+            }
+        }
+        sap_ui5["models"] = {"": {"dataSource": "mainService"}}
     catalog_intro = (
         "Items and status from the local SAP CAP OData mock."
         if with_odata
@@ -315,26 +343,34 @@ def sapui5_files(title: str, *, with_odata: bool = False) -> FileMap:
             "    data-sap-ui-compatVersion=\"edge\" data-sap-ui-async=\"true\"\n"
             "    data-sap-ui-oninit=\"module:sap/ui/core/ComponentSupport\"\n"
             "    data-sap-ui-resourceroots='{\"terrarium.fiori\": \"./\"}'></script>\n"
+            "  <style>\n"
+            "    #terrarium-boot{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;"
+            "justify-content:center;gap:14px;background:#f5f6f7;color:#1d2d3e;font:600 14px '72','Segoe UI',sans-serif}\n"
+            "    #terrarium-boot span{width:36px;height:36px;border-radius:50%;border:3px solid #e3e6ea;border-top-color:#0070f2;"
+            "animation:terrarium-spin .7s linear infinite}\n"
+            "    @keyframes terrarium-spin{to{transform:rotate(360deg)}}\n"
+            "  </style>\n"
             "</head>\n<body class=\"sapUiBody\">\n"
+            "  <div id=\"terrarium-boot\"><span></span>Opening the app</div>\n"
             "  <div data-sap-ui-component data-name=\"terrarium.fiori\" data-id=\"container\" data-settings='{\"id\":\"app\"}'></div>\n"
+            "  <script>\n"
+            "    (function () {\n"
+            "      var timer = setInterval(function () {\n"
+            "        if (!document.querySelector('.sapMPage, .sapFDynamicPage, .sapMList')) return;\n"
+            "        clearInterval(timer);\n"
+            "        var boot = document.getElementById('terrarium-boot');\n"
+            "        if (boot) boot.remove();\n"
+            "        try { parent.postMessage({ type: 'terrarium-preview-ready' }, '*'); } catch (e) {}\n"
+            "      }, 150);\n"
+            "    })();\n"
+            "  </script>\n"
             "</body>\n</html>\n"
         ),
-        "webapp/manifest.json": (
-            "{\n"
-            '  "_version": "1.65.0",\n'
-            '  "sap.app": {\n'
-            '    "id": "terrarium.fiori",\n'
-            '    "type": "application",\n'
-            f'    "title": {json.dumps(title)}{"," if data_source else ""}\n'
-            f"{data_source}"
-            "  },\n"
-            '  "sap.ui5": {\n'
-            '    "rootView": { "viewName": "terrarium.fiori.view.App", "type": "XML", "async": true, "id": "app" },\n'
-            f"{models}"
-            '    "resources": { "css": [{ "uri": "css/style.css" }] }\n'
-            "  }\n"
-            "}\n"
-        ),
+        "webapp/manifest.json": json.dumps(
+            {"_version": "1.65.0", "sap.app": sap_app, "sap.ui5": sap_ui5},
+            indent=2,
+        )
+        + "\n",
         "webapp/Component.js": (
             "sap.ui.define([\"sap/ui/core/UIComponent\"], function (UIComponent) {\n"
             "  \"use strict\";\n"
@@ -345,23 +381,26 @@ def sapui5_files(title: str, *, with_odata: bool = False) -> FileMap:
         ),
         "webapp/view/App.view.xml": (
             '<mvc:View controllerName="terrarium.fiori.controller.App" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" displayBlock="true">\n'
-            '  <App>\n    <Page title="{= ${/title} || \'Catalog\' }" class="sapUiResponsiveContentPadding">\n'
+            '  <App>\n    <Page title="{= ${/title} || \'Catalog\' }" backgroundDesign="Solid">\n'
+            "      <subHeader>\n"
+            f'        <Toolbar><Text text="{escape(catalog_intro, quote=True)}" class="fioriIntro" /></Toolbar>\n'
+            "      </subHeader>\n"
             "      <content>\n"
-            '        <VBox class="sapUiSmallMargin">\n'
-            f'          <Title level="H1" text="{escape(title, quote=True)}" />\n'
-            f'          <Text text="{escape(catalog_intro, quote=True)}" />\n'
-            f'          <List items="{{{catalog_path}}}" headerText="Products">\n'
-            '            <StandardListItem title="{title}" description="{price}" info="{status}" type="Active" press=".onItemPress" />\n'
+            '        <VBox class="sapUiSmallMargin fioriCanvas">\n'
+            f'          <List items="{{{catalog_path}}}" headerText="Products" class="fioriCard sapUiSmallMarginTop">\n'
+            '            <ObjectListItem title="{title}" number="{price}" type="Active" press=".onItemPress">\n'
+            '              <firstStatus><ObjectStatus text="{status}" state="Information" /></firstStatus>\n'
+            "            </ObjectListItem>\n"
             "          </List>\n"
             + (
-                '          <Panel id="detailPanel" headerText="Product details" class="sapUiSmallMarginTop">\n'
+                '          <Panel id="detailPanel" headerText="Product details" class="fioriCard sapUiSmallMarginTop">\n'
                 '            <VBox class="sapUiSmallMargin">\n'
-                '              <Title id="detailTitle" text="Select a product" />\n'
+                '              <Title id="detailTitle" text="Select a product" level="H4" />\n'
                 '              <Text id="detailPrice" text="" />\n'
                 '              <Text id="detailStatus" text="" />\n'
                 "            </VBox>\n"
                 "          </Panel>\n"
-                '          <List items="{/Orders}" headerText="Today\'s orders" class="sapUiSmallMarginTop">\n'
+                '          <List items="{/Orders}" headerText="Today\'s orders" class="fioriCard sapUiSmallMarginTop">\n'
                 '            <StandardListItem title="{title}" info="{status}" />\n'
                 "          </List>\n"
                 if with_odata
@@ -390,7 +429,7 @@ def sapui5_files(title: str, *, with_odata: bool = False) -> FileMap:
             "  });\n"
             "});\n"
         ),
-        "webapp/css/style.css": modern_css("#0f828f"),
+        "webapp/css/style.css": fiori_horizon_css(),
         "README.md": f"# {title}\n\nGenerated SAPUI5/Fiori frontend. OpenUI5 is resolved locally.\n",
     }
     if with_odata:
@@ -470,6 +509,7 @@ def sap_cap_backend_files(title: str) -> FileMap:
             indent=2,
         ),
         "backend/srv/catalog-service.cds": (
+            "@requires: 'authenticated-user'\n"
             "service CatalogService {\n"
             "  @readonly entity Items {\n"
             "    key ID : UUID;\n"
@@ -497,7 +537,7 @@ def sap_cap_backend_files(title: str) -> FileMap:
             "  ]));\n"
             "};\n"
         ),
-        "backend/.cdsrc.json": json.dumps({"server": {"port": 4004}}, indent=2),
+        "backend/.cdsrc.json": cdsrc(),
     }
 
 
@@ -526,6 +566,7 @@ def build_stack_files(
     frontend: FrontendStack,
     backend: BackendStack,
     react_files: FileMap | None = None,
+    reused: Mapping[str, str] | None = None,
 ) -> FileMap:
     heading = _title(title, prompt)
     backend = compatible_backend(frontend, backend)
@@ -540,6 +581,10 @@ def build_stack_files(
         files["README.md"] = f"# {heading}\n\nAngular frontend plus Node/Express backend.\n"
         return files
     if frontend == "sapui5":
+        if backend == "sap-cap":
+            domain_files = fiori_cap_files(heading, prompt, reused)
+            if domain_files is not None:
+                return domain_files
         app = sapui5_files(heading, with_odata=backend == "sap-cap")
         if backend == "none":
             return app

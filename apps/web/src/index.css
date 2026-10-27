@@ -1447,3 +1447,196 @@ body {
   transition-duration: 150ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Brownie knowledge-search spotlight: a big, center-of-screen "thinking" moment that lights
+   up while Jira/Confluence/mail are being searched, then fades itself out. */
+.brownie-spotlight-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--tt-ink) 38%, transparent);
+  backdrop-filter: blur(6px) saturate(1.1);
+  -webkit-backdrop-filter: blur(6px) saturate(1.1);
+}
+
+.brownie-spotlight-backdrop.is-opening {
+  animation: brownie-backdrop-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brownie-spotlight-backdrop.is-closing {
+  animation: brownie-backdrop-out 0.38s ease both;
+  pointer-events: none;
+}
+
+.brownie-spotlight-card {
+  width: min(480px, 100%);
+  background: var(--tt-surface);
+  border-radius: 20px;
+  padding: 22px 24px 20px;
+  box-shadow: 0 24px 64px rgba(20, 10, 14, 0.32), 0 2px 8px rgba(20, 10, 14, 0.12);
+  border: 1px solid color-mix(in srgb, var(--tt-accent-fill) 14%, var(--tt-line));
+}
+
+.brownie-spotlight-backdrop.is-opening .brownie-spotlight-card {
+  animation: brownie-card-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.brownie-spotlight-badge {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--tt-accent-fill), var(--tt-accent-flash));
+  box-shadow: 0 0 0 0 rgba(122, 31, 61, 0.45);
+  animation: brownie-badge-ring 1.8s ease-in-out infinite;
+}
+
+.brownie-spotlight-pill {
+  flex: 0 0 auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--tt-accent-text);
+  background: var(--tt-tint);
+  white-space: nowrap;
+}
+
+.brownie-spotlight-progress.MuiLinearProgress-root {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--tt-line);
+}
+
+.brownie-spotlight-progress .MuiLinearProgress-bar {
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--tt-accent-fill), var(--tt-accent-flash));
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brownie-spotlight-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  opacity: 0.55;
+  transition: opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+.brownie-spotlight-row.is-active,
+.brownie-spotlight-row.is-done {
+  opacity: 1;
+}
+
+.brownie-spotlight-row.is-active {
+  background: color-mix(in srgb, var(--tt-accent-fill) 6%, var(--tt-surface));
+  border-color: color-mix(in srgb, var(--tt-accent-fill) 20%, var(--tt-line));
+  transform: scale(1.015);
+}
+
+.brownie-spotlight-dot {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--dot-color, var(--tt-accent-fill));
+  opacity: 0.45;
+}
+
+.brownie-spotlight-row.is-active .brownie-spotlight-dot {
+  opacity: 1;
+  animation: brownie-dot-pulse 1s ease-in-out infinite;
+}
+
+.brownie-spotlight-row.is-done .brownie-spotlight-dot {
+  opacity: 1;
+}
+
+.brownie-spotlight-cursor {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--tt-accent-flash);
+  animation: brownie-cursor-blink 0.9s ease-in-out infinite;
+}
+
+@keyframes brownie-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes brownie-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes brownie-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes brownie-badge-ring {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(122, 31, 61, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(122, 31, 61, 0);
+  }
+}
+
+@keyframes brownie-dot-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.14);
+  }
+}
+
+@keyframes brownie-cursor-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brownie-spotlight-backdrop.is-opening,
+  .brownie-spotlight-backdrop.is-closing,
+  .brownie-spotlight-backdrop.is-opening .brownie-spotlight-card,
+  .brownie-spotlight-badge,
+  .brownie-spotlight-row.is-active .brownie-spotlight-dot,
+  .brownie-spotlight-cursor {
+    animation: none;
+  }
+}
